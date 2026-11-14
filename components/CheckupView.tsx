@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { inputRow } from "@/lib/findingCopy";
 import { useExplanations } from "./useExplanations";
 import { RemindersCard } from "./RemindersCard";
+import { Paywall } from "./Paywall";
 import { runCheckup } from "@/lib/engine";
 import { Button, Card, Notice, Section } from "./ui";
 import { ChecklistView, FindingCard, ProjectionBanner, W4Card } from "./report";
@@ -19,12 +20,15 @@ export function CheckupView({
   mode,
   onChecklistStatus,
   packetTitle,
+  locked = false,
 }: {
   data: HouseholdData;
   asOf: string;
   mode: "november" | "january";
   onChecklistStatus?: (item: ChecklistItem, status: ChecklistStatus) => void;
   packetTitle: string;
+  /** Free plan: the W-4 fix, tax season and reminders are shown as an Annual paywall. */
+  locked?: boolean;
 }) {
   const result = useMemo(() => runCheckup(data, asOf), [data, asOf]);
   const employerName = (id: string | null) => data.employers.find((e) => e.id === id)?.employerName;
@@ -47,10 +51,16 @@ export function CheckupView({
   );
   const recMismatches = recRows.filter((r) => !r.matches).length;
 
-  const findings = useMemo(
-    () => (mode === "january" ? result.findings : result.findings.filter((f) => !f.code.startsWith("W2_"))),
-    [mode, result],
-  );
+  const findings = useMemo(() => {
+    const list = mode === "january" ? result.findings : result.findings.filter((f) => !f.code.startsWith("W2_"));
+    if (!locked) return list;
+    // The problem is free; the exact per-paycheck fix is part of Annual.
+    return list.map((f) =>
+      f.code === "UNDERWITHHOLDING"
+        ? { ...f, action: { ...f.action, details: "Unlock Annual to get the exact Step 4(c) amount to put on each W-4 so you don't owe in April." } }
+        : f,
+    );
+  }, [mode, result, locked]);
   const explained = useExplanations(findings, result.projection);
 
   return (
@@ -65,7 +75,16 @@ export function CheckupView({
         </div>
       )}
 
-      {mode === "january" && (
+      {mode === "january" && locked && (
+        <Section title="Tax season">
+          <Paywall
+            title="Unlock tax season"
+            reason="Your January checklist of tax forms, W-2 reconciliation against your pay stubs and the accountant packet are part of Annual."
+          />
+        </Section>
+      )}
+
+      {mode === "january" && !locked && (
         <>
           <div className="print-only mb-4">
             <h2 className="text-xl font-bold">{packetTitle}</h2>
@@ -174,7 +193,16 @@ export function CheckupView({
         )}
       </Section>
 
-      {mode === "november" && result.projection && result.projection.balance > 0 && (
+      {mode === "november" && locked && result.projection && result.projection.balance > 0 && (
+        <Section title="Fix it on your W-4">
+          <Paywall
+            title="Get the exact W-4 fix"
+            reason={`We know how much to add to each paycheck so you don't owe ~${money(result.projection.balance)} in April. Annual shows the Step 4(c) amount for every job.`}
+          />
+        </Section>
+      )}
+
+      {mode === "november" && !locked && result.projection && result.projection.balance > 0 && (
         <Section title="Fix it on your W-4" subtitle="Give each employer a new W-4 with this Step 4(c) amount.">
           <div className="grid gap-4 sm:grid-cols-2">
             {result.projection.perEmployer.map((p) => {
@@ -187,9 +215,11 @@ export function CheckupView({
         </Section>
       )}
 
-      <div className="no-print mt-8">
-        <RemindersCard data={data} checklist={result.checklist} asOf={asOf} />
-      </div>
+      {!locked && (
+        <div className="no-print mt-8">
+          <RemindersCard data={data} checklist={result.checklist} asOf={asOf} />
+        </div>
+      )}
 
       {result.projection && (
         <details className="no-print mt-6 text-sm text-slate-600">

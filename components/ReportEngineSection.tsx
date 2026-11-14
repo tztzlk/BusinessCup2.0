@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CheckupView } from "./CheckupView";
 import { api } from "@/lib/api-client";
+import { isAnnual } from "@/lib/plan";
 import type { ChecklistItem, ChecklistStatus, HouseholdData } from "@/lib/types";
 
 // The user's own checkup: lib/engine runs in the browser on the decrypted household data.
@@ -34,7 +35,14 @@ export function ReportEngineSection({ data, onChanged }: { data: HouseholdData; 
           </button>
         ))}
       </div>
-      <CheckupView data={data} asOf={today} mode={mode} onChecklistStatus={saveStatus} packetTitle="Accountant packet" />
+      <CheckupView
+        data={data}
+        asOf={today}
+        mode={mode}
+        onChecklistStatus={saveStatus}
+        packetTitle="Accountant packet"
+        locked={!isAnnual(data)}
+      />
     </div>
   );
 }

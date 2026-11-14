@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api-client";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
+import { Paywall } from "@/components/Paywall";
 import type { EmploymentSettings, ExtractResult, HouseholdData, HouseholdProfile, Paystub, W2 } from "@/lib/types";
 
 type Step = "loading" | "profile" | "recovery" | "employer" | "upload" | "confirm" | "done";
@@ -164,18 +165,21 @@ export function CheckFlow() {
 function useSubmit() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
+  const [errCode, setErrCode] = useState<string | null>(null);
   const run = async (fn: () => Promise<void>) => {
     setBusy(true);
     setErr(null);
+    setErrCode(null);
     try {
       await fn();
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Something went wrong.");
+      setErrCode(e instanceof ApiError ? e.code : null);
     } finally {
       setBusy(false);
     }
   };
-  return { busy, err, run };
+  return { busy, err, errCode, run };
 }
 
 function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void> }) {
@@ -603,7 +607,7 @@ function ConfirmStep({
   const name = (paystub?.employerName ?? w2?.employerName ?? "").toLowerCase();
   const guess = employers.find((e) => name && (name.includes(e.employerName.toLowerCase()) || e.employerName.toLowerCase().includes(name)));
   const [employerId, setEmployerId] = useState<string>(guess?.id ?? employers[0]?.id ?? "");
-  const { busy, err, run } = useSubmit();
+  const { busy, err, errCode, run } = useSubmit();
   const flagged = Object.keys(extracted.confidence).length;
 
   return (
@@ -652,10 +656,16 @@ function ConfirmStep({
         {w2 && <W2Editor value={w2} onChange={setW2} confidence={extracted.confidence} />}
       </div>
 
-      {err && (
+      {err && errCode === "payment_required" ? (
         <div className="mt-4">
-          <Notice tone="danger">{err}</Notice>
+          <Paywall title="Add more documents with Annual" reason={err} />
         </div>
+      ) : (
+        err && (
+          <div className="mt-4">
+            <Notice tone="danger">{err}</Notice>
+          </div>
+        )
       )}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
         <Button

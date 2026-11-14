@@ -9,6 +9,7 @@ import {
   setSessionCookie,
 } from "@/lib/household";
 import { HouseholdProfileSchema } from "@/lib/validation";
+import { publicOrigin } from "@/lib/origin";
 
 export const runtime = "nodejs";
 
@@ -23,16 +24,6 @@ export async function POST(req: Request) {
   const { id, secret } = await createHousehold(parsed.data);
   await setSessionCookie(secret);
   return NextResponse.json({ householdId: id, recoveryUrl: `${publicOrigin(req)}/recover#${secret}` }, { status: 201 });
-}
-
-// Behind the Fly proxy req.url carries the container's bind address (0.0.0.0:3000), so the public
-// origin comes from the forwarded host. The client also rebuilds the link from its own location.
-function publicOrigin(req: Request): string {
-  const h = req.headers;
-  const host = h.get("x-forwarded-host")?.split(",")[0]?.trim() || h.get("host");
-  if (!host) return new URL(req.url).origin;
-  const proto = h.get("x-forwarded-proto")?.split(",")[0]?.trim() || (host.startsWith("localhost") ? "http" : "https");
-  return `${proto}://${host}`;
 }
 
 export async function GET() {

@@ -15,7 +15,7 @@ const VALUE = [
   },
 ];
 
-// Only steps that work end to end today. Add "Pay with a test card" when Stripe Checkout is live.
+// Only steps that work end to end today.
 const HOW_TO_TEST = [
   {
     title: "November: the paycheck checkup",
@@ -42,6 +42,7 @@ const HOW_TO_TEST = [
     points: [
       "Upload a PDF or a phone photo of a pay stub or W-2",
       "Confirm the fields Claude read, then see your report",
+      "Unlock Annual on My report with the Stripe test card 4242 4242 4242 4242 (test mode, no charge)",
       "Only confirmed fields are kept, encrypted; delete them anytime from My report",
     ],
     cta: "Check a pay stub",
@@ -136,8 +137,8 @@ export default function Home() {
             <h3 className="font-semibold text-slate-900">Free</h3>
             <p className="mt-1 text-3xl font-bold text-slate-900">$0</p>
             <ul className="mt-4 space-y-2 text-sm text-slate-600">
-              <li>One paycheck checkup</li>
-              <li>April projection for one pay stub</li>
+              <li>One pay stub checkup: every mistake in dollars</li>
+              <li>April projection: owe or refund</li>
             </ul>
             <ButtonLink href="/check" variant="secondary" className="mt-6 w-full">
               Start free

@@ -109,11 +109,17 @@ export interface ChecklistItem {
   dueDate: string | null;
 }
 
+export interface Plan {
+  tier: "free" | "annual";
+  until: string | null; // ISO date the Annual plan ends
+}
+
 export interface HouseholdData {
   profile: HouseholdProfile;
   employers: EmploymentSettings[];
   documents: StoredDocument[];
   checklist: ChecklistItem[];
+  plan?: Plan; // absent in demo data; demo shows everything
 }
 
 export type Severity = "info" | "warning" | "critical";

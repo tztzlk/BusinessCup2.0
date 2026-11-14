@@ -57,7 +57,12 @@ export function ReportView() {
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">My report</h1>
+          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
+            My report
+            <Badge tone={data.plan?.tier === "annual" ? "success" : "neutral"}>
+              {data.plan?.tier === "annual" ? "Annual" : "Free plan"}
+            </Badge>
+          </h1>
           <p className="text-slate-600">Everything below is stored encrypted and tied to this browser.</p>
         </div>
         <ButtonLink href="/check">Add a document</ButtonLink>

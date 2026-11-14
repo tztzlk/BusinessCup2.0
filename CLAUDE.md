@@ -62,7 +62,14 @@ B2C веб-продукт для работающих семей в США (W-2)
 | `POST /api/documents` | Сохранить подтверждённые поля листка или W-2 |
 | `POST /api/checklist`, `PATCH /api/checklist/:id` | Чек-лист документов |
 | `POST /api/explain` | Коды и числа находок → тексты (без PII) |
+| `POST /api/billing/checkout` | Stripe Checkout (test mode) на Annual $79/год → `{url}`; живые ключи отклоняются без `ALLOW_LIVE_PAYMENTS=true` |
+| `POST /api/billing/confirm` | `{sessionId}` → проверка сессии в Stripe (своя семья, оплачено) → тариф `annual` на год |
 | `GET /api/health` | Проверка живости |
+
+## Тарифы
+- Free: 1 листок, находки, прогноз «долг или возврат». Annual ($79/год): все листки обоих супругов, точный Step 4(c) по каждой работе, январский режим (чек-лист, сверка W-2, пакет), напоминания в календарь.
+- Лимиты — `lib/plan.ts` (`FREE_LIMITS`), проверка на сервере в `POST /api/documents` (402 `payment_required`), блокировка в UI — `CheckupView locked`. Демо без `plan` показывает всё.
+- Секрет `STRIPE_SECRET_KEY` (`sk_test_...`) в `.env` и `fly secrets`. Тестовая карта 4242 4242 4242 4242.
 
 ## Статус (обновлять по ходу)
 - [x] Хранилище: шифрование, SQLite, API семьи, тесты crypto (6/6), проверено end-to-end

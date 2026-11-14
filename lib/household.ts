@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { cookies, headers } from "next/headers";
 import { aadFor, decryptJson, deriveKey, encryptJson, hashIp, hashToken, newHouseholdSecret } from "./crypto";
 import { audit, getDb } from "./db";
+import { planFor } from "./billing";
 import type {
   ChecklistItem,
   ChecklistStatus,
@@ -197,7 +198,7 @@ export async function loadHouseholdData(s: Session): Promise<HouseholdData> {
   }));
 
   audit(s.householdId, "read", await clientIpHash());
-  return { profile, employers, documents, checklist };
+  return { profile, employers, documents, checklist, plan: planFor(s.householdId) };
 }
 
 export async function deleteHousehold(s: Session): Promise<void> {

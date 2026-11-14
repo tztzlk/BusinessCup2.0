@@ -48,6 +48,12 @@ const MIGRATIONS: string[] = [
     at            TEXT NOT NULL
   );
   `,
+  // 2: plan. Not personal data, so stored in plain text.
+  `
+  ALTER TABLE households ADD COLUMN plan TEXT NOT NULL DEFAULT 'free' CHECK (plan IN ('free','annual'));
+  ALTER TABLE households ADD COLUMN plan_until TEXT;
+  ALTER TABLE households ADD COLUMN stripe_session_id TEXT;
+  `,
 ];
 
 let db: Database.Database | null = null;

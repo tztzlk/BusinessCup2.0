@@ -4,6 +4,7 @@ import type {
   ExtractResult,
   HouseholdData,
   HouseholdProfile,
+  Plan,
   Paystub,
   W2,
 } from "./types";
@@ -33,6 +34,12 @@ const FRIENDLY: Record<string, string> = {
   busy: "Our document reader is busy. Try again in a minute.",
   no_household: "No saved household in this browser yet.",
   internal: "Something went wrong on our side. Try again.",
+  payment_required: "This is part of Annual. Unlock Annual to continue.",
+  billing_unavailable: "Payments are not set up on this deployment yet.",
+  live_payments_disabled: "Live payments are disabled on this deployment.",
+  stripe_error: "Payment provider error. Try again in a minute.",
+  not_paid: "The payment is not complete yet.",
+  wrong_household: "This payment belongs to a different household.",
 };
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
@@ -79,6 +86,9 @@ export const api = {
   }) => request<{ id: string }>("/api/documents", json("POST", doc)),
   saveChecklist: (items: Array<{ formType: string; source: string; status: ChecklistStatus; dueDate: string | null }>) =>
     request<{ ids: string[] }>("/api/checklist", json("POST", items)),
+  startCheckout: () => request<{ url: string }>("/api/billing/checkout", { method: "POST" }),
+  confirmCheckout: (sessionId: string) =>
+    request<{ plan: Plan }>("/api/billing/confirm", json("POST", { sessionId })),
   setChecklistStatus: (id: string, status: ChecklistStatus) =>
     request<{ ok: true }>(`/api/checklist/${encodeURIComponent(id)}`, json("PATCH", { status })),
 };
