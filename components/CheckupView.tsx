@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { inputRow } from "@/lib/findingCopy";
 import { useExplanations } from "./useExplanations";
+import { RemindersCard } from "./RemindersCard";
 import { runCheckup } from "@/lib/engine";
 import { Button, Card, Notice, Section } from "./ui";
 import { ChecklistView, FindingCard, ProjectionBanner, W4Card } from "./report";
@@ -185,6 +186,10 @@ export function CheckupView({
           </div>
         </Section>
       )}
+
+      <div className="no-print mt-8">
+        <RemindersCard data={data} checklist={result.checklist} asOf={asOf} />
+      </div>
 
       {result.projection && (
         <details className="no-print mt-6 text-sm text-slate-600">
