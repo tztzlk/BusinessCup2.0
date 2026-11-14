@@ -18,7 +18,7 @@ export interface ExplainRequest {
 
 export interface ExplainResponse {
   summary: string;
-  items: Array<{ id: string; code: string; title: string; body: string }>;
+  items: Array<{ id?: string; code: string; title: string; body: string }>;
 }
 
 export const findingId = (index: number) => `f${index}`;
@@ -58,7 +58,9 @@ export function numbersAreGrounded(text: string, allowed: number[]): boolean {
 export function groundedBodies(req: ExplainRequest, res: ExplainResponse): Map<number, string> {
   const out = new Map<number, string>();
   req.findings.forEach((f, i) => {
-    const item = res.items.find((x) => x.id === f.id && x.code === f.code);
+    // Match by id; fall back to code only when that code is unique in the request.
+    const unique = req.findings.filter((x) => x.code === f.code).length === 1;
+    const item = res.items.find((x) => x.id === f.id && x.code === f.code) ?? (unique ? res.items.find((x) => x.code === f.code) : undefined);
     const body = item?.body.trim();
     if (!body) return;
     const allowed = [f.amountUsd, ...Object.values(f.inputs), ...(req.projection ? [req.projection.balance] : [])];

@@ -55,4 +55,18 @@ describe("number grounding", () => {
     expect(bodies.get(1)).toBe("You're missing $3,120 of free match.");
     expect(bodies.has(0)).toBe(false); // invented amount → engine text stays
   });
+
+  it("falls back to the code when the answer has no id and the code is unique", () => {
+    const req = buildExplainRequest([match("emp_a", 475), match("emp_b", 3120), w2], null);
+    const bodies = groundedBodies(req, {
+      summary: "",
+      items: [
+        { code: "MATCH_LEFT_ON_TABLE", title: "", body: "About $475 of match." },
+        { code: "W2_BOX12D_MISMATCH", title: "", body: "Your W-2 shows $1,560 more than your stubs." },
+      ],
+    });
+    expect(bodies.get(2)).toBe("Your W-2 shows $1,560 more than your stubs.");
+    expect(bodies.has(0)).toBe(false); // ambiguous code without id → engine text
+    expect(bodies.has(1)).toBe(false);
+  });
 });

@@ -15,7 +15,8 @@ const Body = z.object({
   findings: z
     .array(
       z.object({
-        id: z.string().regex(/^f\d{1,2}$/),
+        // Optional: lets two findings with the same code (e.g. a match finding per employer) get separate texts.
+        id: z.string().regex(/^f\d{1,2}$/).optional(),
         code: z.string().regex(/^[A-Z0-9_]{2,40}$/),
         severity: z.enum(["info", "warning", "critical"]),
         amountUsd: z.number().finite(),
@@ -29,14 +30,14 @@ const Body = z.object({
 
 const Output = z.object({
   summary: z.string(),
-  items: z.array(z.object({ id: z.string(), code: z.string(), title: z.string(), body: z.string() })),
+  items: z.array(z.object({ id: z.string().optional(), code: z.string(), title: z.string(), body: z.string() })),
 });
 
 const SYSTEM = `You write short, plain-English explanations for a US paycheck-checking app.
 You receive findings computed by a deterministic tax engine. Each finding has a code, a dollar amount and the numbers used.
 Rules:
 - Never change, recompute or contradict the numbers. Quote amounts as given, rounded to whole dollars.
-- One item per finding, with the same id and code. Title: max 8 words. Body: 2-3 sentences, what it means and what to do.
+- One item per finding, with the same code (and the same id, if the finding has one). Title: max 8 words. Body: 2-3 sentences, what it means and what to do.
 - Only quote dollar amounts that appear in that finding (amountUsd or inputs) or in projection.balance. If an amount is not given, describe it in words.
 - summary: one sentence about the whole picture. If projection.balance > 0 the household is projected to owe that amount in April; if < 0, to get that refund.
 - Calm, specific tone. No legal or tax advice wording such as "you must"; say "consider" or "you can".`;
