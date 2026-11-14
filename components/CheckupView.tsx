@@ -221,6 +221,16 @@ export function CheckupView({
         </div>
       )}
 
+      {/* Free plan with nothing else locked on this tab (e.g. a refund, so no W-4 fix): still offer Annual. */}
+      {locked && mode === "november" && !(result.projection && result.projection.balance > 0) && (
+        <Section title="Keep checking all year">
+          <Paywall
+            title="Check every paycheck with Annual"
+            reason="The free plan checks one pay stub. Annual checks every paycheck for both of you, reminds you on payday and gets your tax forms ready in January."
+          />
+        </Section>
+      )}
+
       {result.projection && (
         <details className="no-print mt-6 text-sm text-slate-600">
           <summary className="cursor-pointer font-medium text-slate-700">How we calculated the {result.taxYear} projection</summary>

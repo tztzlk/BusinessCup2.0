@@ -70,7 +70,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await res.json().catch(() => null);
   if (!res.ok) {
     const code: string = body?.error ?? "internal";
-    let message = FRIENDLY[code] ?? body?.message ?? FRIENDLY.internal;
+    // Our wording wins for reader and network errors; the server's own message is more specific for plan limits.
+    const preferServer = code === "payment_required" && typeof body?.message === "string";
+    let message: string = (preferServer ? body.message : FRIENDLY[code]) ?? body?.message ?? FRIENDLY.internal;
     // Validation errors name the first field that failed, so the user knows what to fix.
     const field = res.status === 400 && Array.isArray(body?.issues) ? fieldLabel(body.issues[0]?.path) : null;
     if (field) message = `${message} (field: ${field})`;

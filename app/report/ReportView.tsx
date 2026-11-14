@@ -17,6 +17,14 @@ export function ReportView() {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
+  const [checkoutNotice, setCheckoutNotice] = useState<"upgraded" | "cancelled" | null>(null);
+
+  // Stripe returns here with ?upgraded=1 (after /billing/success) or ?checkout=cancelled.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("upgraded") === "1") setCheckoutNotice("upgraded");
+    else if (q.get("checkout") === "cancelled") setCheckoutNotice("cancelled");
+  }, []);
 
   useEffect(() => {
     api
@@ -72,6 +80,19 @@ export function ReportView() {
       {error && (
         <div className="mt-4">
           <Notice tone="danger">{error}</Notice>
+        </div>
+      )}
+      {checkoutNotice === "upgraded" && data.plan?.tier === "annual" && (
+        <div className="mt-4">
+          <Notice tone="success">
+            <span className="font-medium">Annual is active{data.plan.until ? ` until ${shortDate(data.plan.until)}` : ""}.</span>{" "}
+            Add every pay stub for both of you; the W-4 fix, tax season and reminders are now open.
+          </Notice>
+        </div>
+      )}
+      {checkoutNotice === "cancelled" && (
+        <div className="mt-4">
+          <Notice tone="neutral">Checkout was cancelled. Nothing was charged.</Notice>
         </div>
       )}
 

@@ -690,6 +690,7 @@ function ConfirmStep({
         )
       )}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        {errCode !== "payment_required" && (
         <Button
           type="button"
           disabled={busy}
@@ -708,9 +709,16 @@ function ConfirmStep({
         >
           {busy ? "Saving…" : "Looks right — save"}
         </Button>
-        <Button type="button" variant="secondary" onClick={onBack} disabled={busy}>
-          Upload a different file
-        </Button>
+        )}
+        {errCode === "payment_required" ? (
+          <ButtonLink href="/report" variant="secondary">
+            Back to my report
+          </ButtonLink>
+        ) : (
+          <Button type="button" variant="secondary" onClick={onBack} disabled={busy}>
+            Upload a different file
+          </Button>
+        )}
       </div>
     </Card>
   );
