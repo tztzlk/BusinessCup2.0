@@ -35,7 +35,7 @@ import {
   type DropdownItem,
 } from "@/components/ui";
 import { api } from "@/lib/api-client";
-import { shortDate } from "@/lib/format";
+import { localDate } from "@/lib/format";
 import { lastConfirmedAt } from "@/lib/householdMeta";
 import { HouseholdProvider, useHousehold } from "./HouseholdProvider";
 
@@ -223,7 +223,7 @@ function AppHeader({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: ()
               <p className="truncate text-[13px] text-fg-muted">
                 <span className="hidden sm:inline">Last checked: </span>
                 <span className="sm:hidden">Checked </span>
-                <time dateTime={checked}>{shortDate(checked)}</time>
+                <time dateTime={checked}>{localDate(checked)}</time>
               </p>
             )}
           </>
