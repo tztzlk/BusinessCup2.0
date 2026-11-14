@@ -23,7 +23,8 @@ export function overtimeDeduction(premium: number, magi: number, status: FilingS
   const od = p.overtimeDeduction;
   const cap = isJoint(status) ? od.cap.married_joint : od.cap.other;
   const threshold = isJoint(status) ? od.phaseOutThreshold.married_joint : od.phaseOutThreshold.other;
-  const reduction = Math.ceil(pos(magi - threshold) / 1000) * od.phaseOutPer1000;
+  // Schedule 1-A line 19: a partial $1,000 step is dropped ("decrease the result to the next lower whole number").
+  const reduction = Math.floor(pos(magi - threshold) / 1000) * od.phaseOutPer1000;
   return round2(pos(Math.min(premium, cap) - reduction));
 }
 

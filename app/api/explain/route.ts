@@ -2,12 +2,17 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { claude, FALLBACK_BETA, MODEL } from "@/lib/claude";
+import { allowClaudeCall, claude, ClaudeNotConfiguredError, FALLBACK_BETA, MODEL, readStructuredOutput } from "@/lib/claude";
 import { clientIpHash } from "@/lib/household";
+import { readJson } from "@/lib/http";
 import { allow } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
+
+const MAX_INPUTS = 30;
+// Real requests are a few KB (20 findings at most); anything near this is not from our UI.
+const BODY_MAX_BYTES = 32 * 1024;
 
 // Input carries only finding codes and numbers computed by the engine: no names,
 // employers or free text, so no personal data reaches the model from here.
@@ -21,11 +26,14 @@ const Body = z.object({
         severity: z.enum(["info", "warning", "critical"]),
         amountUsd: z.number().finite(),
         actionKind: z.enum(["w4_change", "contribution_change", "ask_hr", "ask_w2c", "info"]),
-        inputs: z.record(z.string().regex(/^[A-Za-z0-9_]{1,40}$/), z.number().finite()),
+        // Bounded so a request cannot grow the prompt: the engine emits at most ~15 inputs per finding.
+        inputs: z
+          .record(z.string().regex(/^[A-Za-z0-9_]{1,40}$/), z.number().finite())
+          .refine((o) => Object.keys(o).length <= MAX_INPUTS, { message: `At most ${MAX_INPUTS} inputs` }),
       }),
     )
     .max(20),
-  projection: z.object({ balance: z.number().finite(), taxYear: z.number().int() }).nullable(),
+  projection: z.object({ balance: z.number().finite(), taxYear: z.number().int().min(2020).max(2100) }).nullable(),
 });
 
 const Output = z.object({
@@ -47,25 +55,36 @@ export async function POST(req: Request) {
   if (!allow(`explain:${ip}`, 30, 10 * 60 * 1000)) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
-  const parsed = Body.safeParse(await req.json().catch(() => null));
+  const body = await readJson(req, BODY_MAX_BYTES);
+  if (!body.ok) return body.response;
+  const parsed = Body.safeParse(body.value);
   if (!parsed.success) return NextResponse.json({ error: "invalid_input", issues: parsed.error.issues }, { status: 400 });
   if (parsed.data.findings.length === 0) return NextResponse.json({ summary: "", items: [] });
+  if (!allowClaudeCall()) return NextResponse.json({ error: "busy" }, { status: 503 });
 
   try {
-    const response = await claude().beta.messages.parse({
-      model: MODEL,
-      max_tokens: 4000,
-      betas: [FALLBACK_BETA],
-      fallbacks: "default",
-      system: SYSTEM,
-      output_config: { effort: "low", format: betaZodOutputFormat(Output) },
-      messages: [{ role: "user", content: JSON.stringify(parsed.data) }],
-    });
-    if (response.stop_reason === "refusal" || !response.parsed_output) {
-      return NextResponse.json({ error: "no_explanation" }, { status: 422 });
-    }
-    return NextResponse.json(response.parsed_output);
+    // create() rather than parse(): parse() throws on truncated or partial text. The UI keeps the
+    // engine's own text whenever this route answers with an error.
+    const response = await claude().beta.messages.create(
+      {
+        model: MODEL,
+        max_tokens: 4000,
+        betas: [FALLBACK_BETA],
+        fallbacks: "default",
+        system: SYSTEM,
+        output_config: { effort: "low", format: betaZodOutputFormat(Output) },
+        messages: [{ role: "user", content: JSON.stringify(parsed.data) }],
+      },
+      // Fits maxDuration (60 s); a failed call only means the engine text stays.
+      { timeout: 50_000, maxRetries: 0 },
+    );
+    const read = readStructuredOutput(response);
+    const out = read.ok ? Output.safeParse(read.json) : null;
+    if (!out?.success) return NextResponse.json({ error: "no_explanation" }, { status: 422 });
+    return NextResponse.json(out.data);
   } catch (err) {
+    if (err instanceof ClaudeNotConfiguredError) return NextResponse.json({ error: "upstream" }, { status: 503 });
+    if (err instanceof Anthropic.RateLimitError) return NextResponse.json({ error: "busy" }, { status: 503 });
     if (err instanceof Anthropic.APIError) {
       console.error("explain: Claude API error", err.status, err.message);
       return NextResponse.json({ error: "upstream" }, { status: 502 });

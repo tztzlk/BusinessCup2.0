@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { sessionFromSecret, setSessionCookie } from "@/lib/household";
+import { readJson } from "@/lib/http";
 
 export const runtime = "nodejs";
 
@@ -9,7 +10,9 @@ export const runtime = "nodejs";
 const Body = z.object({ secret: z.string().regex(/^[A-Za-z0-9_-]{43}$/) });
 
 export async function POST(req: Request) {
-  const parsed = Body.safeParse(await req.json().catch(() => null));
+  const read = await readJson(req, 4 * 1024);
+  if (!read.ok) return read.response;
+  const parsed = Body.safeParse(read.value);
   if (!parsed.success) return NextResponse.json({ error: "invalid_secret" }, { status: 400 });
   const session = sessionFromSecret(parsed.data.secret);
   if (!session) return NextResponse.json({ error: "not_found" }, { status: 404 });

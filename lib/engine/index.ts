@@ -1,6 +1,6 @@
 import type { Finding, HouseholdData, Paystub, W2 } from "../types";
 import { federalParams, SUPPORTED_YEARS } from "./params";
-import { sortByPayDate } from "./paystub";
+import { sortByPayDate, withKnownFrequency } from "./paystub";
 import { checkPaystub } from "./checks";
 import { type JobInput, type ProjectionDetail, projectionFindings, projectYear } from "./projection";
 import { type ReconcileRow, reconcileW2 } from "./reconcileW2";
@@ -43,19 +43,28 @@ export function runCheckup(data: HouseholdData, asOf: string = new Date().toISOS
         .map((d) => d.fields as Paystub),
     );
     if (own.length === 0) {
-      notes.push(`No ${taxYear} pay stub yet for ${settings.employerName}. Add one to include this job.`);
+      jobs.push({ settings, latestStub: null });
       continue;
     }
-    findings.push(...checkPaystub(own[0], own[1] ?? null, settings, status, p));
-    jobs.push({ settings, latestStub: own[0] });
-    lastStubByEmployer.set(settings.id, own[0]);
+    const latest = withKnownFrequency(own[0]);
+    if (latest.note) notes.push(latest.note);
+    const previous = own[1] ? withKnownFrequency(own[1]).stub : null;
+    findings.push(...checkPaystub(latest.stub, previous, settings, status, p));
+    jobs.push({ settings, latestStub: latest.stub });
+    lastStubByEmployer.set(settings.id, latest.stub);
   }
 
   let projection: ProjectionDetail | null = null;
-  if (jobs.length > 0) {
-    projection = projectYear(jobs, data.profile, p);
-    findings.push(...projectionFindings(projection, jobs));
-    if (data.employers.length > jobs.length) notes.push("The projection only includes jobs with a pay stub.");
+  if (jobs.some((j) => j.latestStub)) {
+    const proj = projectYear(jobs, data.profile, p);
+    notes.push(...proj.notes);
+    // A projection that leaves out a job would show one income as the household's: no total, no W-4 advice.
+    if (!proj.incomplete) {
+      projection = proj;
+      findings.push(...projectionFindings(proj, jobs));
+    }
+  } else {
+    for (const j of jobs) notes.push(`No ${taxYear} pay stub yet for ${j.settings.employerName}. Add one to include this job.`);
   }
 
   const reconciliation: CheckupResult["reconciliation"] = [];

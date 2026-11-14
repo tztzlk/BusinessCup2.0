@@ -8,7 +8,8 @@
     "limit401k": "https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500",
     "childTaxCredit": "https://www.irs.gov/credits-deductions/individuals/child-tax-credit",
     "overtimeDeduction": "https://www.irs.gov/newsroom/what-to-know-about-the-no-tax-on-overtime-deduction",
-    "additionalMedicare": "https://www.irs.gov/taxtopics/tc560"
+    "additionalMedicare": "https://www.irs.gov/taxtopics/tc560",
+    "flsaWorkweek": "https://www.dol.gov/agencies/whd/overtime"
   },
   "standardDeduction": {
     "_source": "revProc",
@@ -18,11 +19,11 @@
     "head_of_household": 24150
   },
   "brackets": {
-    "_source": "brackets (single, married_joint); head_of_household derived from pub15t annual table minus the 15-T standard-deduction offset; married_separate = single per pub15t",
+    "_source": "brackets (single, married_joint); head_of_household derived from pub15t annual table minus the 15-T standard-deduction offset; married_separate = single up to the 32% bracket, 35% ends at $384,350 per revProc Table 4",
     "_format": "[upper bound of taxable income, rate]; last bound null = no limit",
     "single": [[12400, 0.10], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [null, 0.37]],
     "married_joint": [[24800, 0.10], [100800, 0.12], [211400, 0.22], [403550, 0.24], [512450, 0.32], [768700, 0.35], [null, 0.37]],
-    "married_separate": [[12400, 0.10], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [null, 0.37]],
+    "married_separate": [[12400, 0.10], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [384350, 0.35], [null, 0.37]],
     "head_of_household": [[17700, 0.10], [67450, 0.12], [105700, 0.22], [201750, 0.24], [256200, 0.32], [640600, 0.35], [null, 0.37]]
   },
   "withholding": {
@@ -72,5 +73,9 @@
   },
   "flsa": {
     "overtimeMultiplier": 1.5
+  },
+  "estimates": {
+    "_source": "flsaWorkweek (40-hour workweek x 52 weeks); used only to estimate a year of pay for an hourly job with no pay stub",
+    "standardHoursPerYear": 2080
   }
 }

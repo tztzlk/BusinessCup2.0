@@ -1,37 +1,113 @@
 import type { EmploymentSettings, Finding, HouseholdProfile, Paystub, Projection } from "../types";
 import type { FederalParams } from "./params";
 import { pos, round2, sum } from "./money";
-import { federalWages, ficaWages, overtimePay, remainingPayPeriods, tax } from "./paystub";
+import {
+  DEFAULT_PAY_FREQUENCY,
+  elapsedPayPeriods,
+  federalWages,
+  ficaWages,
+  hasNonRecurringPay,
+  overtimePay,
+  periodsPerYear,
+  preTaxForFederal,
+  preTaxForFica,
+  recurringGross,
+  remainingPayPeriods,
+  tax,
+  withEstimatedYtd,
+  withKnownFrequency,
+} from "./paystub";
 import { additionalMedicareDue, bracketTax, childCredits, overtimeDeduction } from "./tax";
+import { expectedWithholding } from "./withholding";
 
 export interface JobInput {
   settings: EmploymentSettings;
-  latestStub: Paystub;
+  /** null = no pay stub yet: the job is estimated from its settings (salary or hourly rate, W-4). */
+  latestStub: Paystub | null;
 }
 
 export interface ProjectionDetail extends Projection {
   inputs: Record<string, number>;
+  /** Some numbers are estimates (missing YTD, a job without a stub, a one-time bonus, a guessed pay frequency). */
+  estimated: boolean;
+  /** A job has neither a stub nor a pay rate: the totals leave it out and must not be shown as the household's. */
+  incomplete: boolean;
+  notes: string[];
+}
+
+interface JobRow {
+  employerId: string;
+  remaining: number;
+  fedWages: number;
+  ficaWages: number;
+  withheld: number;
+  overtime: number;
 }
 
 /**
  * Full-year projection for the household: year-to-date from each job's latest stub
- * plus the current paycheck repeated for the remaining pay periods.
+ * plus the current recurring paycheck repeated for the remaining pay periods.
+ * A job without a stub is estimated from its settings (Pub. 15-T Worksheet 1A for withholding).
  * Standard deduction only (itemizing is out of scope for now).
  */
 export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: FederalParams): ProjectionDetail {
   const status = profile.filingStatus;
-  const rows = jobs.map(({ settings, latestStub: s }) => {
+  const notes: string[] = [];
+  let estimated = false;
+  let incomplete = false;
+  const stubDates = jobs.flatMap((j) => (j.latestStub ? [j.latestStub.payDate] : [])).sort();
+  const asOfPayDate = stubDates[stubDates.length - 1] ?? null;
+
+  const rows: JobRow[] = [];
+  for (const { settings, latestStub } of jobs) {
+    const name = settings.employerName;
+    if (!latestStub) {
+      const row = estimateJobWithoutStub(settings, asOfPayDate, status, p);
+      if (!row) {
+        incomplete = true;
+        notes.push(`No ${p.taxYear} pay stub for ${name} and no salary or hourly rate in its settings, so the April projection would be incomplete. Add a pay stub or the pay rate for this job.`);
+        continue;
+      }
+      estimated = true;
+      notes.push(`No ${p.taxYear} pay stub for ${name} yet: the projection estimates this job from the pay rate and W-4 in its settings (${usd(row.fedWages)} a year, before pre-tax deductions). Add a stub for exact numbers.`);
+      rows.push(row);
+      continue;
+    }
+
+    const freq = withKnownFrequency(latestStub);
+    if (freq.note) {
+      estimated = true;
+      notes.push(freq.note);
+    }
+    const { stub: s, estimated: ytdEstimated } = withEstimatedYtd(freq.stub, p);
+    if (ytdEstimated) {
+      estimated = true;
+      notes.push(`Some year-to-date amounts are missing on the ${name} stub; we estimated them as this paycheck times ${elapsedPayPeriods(s.payDate, s.payFrequency, p)} pay periods so far.`);
+    }
+
     const n = remainingPayPeriods(s.payDate, s.payFrequency, p);
-    const ytd = (cur: number, y: number) => y + cur * n;
-    return {
+    const regular = recurringGross(s);
+    const fedPerPeriod = round2(regular - preTaxForFederal(s, "current"));
+    const ficaPerPeriod = round2(regular - preTaxForFica(s, "current"));
+    // A one-time payment can be withheld at the flat supplemental rate, so this paycheck's withholding
+    // doesn't repeat: estimate the regular paychecks from the W-4 instead.
+    const oneOff = hasNonRecurringPay(s);
+    const withheldPerPeriod = oneOff
+      ? expectedWithholding(fedPerPeriod, periodsPerYear(s.payFrequency, p), status, settings.w4, p)
+      : tax(s, "federal_income", "current");
+    if (oneOff) {
+      estimated = true;
+      notes.push(`The bonus or other one-time pay on the ${name} stub is counted once, not repeated for the remaining paychecks.`);
+    }
+    rows.push({
       employerId: settings.id,
       remaining: n,
-      fedWages: ytd(federalWages(s, "current"), federalWages(s, "ytd")),
-      ficaWages: ytd(ficaWages(s, "current"), ficaWages(s, "ytd")),
-      withheld: ytd(tax(s, "federal_income", "current"), tax(s, "federal_income", "ytd")),
-      overtime: ytd(overtimePay(s, "current"), overtimePay(s, "ytd")),
-    };
-  });
+      fedWages: federalWages(s, "ytd") + fedPerPeriod * n,
+      ficaWages: ficaWages(s, "ytd") + ficaPerPeriod * n,
+      withheld: tax(s, "federal_income", "ytd") + withheldPerPeriod * n,
+      overtime: overtimePay(s, "ytd") + overtimePay(s, "current") * n,
+    });
+  }
 
   const agi = sum(rows.map((r) => r.fedWages));
   const otPremium = sum(rows.map((r) => r.overtime)) / 3; // the "half" in time-and-a-half
@@ -57,6 +133,9 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
     projectedWithholding,
     balance,
     perEmployer,
+    estimated,
+    incomplete,
+    notes,
     inputs: {
       agi: round2(agi),
       standardDeduction: p.standardDeduction[status],
@@ -67,6 +146,30 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
       childCreditsRefundable: credits.refundable,
       additionalMedicareLiability: addl.liability,
     },
+  };
+}
+
+/**
+ * A full year for a job with no pay stub, from its settings: salary, or hourly rate x standard hours.
+ * Paid on the default frequency; remaining paychecks counted from the household's latest stub. null = no pay info.
+ */
+function estimateJobWithoutStub(settings: EmploymentSettings, asOfPayDate: string | null, status: HouseholdProfile["filingStatus"], p: FederalParams): JobRow | null {
+  const annual =
+    settings.annualSalary && settings.annualSalary > 0
+      ? settings.annualSalary
+      : settings.hourlyRate && settings.hourlyRate > 0
+        ? settings.hourlyRate * p.estimates.standardHoursPerYear
+        : null;
+  if (annual === null) return null;
+  const periods = periodsPerYear(DEFAULT_PAY_FREQUENCY, p);
+  const withheld = expectedWithholding(annual / periods, periods, status, settings.w4, p) * periods;
+  return {
+    employerId: settings.id,
+    remaining: asOfPayDate ? remainingPayPeriods(asOfPayDate, DEFAULT_PAY_FREQUENCY, p) : 0,
+    fedWages: round2(annual),
+    ficaWages: round2(annual),
+    withheld: round2(withheld),
+    overtime: 0,
   };
 }
 

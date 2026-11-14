@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
-import { claude, FALLBACK_BETA, MODEL } from "./claude";
+import { claude, FALLBACK_BETA, MODEL, readStructuredOutput } from "./claude";
 import { PaystubSchema, W2Schema } from "./validation";
 import type { Confidence, ExtractResult } from "./types";
 
@@ -77,11 +77,61 @@ Rules:
 export const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 export type AcceptedType = (typeof ACCEPTED_TYPES)[number];
 
+/** Upload caps. Claude takes images up to 10 MB base64-encoded (about 7.5 MB raw); PDFs up to the request limit. */
+export const PDF_MAX_BYTES = 10 * 1024 * 1024;
+export const IMAGE_MAX_BYTES = 7 * 1024 * 1024;
+/** Pay stubs and W-2s are one or two pages; longer PDFs are rejected before calling Claude. */
+export const PDF_MAX_PAGES = 5;
+
+const startsWith = (b: Uint8Array, sig: number[], offset = 0) =>
+  b.length >= offset + sig.length && sig.every((v, i) => b[offset + i] === v);
+const ascii = (b: Uint8Array, from: number, to: number) => String.fromCharCode(...b.subarray(from, to));
+
+/**
+ * Detects the real file type from its first bytes; the browser-declared type is not trusted.
+ * Returns "heic" for iPhone HEIC/HEIF photos (not supported by Claude) and null for anything else.
+ */
+export function sniffType(b: Uint8Array): AcceptedType | "heic" | null {
+  if (startsWith(b, [0xff, 0xd8, 0xff])) return "image/jpeg";
+  if (startsWith(b, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return "image/png";
+  if (ascii(b, 0, 4) === "RIFF" && ascii(b, 8, 12) === "WEBP") return "image/webp";
+  if (ascii(b, 0, 6) === "GIF87a" || ascii(b, 0, 6) === "GIF89a") return "image/gif";
+  if (ascii(b, 4, 8) === "ftyp" && ["heic", "heix", "hevc", "hevx", "heim", "heis", "mif1", "msf1"].includes(ascii(b, 8, 12))) {
+    return "heic";
+  }
+  // Checked last: the PDF header may follow a few junk bytes; readers accept it within the first 1 KB.
+  if (ascii(b, 0, Math.min(b.length, 1024)).includes("%PDF-")) return "application/pdf";
+  return null;
+}
+
+/**
+ * Best-effort page count without a PDF parser. Prefers the largest /Count of a flat
+ * `/Type /Pages` dictionary (the page tree root), else counts `/Type /Page` objects.
+ * Returns 0 when neither is visible (e.g. pages inside compressed object streams): unknown.
+ */
+export function countPdfPages(b: Uint8Array): number {
+  const text = Buffer.from(b.buffer, b.byteOffset, b.byteLength).toString("latin1");
+  let fromTree = 0;
+  for (const m of text.matchAll(/<<((?:(?!<<|>>)[\s\S]){0,4000}?)>>/g)) {
+    if (!/\/Type\s*\/Pages(?![A-Za-z0-9_.#-])/.test(m[1])) continue;
+    const count = /\/Count\s+(\d{1,7})/.exec(m[1]);
+    if (count) fromTree = Math.max(fromTree, Number(count[1]));
+  }
+  if (fromTree > 0) return fromTree;
+  return [...text.matchAll(/\/Type\s*\/Page(?![A-Za-z0-9_.#-])/g)].length;
+}
+
 export class ExtractionError extends Error {
   constructor(public readonly code: "refused" | "unreadable" | "truncated", message: string) {
     super(message);
   }
 }
+
+const MESSAGES = {
+  refused: "The document could not be processed.",
+  truncated: "The document is too long to read.",
+  unreadable: "The document could not be read.",
+} as const;
 
 export async function extractDocument(data: Buffer, mediaType: AcceptedType): Promise<ExtractResult> {
   const base64 = data.toString("base64");
@@ -90,7 +140,9 @@ export async function extractDocument(data: Buffer, mediaType: AcceptedType): Pr
       ? ({ type: "document", source: { type: "base64", media_type: "application/pdf", data: base64 } } as const)
       : ({ type: "image", source: { type: "base64", media_type: mediaType, data: base64 } } as const);
 
-  const response = await claude().beta.messages.parse({
+  // create() instead of parse(): parse() throws a plain AnthropicError on truncated, partial
+  // or schema-invalid text, so stop_reason is checked first and the zod check runs here.
+  const response = await claude().beta.messages.create({
     model: MODEL,
     max_tokens: 16000,
     betas: [FALLBACK_BETA],
@@ -100,10 +152,11 @@ export async function extractDocument(data: Buffer, mediaType: AcceptedType): Pr
     messages: [{ role: "user", content: [source, { type: "text", text: "Extract this document." }] }],
   });
 
-  if (response.stop_reason === "refusal") throw new ExtractionError("refused", "The document could not be processed.");
-  if (response.stop_reason === "max_tokens") throw new ExtractionError("truncated", "The document is too long to read.");
-  const out = response.parsed_output;
-  if (!out) throw new ExtractionError("unreadable", "The document could not be read.");
+  const read = readStructuredOutput(response);
+  if (!read.ok) throw new ExtractionError(read.reason, MESSAGES[read.reason]);
+  const parsed = ExtractionOutput.safeParse(read.json);
+  if (!parsed.success) throw new ExtractionError("unreadable", MESSAGES.unreadable);
+  const out = parsed.data;
 
   const confidence: Record<string, Confidence> = {};
   for (const f of out.uncertainFields) confidence[f.path] = f.confidence;

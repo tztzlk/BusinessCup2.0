@@ -16,7 +16,10 @@ import type {
 } from "./types";
 
 export const COOKIE_NAME = "pt_hh";
-const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days, same as inactivity cleanup
+// 30 days, same as inactivity cleanup. The cookie is re-issued on every household read,
+// so both clocks count from the last visit.
+const COOKIE_MAX_AGE = 60 * 60 * 24 * 30;
+export const MAX_EMPLOYERS = 4;
 
 export const DEFAULT_PROFILE: HouseholdProfile = {
   filingStatus: "single",
@@ -47,6 +50,12 @@ export async function setSessionCookie(secret: string): Promise<void> {
     path: "/",
     maxAge: COOKIE_MAX_AGE,
   });
+}
+
+/** Extends the cookie's lifetime from now. Call after a successful session lookup. */
+export async function refreshSessionCookie(): Promise<void> {
+  const secret = (await cookies()).get(COOKIE_NAME)?.value;
+  if (secret) await setSessionCookie(secret);
 }
 
 export async function clearSessionCookie(): Promise<void> {
@@ -88,6 +97,37 @@ export function saveProfile(s: Session, profile: HouseholdProfile): void {
   getDb()
     .prepare("UPDATE households SET enc_profile = ? WHERE id = ?")
     .run(encryptJson(s.key, profile, aadFor("households", s.householdId, s.householdId)), s.householdId);
+}
+
+export function countEmployers(s: Session): number {
+  return (getDb().prepare("SELECT COUNT(*) AS n FROM employers WHERE household_id = ?").get(s.householdId) as { n: number }).n;
+}
+
+/** True when the employer exists and belongs to this household. */
+export function ownsEmployer(s: Session, employerId: string): boolean {
+  return Boolean(getDb().prepare("SELECT 1 FROM employers WHERE id = ? AND household_id = ?").get(employerId, s.householdId));
+}
+
+/** Ids of this household's employers whose (encrypted) settings match `pred`. */
+export function employerIdsWhere(s: Session, pred: (settings: Omit<EmploymentSettings, "id">) => boolean): Set<string> {
+  const rows = getDb().prepare("SELECT id, enc_settings FROM employers WHERE household_id = ?").all(s.householdId) as Array<{
+    id: string;
+    enc_settings: Buffer;
+  }>;
+  const ids = new Set<string>();
+  for (const r of rows) {
+    const settings = decryptJson<Omit<EmploymentSettings, "id">>(s.key, r.enc_settings, aadFor("employers", r.id, s.householdId));
+    if (pred(settings)) ids.add(r.id);
+  }
+  return ids;
+}
+
+/** Documents of one type, not counting those attached to `excludeEmployerIds`. */
+export function countDocuments(s: Session, docType: "paystub" | "w2", excludeEmployerIds: Set<string>): number {
+  const rows = getDb()
+    .prepare("SELECT employer_id FROM documents WHERE household_id = ? AND doc_type = ?")
+    .all(s.householdId, docType) as Array<{ employer_id: string | null }>;
+  return rows.filter((r) => !r.employer_id || !excludeEmployerIds.has(r.employer_id)).length;
 }
 
 export function addEmployer(s: Session, settings: Omit<EmploymentSettings, "id">): string {
@@ -206,10 +246,16 @@ export async function deleteHousehold(s: Session): Promise<void> {
   audit(s.householdId, "delete_household", await clientIpHash());
 }
 
-// Inactive households are removed after 30 days.
+// Inactive households are removed after 30 days. Households with a paid plan that is
+// still running are kept until it ends.
 export function purgeInactive(): number {
+  const nowIso = now();
   const cutoff = new Date(Date.now() - COOKIE_MAX_AGE * 1000).toISOString();
-  const res = getDb().prepare("DELETE FROM households WHERE last_seen_at < ?").run(cutoff);
+  const res = getDb()
+    .prepare(
+      "DELETE FROM households WHERE last_seen_at < ? AND NOT (plan = 'annual' AND plan_until IS NOT NULL AND plan_until > ?)",
+    )
+    .run(cutoff, nowIso);
   if (res.changes > 0) audit(null, `purge_inactive:${res.changes}`, null);
   return res.changes;
 }

@@ -23,3 +23,8 @@ export const SAMPLE_EMPLOYER: Omit<EmploymentSettings, "id"> = {
   match401k: { matchPercent: 50, upToPercentOfPay: 3 },
   w4: { step2Checked: false, step3Credits: 0, step4aOtherIncome: 0, step4bDeductions: 0, step4cExtraWithholding: 0 },
 };
+
+/** The sample job. Its pay stubs don't count toward the free plan, so judges can try the sample and their own stub. */
+export function isSampleEmployer(settings: Pick<EmploymentSettings, "employerName">): boolean {
+  return settings.employerName === SAMPLE_EMPLOYER.employerName;
+}

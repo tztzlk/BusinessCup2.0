@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { addDocument, currentSession } from "@/lib/household";
+import { addDocument, countDocuments, currentSession, employerIdsWhere, ownsEmployer } from "@/lib/household";
+import { isSampleEmployer } from "@/lib/sample";
+import { readJson } from "@/lib/http";
 import { AddDocumentSchema } from "@/lib/validation";
 import { planFor } from "@/lib/billing";
-import { getDb } from "@/lib/db";
 import { FREE_LIMITS } from "@/lib/plan";
 
 export const runtime = "nodejs";
@@ -11,14 +12,20 @@ export const runtime = "nodejs";
 export async function POST(req: Request) {
   const s = await currentSession();
   if (!s) return NextResponse.json({ error: "no_household" }, { status: 401 });
-  const parsed = AddDocumentSchema.safeParse(await req.json().catch(() => null));
+  const read = await readJson(req);
+  if (!read.ok) return read.response;
+  const parsed = AddDocumentSchema.safeParse(read.value);
   if (!parsed.success) return NextResponse.json({ error: "invalid_document", issues: parsed.error.issues }, { status: 400 });
+  if (parsed.data.employerId && !ownsEmployer(s, parsed.data.employerId)) {
+    return NextResponse.json({ error: "unknown_employer" }, { status: 400 });
+  }
 
   // Free plan: one pay stub, no W-2s. Annual unlocks every stub for both earners and tax season.
-  if (planFor(s.householdId).tier === "free") {
-    const count = (getDb()
-      .prepare("SELECT COUNT(*) AS n FROM documents WHERE household_id = ? AND doc_type = ?")
-      .get(s.householdId, parsed.data.docType) as { n: number }).n;
+  // The sample job's stubs don't count, so trying the sample never uses up the free stub.
+  const sampleIds = employerIdsWhere(s, isSampleEmployer);
+  const isSample = parsed.data.employerId !== null && sampleIds.has(parsed.data.employerId);
+  if (!isSample && planFor(s.householdId).tier === "free") {
+    const count = countDocuments(s, parsed.data.docType, sampleIds);
     const limit = parsed.data.docType === "paystub" ? FREE_LIMITS.paystubs : FREE_LIMITS.w2s;
     if (count >= limit) {
       return NextResponse.json(

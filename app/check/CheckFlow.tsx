@@ -6,7 +6,8 @@ import { api, ApiError } from "@/lib/api-client";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
 import { Paywall } from "@/components/Paywall";
-import { SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
+import { isSampleEmployer, SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
+import { FREE_LIMITS } from "@/lib/plan";
 import type { EmploymentSettings, ExtractResult, HouseholdData, HouseholdProfile, Paystub, W2 } from "@/lib/types";
 
 type Step = "loading" | "profile" | "recovery" | "employer" | "upload" | "confirm" | "done";
@@ -28,6 +29,8 @@ export function CheckFlow() {
   const [step, setStep] = useState<Step>("loading");
   const [household, setHousehold] = useState<HouseholdData | null>(null);
   const [recoveryUrl, setRecoveryUrl] = useState<string | null>(null);
+  // Set when "Try with a sample" created the household, so the link is still shown once.
+  const [sampleRecoveryUrl, setSampleRecoveryUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [extracted, setExtracted] = useState<Extracted | null>(null);
 
@@ -63,7 +66,8 @@ export function CheckFlow() {
     try {
       let data = household;
       if (!data) {
-        await api.createHousehold(SAMPLE_PROFILE);
+        const created = await api.createHousehold(SAMPLE_PROFILE);
+        setSampleRecoveryUrl(visibleRecoveryUrl(created.recoveryUrl));
         data = await refresh();
       }
       if (!data?.employers.some((e) => e.employerName === SAMPLE_EMPLOYER.employerName)) {
@@ -124,9 +128,7 @@ export function CheckFlow() {
             onDone={async (profile) => {
               setError(null);
               const res = await api.createHousehold(profile);
-              // Use the origin the visitor actually sees; the server may sit behind a proxy.
-              const link = new URL(res.recoveryUrl);
-              setRecoveryUrl(`${window.location.origin}${link.pathname}${link.hash}`);
+              setRecoveryUrl(visibleRecoveryUrl(res.recoveryUrl));
               await refresh();
               setStep("recovery");
             }}
@@ -150,6 +152,7 @@ export function CheckFlow() {
 
         {step === "upload" && (
           <UploadStep
+            freeStubUsed={freeStubUsed(household)}
             employers={household?.employers ?? []}
             onAddEmployer={() => setStep("employer")}
             onExtracted={(res) => {
@@ -191,6 +194,12 @@ export function CheckFlow() {
               </Button>
             </div>
           </Card>
+        )}
+
+        {step === "done" && sampleRecoveryUrl && (
+          <div className="mt-4">
+            <RecoveryStep url={sampleRecoveryUrl} />
+          </div>
         )}
       </div>
     </div>
@@ -352,7 +361,21 @@ function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void
   );
 }
 
-function RecoveryStep({ url, onDone }: { url: string; onDone: () => void }) {
+// Use the origin the visitor actually sees; the server may sit behind a proxy.
+function visibleRecoveryUrl(serverUrl: string): string {
+  const link = new URL(serverUrl);
+  return `${window.location.origin}${link.pathname}${link.hash}`;
+}
+
+/** True when a free household has used its one pay stub (sample stubs don't count). */
+function freeStubUsed(data: HouseholdData | null): boolean {
+  if (!data || data.plan?.tier !== "free") return false;
+  const sampleIds = new Set(data.employers.filter(isSampleEmployer).map((e) => e.id));
+  const used = data.documents.filter((d) => d.docType === "paystub" && !(d.employerId && sampleIds.has(d.employerId))).length;
+  return used >= FREE_LIMITS.paystubs;
+}
+
+function RecoveryStep({ url, onDone }: { url: string; onDone?: () => void }) {
   const [copied, setCopied] = useState(false);
   return (
     <Card>
@@ -378,9 +401,11 @@ function RecoveryStep({ url, onDone }: { url: string; onDone: () => void }) {
         </Button>
       </div>
       <p className="mt-2 text-xs text-slate-500">Anyone with this link can open your data. Keep it like a password.</p>
-      <Button type="button" className="mt-4" onClick={onDone}>
-        I saved it — continue
-      </Button>
+      {onDone && (
+        <Button type="button" className="mt-4" onClick={onDone}>
+          I saved it — continue
+        </Button>
+      )}
     </Card>
   );
 }
@@ -555,10 +580,12 @@ function EmployerStep({
 }
 
 function UploadStep({
+  freeStubUsed,
   employers,
   onAddEmployer,
   onExtracted,
 }: {
+  freeStubUsed: boolean;
   employers: EmploymentSettings[];
   onAddEmployer: () => void;
   onExtracted: (res: Extracted) => void;
@@ -578,6 +605,16 @@ function UploadStep({
       else onExtracted(res);
     });
   };
+
+  // Checked before reading the file, so a stub that could not be saved never costs a read.
+  if (freeStubUsed) {
+    return (
+      <Paywall
+        title="Add more documents with Annual"
+        reason="The free plan includes one pay stub, and you've used it. Annual adds every pay stub for both earners and your W-2s. The sample pay stub stays free."
+      />
+    );
+  }
 
   return (
     <Card>

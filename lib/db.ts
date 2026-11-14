@@ -63,14 +63,24 @@ export function getDb(): Database.Database {
   const path = process.env.DB_PATH ?? "./data/paytrail.db";
   mkdirSync(dirname(path), { recursive: true });
   const conn = new Database(path);
-  conn.pragma("journal_mode = WAL");
-  conn.pragma("foreign_keys = ON");
-  const current = conn.pragma("user_version", { simple: true }) as number;
-  for (let i = current; i < MIGRATIONS.length; i++) {
-    conn.transaction(() => {
-      conn.exec(MIGRATIONS[i]);
-      conn.pragma(`user_version = ${i + 1}`);
-    })();
+  // On failure close the handle, so a broken migration or a full volume fails loudly
+  // on every request instead of leaking one open connection per request.
+  try {
+    conn.pragma("journal_mode = WAL");
+    conn.pragma("foreign_keys = ON");
+    const current = conn.pragma("user_version", { simple: true }) as number;
+    if (current > MIGRATIONS.length) {
+      console.warn(`db: schema version ${current} is newer than this build (${MIGRATIONS.length})`);
+    }
+    for (let i = current; i < MIGRATIONS.length; i++) {
+      conn.transaction(() => {
+        conn.exec(MIGRATIONS[i]);
+        conn.pragma(`user_version = ${i + 1}`);
+      })();
+    }
+  } catch (err) {
+    conn.close();
+    throw err;
   }
   db = conn;
   return db;

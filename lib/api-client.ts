@@ -40,7 +40,25 @@ const FRIENDLY: Record<string, string> = {
   stripe_error: "Payment provider error. Try again in a minute.",
   not_paid: "The payment is not complete yet.",
   wrong_household: "This payment belongs to a different household.",
+  invalid_document: "Some fields look invalid. Check them and try again.",
+  invalid_employer: "Some job details look invalid. Check them and try again.",
+  invalid_profile: "Some household details look invalid. Check them and try again.",
+  invalid_checklist: "The checklist could not be saved. Reload the page and try again.",
+  invalid_status: "That status is not valid.",
+  invalid_session: "This payment link is not valid. Start checkout again.",
+  invalid_secret: "This recovery link is incomplete. Copy the whole link and try again.",
+  not_found: "Nothing was found for this link. It may have been deleted.",
+  unknown_employer: "That job is no longer in your household. Reload the page and pick a job again.",
+  too_many_employers: "A household can have up to 4 jobs.",
+  forbidden: "This request was blocked. Reload the page and try again.",
+  unsupported_media_type: "Something went wrong sending your data. Reload the page and try again.",
+  too_large: "That's too much data to send at once.",
+  too_many_pages: "Upload a single pay stub or W-2 (up to 5 pages).",
+  image_too_large: "Photos must be under 7 MB. Try a smaller photo or the PDF.",
 };
+
+const fieldLabel = (path: unknown): string | null =>
+  Array.isArray(path) && path.length > 0 ? path.filter((p) => typeof p === "string").join(" › ") || null : null;
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let res: Response;
@@ -52,7 +70,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await res.json().catch(() => null);
   if (!res.ok) {
     const code: string = body?.error ?? "internal";
-    throw new ApiError(res.status, code, FRIENDLY[code] ?? body?.message ?? FRIENDLY.internal);
+    let message = FRIENDLY[code] ?? body?.message ?? FRIENDLY.internal;
+    // Validation errors name the first field that failed, so the user knows what to fix.
+    const field = res.status === 400 && Array.isArray(body?.issues) ? fieldLabel(body.issues[0]?.path) : null;
+    if (field) message = `${message} (field: ${field})`;
+    throw new ApiError(res.status, code, message);
   }
   return body as T;
 }

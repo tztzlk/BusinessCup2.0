@@ -3,6 +3,7 @@ import { z } from "zod";
 import { BillingError, confirmCheckout } from "@/lib/billing";
 import { audit } from "@/lib/db";
 import { clientIpHash, currentSession } from "@/lib/household";
+import { readJson } from "@/lib/http";
 
 export const runtime = "nodejs";
 
@@ -13,7 +14,9 @@ const Body = z.object({ sessionId: z.string().regex(/^cs_(test|live)_[A-Za-z0-9]
 export async function POST(req: Request) {
   const s = await currentSession();
   if (!s) return NextResponse.json({ error: "no_household" }, { status: 401 });
-  const parsed = Body.safeParse(await req.json().catch(() => null));
+  const read = await readJson(req, 4 * 1024);
+  if (!read.ok) return read.response;
+  const parsed = Body.safeParse(read.value);
   if (!parsed.success) return NextResponse.json({ error: "invalid_session" }, { status: 400 });
   try {
     const plan = await confirmCheckout(s.householdId, parsed.data.sessionId);

@@ -43,6 +43,7 @@ export interface FederalParams {
     phaseOutPer1000: number;
   };
   flsa: { overtimeMultiplier: number };
+  estimates: { standardHoursPerYear: number };
 }
 
 const BY_YEAR: Record<number, FederalParams> = {

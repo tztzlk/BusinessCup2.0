@@ -13,6 +13,11 @@ export interface CalendarEvent {
 
 const DAY = 86_400_000;
 
+function isRealDate(iso: string): boolean {
+  const t = Date.parse(`${iso}T00:00:00Z`);
+  return /^\d{4}-\d{2}-\d{2}$/.test(iso) && Number.isFinite(t) && new Date(t).toISOString().slice(0, 10) === iso;
+}
+
 function addDays(iso: string, days: number): string {
   return new Date(Date.parse(`${iso}T00:00:00Z`) + days * DAY).toISOString().slice(0, 10);
 }
@@ -73,7 +78,9 @@ export function reminderEvents(data: HouseholdData, checklist: Array<Omit<Checkl
       .filter((d) => d.docType === "paystub" && d.employerId === e.id)
       .map((d) => d.fields as Paystub)
       .sort((a, b) => b.payDate.localeCompare(a.payDate))[0];
-    if (!latest?.payDate) continue;
+    // Data saved before date validation was tightened may hold impossible dates; skip them
+    // rather than crash the report.
+    if (!latest?.payDate || !isRealDate(latest.payDate)) continue;
     const date = nextPayDate(latest.payDate, latest.payFrequency, asOf);
     events.push({
       uid: `payday-${e.id}`,
@@ -84,7 +91,7 @@ export function reminderEvents(data: HouseholdData, checklist: Array<Omit<Checkl
     });
   }
   for (const c of checklist) {
-    if (!c.dueDate || c.status === "received") continue;
+    if (!c.dueDate || !isRealDate(c.dueDate) || c.status === "received") continue;
     events.push({
       uid: `due-${c.formType}-${c.source}`.replace(/[^A-Za-z0-9-]/g, "-"),
       date: c.dueDate,
