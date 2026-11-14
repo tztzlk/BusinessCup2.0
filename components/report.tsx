@@ -45,8 +45,8 @@ export function ProjectionBanner({ projection, outlook }: { projection: Projecti
         : "You're on track for April";
   return (
     <div className={`rounded-2xl px-6 py-6 ${tone}`}>
-      <p className="text-sm font-medium uppercase tracking-wide opacity-70">April {projection.taxYear + 1} projection</p>
-      <p className="mt-2 text-2xl font-bold sm:text-3xl">{headline}</p>
+      <p className="text-sm font-medium opacity-75">April {projection.taxYear + 1} projection</p>
+      <p className="mt-2 text-2xl font-semibold sm:text-3xl">{headline}</p>
       <p className="mt-2 text-sm opacity-80">
         Projected {projection.taxYear} federal tax {money(projection.projectedTax, true)} vs. projected withholding{" "}
         {money(projection.projectedWithholding, true)}
@@ -86,7 +86,7 @@ export function FindingCard({
           </div>
           <h3 className="mt-2 font-semibold text-slate-900">{findingTitle(finding)}</h3>
         </div>
-        <p className="text-xl font-bold text-slate-900">
+        <p className="text-xl font-semibold text-slate-900">
           {money(finding.amountUsd, true)}
           <span className="block text-right text-xs font-normal text-slate-500">at stake</span>
         </p>
@@ -138,12 +138,12 @@ export function W4Card({
 }) {
   return (
     <Card>
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+      <p className="text-xs text-slate-500">
         W-4 · {employer.member === "self" ? "You" : "Spouse"}
       </p>
       <h3 className="mt-1 font-semibold text-slate-900">{employer.employerName}</h3>
       <p className="mt-3 text-sm text-slate-600">Step 4(c) extra withholding per paycheck</p>
-      <p className="text-2xl font-bold text-brand-700">{money(recommendedStep4c, true)}</p>
+      <p className="text-2xl font-semibold tabular-nums text-brand-700">{money(recommendedStep4c, true)}</p>
       <p className="mt-2 text-xs text-slate-500">
         {remainingPayPeriods} paychecks left this year · currently {money(employer.w4.step4cExtraWithholding, true)}
       </p>
@@ -192,7 +192,7 @@ export function HouseholdSummary({
           <Card key={e.id}>
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{e.member === "self" ? "You" : "Spouse"}</p>
+                <p className="text-xs text-slate-500">{e.member === "self" ? "You" : "Spouse"}</p>
                 <h3 className="font-semibold text-slate-900">{e.employerName}</h3>
               </div>
               {onEditEmployer && (

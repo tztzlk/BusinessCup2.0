@@ -1,6 +1,7 @@
+import Image from "next/image";
 import { ButtonLink, Card } from "@/components/ui";
+import { CatchTicker, HeroStack } from "@/components/HeroArt";
 import { LogoMark } from "@/components/Logo";
-import { CatchTicker, HeroBackdrop, HeroStack } from "@/components/HeroArt";
 import { PayStubArt, W2Art } from "@/components/PaperArt";
 
 const VALUE = [
@@ -45,7 +46,7 @@ const HOW_TO_TEST = [
     points: [
       "Upload a PDF or a phone photo of a pay stub or W-2, or press “Try with a sample pay stub”",
       "Confirm the fields Claude read, then see your report",
-      "Unlock Annual on My report with the Stripe test card 4242 4242 4242 4242 (test mode, no charge)",
+      "Get Annual on My report with the Stripe test card 4242 4242 4242 4242 (test mode, no charge)",
       "Only confirmed fields are kept, encrypted; delete them anytime from My report",
     ],
     cta: "Check a pay stub",
@@ -69,21 +70,21 @@ const PRIVACY = [
 /** Small illustration on top of each value card. */
 function ValueArt({ index }: { index: number }) {
   return (
-    <div aria-hidden="true" className="relative h-36 overflow-hidden bg-gradient-to-br from-brand-50 to-brand-100">
+    <div aria-hidden="true" className="relative h-36 overflow-hidden border-b border-slate-100 bg-slate-50">
       {index === 0 && (
-        <PayStubArt className="absolute left-1/2 top-5 w-48 -translate-x-1/2 -rotate-3 rounded-xl shadow-lg transition-transform duration-500 group-hover:-translate-y-2" />
+        <PayStubArt className="absolute left-1/2 top-5 w-48 -translate-x-1/2 -rotate-3 rounded-xl shadow-md" />
       )}
       {index === 1 && (
-        <div className="absolute inset-x-5 top-6 -rotate-2 rounded-xl bg-rose-50 p-4 shadow-lg ring-1 ring-rose-200 transition-transform duration-500 group-hover:-translate-y-2">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-rose-800/70">April 2027 projection · sample</p>
-          <p className="mt-1 text-lg font-bold text-rose-950">You may owe ~$7,573</p>
+        <div className="absolute inset-x-5 top-6 -rotate-2 rounded-xl bg-rose-50 p-4 shadow-md ring-1 ring-rose-200">
+          <p className="text-xs text-rose-800">April 2027 projection, sample</p>
+          <p className="mt-1 text-lg font-semibold tabular-nums text-rose-950">You may owe ~$7,573</p>
           <p className="mt-2 inline-block rounded-md bg-white px-2 py-1 font-mono text-xs text-brand-700 ring-1 ring-brand-200">
             W-4 Step 4(c): +$999 / paycheck
           </p>
         </div>
       )}
       {index === 2 && (
-        <W2Art className="absolute left-1/2 top-5 w-60 -translate-x-1/2 rotate-2 rounded-lg shadow-lg transition-transform duration-500 group-hover:-translate-y-2" />
+        <W2Art className="absolute left-1/2 top-5 w-60 -translate-x-1/2 rotate-2 rounded-lg shadow-md" />
       )}
     </div>
   );
@@ -93,48 +94,39 @@ export default function Home() {
   return (
     <div>
       <section className="relative overflow-hidden rounded-3xl bg-ink px-6 py-10 text-white sm:px-10 sm:py-14">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-500/25 blur-3xl"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-brand-700/30 blur-3xl"
-        />
-        <HeroBackdrop />
         <div className="relative grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_330px] lg:grid-cols-[minmax(0,1fr)_380px]">
-        <div className="relative z-10">
-        <div className="flex items-center gap-3">
-          <LogoMark animate breathe size={64} className="logo-glow h-auto w-12 text-white sm:w-14" />
-          <p className="rise-in text-sm font-medium uppercase tracking-wide text-brand-300" style={{ animationDelay: "0.5s" }}>
-            For two-income W-2 households
-          </p>
-        </div>
-        <h1 className="rise-in mt-3 max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl" style={{ animationDelay: "0.65s" }}>
-          Catch paycheck mistakes now — not a surprise tax bill in April.
-        </h1>
-        <p className="rise-in mt-4 max-w-2xl text-brand-100" style={{ animationDelay: "0.8s" }}>
-          When both of you work, withholding quietly falls short. PayTrail checks every pay stub, tells you what you&apos;ll owe or
-          get back, and what to change on your W-4 today.
-        </p>
-        <div className="rise-in mt-8 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "0.95s" }}>
-          <ButtonLink href="/demo" className="bg-white !text-brand-950 hover:bg-brand-100">
-            Try the demo
-          </ButtonLink>
-          <ButtonLink href="/check" className="bg-brand-500 hover:bg-brand-400">
-            Check my pay stub
-          </ButtonLink>
-        </div>
-        <p className="rise-in mt-4 text-xs text-brand-300" style={{ animationDelay: "1.1s" }}>
-          No sign-up. The demo uses a fictional household.{" "}
-          <a href="#how-to-test" className="underline hover:text-white">
-            Judges: how to test in 3 minutes
-          </a>
-        </p>
-        </div>
-        <div className="rise-in md:pr-6" style={{ animationDelay: "0.3s" }}>
-          <HeroStack />
-        </div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-3">
+              <LogoMark animate breathe size={64} className="h-auto w-12 text-white sm:w-14" />
+              <p className="rise-in text-sm text-brand-200" style={{ animationDelay: "0.5s" }}>
+                For two-income W-2 households
+              </p>
+            </div>
+            <h1 style={{ animationDelay: "0.65s" }} className="rise-in mt-4 max-w-2xl text-3xl font-semibold leading-[1.1] sm:text-4xl lg:text-[44px] lg:tracking-[-0.02em]">
+              Catch paycheck mistakes now, not a surprise tax bill in April
+            </h1>
+            <p className="rise-in mt-5 max-w-xl text-lg leading-relaxed text-slate-300" style={{ animationDelay: "0.8s" }}>
+              When both of you work, withholding quietly falls short. PayTrail checks every pay stub, tells you what you&apos;ll owe or
+              get back, and what to change on your W-4 today.
+            </p>
+            <div className="rise-in mt-8 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "0.95s" }}>
+              <ButtonLink href="/check" className="bg-white !text-ink hover:bg-slate-100">
+                Check my pay stub
+              </ButtonLink>
+              <ButtonLink href="/demo" className="border border-white/20 bg-white/5 hover:bg-white/10">
+                See a sample household
+              </ButtonLink>
+            </div>
+            <p className="rise-in mt-4 text-sm text-slate-400" style={{ animationDelay: "1.1s" }}>
+              No sign-up. The samples are fictional households.{" "}
+              <a href="#how-to-test" className="text-slate-200 underline underline-offset-2 hover:text-white">
+                Judges: how to test in 3 minutes
+              </a>
+            </p>
+          </div>
+          <div className="rise-in md:pr-6" style={{ animationDelay: "0.3s" }}>
+            <HeroStack />
+          </div>
         </div>
       </section>
 
@@ -145,20 +137,20 @@ export default function Home() {
         </p>
       </div>
 
-      <section id="how-to-test" className="mt-10 scroll-mt-20 rounded-2xl border border-brand-200 bg-brand-50/60 p-6 sm:p-8">
-        <h2 className="text-xl font-bold text-slate-900">How to test PayTrail</h2>
+      <section id="how-to-test" className="mt-12 scroll-mt-20">
+        <h2 className="text-2xl font-semibold text-slate-900">How to test PayTrail</h2>
         <p className="mt-1 text-sm text-slate-600">About 3 minutes. No sign-up, nothing to install.</p>
         <ol className="mt-5 grid gap-4 sm:grid-cols-3">
           {HOW_TO_TEST.map((s, i) => (
-            <li key={s.title} className="rounded-xl border border-slate-200 bg-white p-5">
-              <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">Step {i + 1}</p>
+            <li key={s.title} className="flex flex-col rounded-xl border border-slate-200 bg-white p-5">
+              <p className="font-mono text-xs text-slate-500">Step {i + 1}</p>
               <h3 className="mt-1 font-semibold text-slate-900">{s.title}</h3>
-              <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-600">
+              <ul className="mt-2 mb-4 list-disc space-y-1 pl-4 text-sm text-slate-600">
                 {s.points.map((p) => (
                   <li key={p}>{p}</li>
                 ))}
               </ul>
-              <ButtonLink href={s.href} variant={i === 0 ? "primary" : "secondary"} className="mt-4 w-full">
+              <ButtonLink href={s.href} variant={i === 0 ? "primary" : "secondary"} className="mt-auto w-full">
                 {s.cta}
               </ButtonLink>
             </li>
@@ -168,12 +160,9 @@ export default function Home() {
 
       <section className="mt-10 grid gap-4 sm:grid-cols-3">
         {VALUE.map((v, i) => (
-          <div key={v.title} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+          <div key={v.title} className="overflow-hidden rounded-xl border border-slate-200 bg-white">
             <ValueArt index={i} />
             <div className="p-5">
-            <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
-              {i + 1}
-            </div>
             <h2 className="font-semibold text-slate-900">{v.title}</h2>
             <p className="mt-2 text-sm text-slate-600">{v.body}</p>
             </div>
@@ -182,7 +171,7 @@ export default function Home() {
       </section>
 
       <section className="mt-12">
-        <h2 className="text-2xl font-bold text-slate-900">Built for documents with your salary on them</h2>
+        <h2 className="text-2xl font-semibold text-slate-900">Built for documents with your salary on them</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {PRIVACY.map(([title, body]) => (
             <div key={title} className="rounded-xl border border-slate-200 bg-white p-5">
@@ -194,11 +183,11 @@ export default function Home() {
       </section>
 
       <section className="mt-12" id="pricing">
-        <h2 className="text-2xl font-bold text-slate-900">Pricing</h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <h2 className="text-2xl font-semibold text-slate-900">Pricing</h2>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_190px]">
           <Card>
             <h3 className="font-semibold text-slate-900">Free</h3>
-            <p className="mt-1 text-3xl font-bold text-slate-900">$0</p>
+            <p className="mt-1 text-3xl font-semibold tabular-nums text-slate-900">$0</p>
             <ul className="mt-4 space-y-2 text-sm text-slate-600">
               <li>One pay stub checkup: every mistake in dollars</li>
               <li>April projection: owe or refund</li>
@@ -207,9 +196,9 @@ export default function Home() {
               Start free
             </ButtonLink>
           </Card>
-          <Card className="border-brand-300 ring-2 ring-brand-100">
+          <Card className="border-brand-500">
             <h3 className="font-semibold text-slate-900">Annual</h3>
-            <p className="mt-1 text-3xl font-bold text-slate-900">
+            <p className="mt-1 text-3xl font-semibold tabular-nums text-slate-900">
               $79<span className="text-base font-medium text-slate-500">/year</span>
             </p>
             <ul className="mt-4 space-y-2 text-sm text-slate-600">
@@ -222,6 +211,14 @@ export default function Home() {
               See everything in Annual
             </ButtonLink>
           </Card>
+          {/* Mirrored so she points left, at the Annual card. */}
+          <Image
+            src="/illustrations/annual-guide.webp"
+            alt="Illustration: a woman holding her pay stubs points to the Annual plan"
+            width={400}
+            height={531}
+            className="hidden h-auto w-[190px] -scale-x-100 self-end lg:block"
+          />
         </div>
       </section>
     </div>

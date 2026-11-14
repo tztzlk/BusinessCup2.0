@@ -25,7 +25,7 @@ export function PersonaDemo({
   return (
     <div>
       <SampleLabel />
-      <h1 className="text-2xl font-bold text-slate-900">{name}</h1>
+      <h1 className="text-2xl font-semibold text-slate-900">{name}</h1>
       <p className="text-slate-600">{subtitle}</p>
       <p className="mt-3 max-w-2xl rounded-lg bg-white/70 px-4 py-3 text-sm text-slate-700 ring-1 ring-slate-200">{story}</p>
 

@@ -60,7 +60,7 @@ export function ReportView() {
   if (state === "none" || !data)
     return (
       <Card className="mx-auto max-w-xl text-center">
-        <h1 className="text-xl font-bold text-slate-900">No saved data in this browser</h1>
+        <h1 className="text-xl font-semibold text-slate-900">No saved data in this browser</h1>
         <p className="mt-2 text-sm text-slate-600">
           Start a checkup, or open your private recovery link if you saved one.
         </p>
@@ -81,7 +81,7 @@ export function ReportView() {
     <div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-bold text-slate-900">
+          <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold text-slate-900">
             My report
             <Badge tone={data.plan?.tier === "annual" ? "success" : "neutral"}>
               {data.plan?.tier === "annual" ? "Annual" : "Free plan"}

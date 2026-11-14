@@ -29,7 +29,7 @@ export function CoupleDemo({ initialMode = "november" }: { initialMode?: "novemb
       </div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Alex &amp; Jordan</h1>
+          <h1 className="text-2xl font-semibold text-slate-900">Alex &amp; Jordan</h1>
           <p className="text-slate-600">Married filing jointly · Texas · two salaried jobs · one child</p>
         </div>
         <div className="no-print inline-flex rounded-lg border border-slate-300 bg-white p-1 text-sm" role="tablist">

@@ -57,7 +57,7 @@ export function CheckupView({
     // The problem is free; the exact per-paycheck fix is part of Annual.
     return list.map((f) =>
       f.code === "UNDERWITHHOLDING"
-        ? { ...f, action: { ...f.action, details: "Unlock Annual to get the exact Step 4(c) amount to put on each W-4 so you don't owe in April." } }
+        ? { ...f, action: { ...f.action, details: "Annual shows the exact Step 4(c) amount to put on each W-4 so you don't owe in April." } }
         : f,
     );
   }, [mode, result, locked]);
@@ -81,7 +81,7 @@ export function CheckupView({
       {mode === "january" && locked && (
         <Section title="Tax season">
           <Paywall
-            title="Unlock tax season"
+            title="Tax season is part of Annual"
             reason="Your January checklist of tax forms, W-2 reconciliation against your pay stubs and the accountant packet are part of Annual."
           />
         </Section>
@@ -90,7 +90,7 @@ export function CheckupView({
       {mode === "january" && !locked && (
         <>
           <div className="print-only mb-4">
-            <h2 className="text-xl font-bold">{packetTitle}</h2>
+            <h2 className="text-xl font-semibold">{packetTitle}</h2>
             <p className="text-sm">Prepared with PayTrail. Estimates only. Not tax advice.</p>
           </div>
           <Section

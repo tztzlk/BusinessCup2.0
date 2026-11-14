@@ -37,7 +37,7 @@ export function RecoverView() {
   if (pending) {
     return (
       <Card className="mx-auto max-w-xl text-center">
-        <h1 className="text-xl font-bold text-slate-900">Open different data?</h1>
+        <h1 className="text-xl font-semibold text-slate-900">Open different data?</h1>
         <p className="mt-2 text-sm text-slate-600">
           This browser already has saved data. If you open this link, the current data will only be reachable through its own
           private link. Only continue if this link is yours.
@@ -65,7 +65,7 @@ export function RecoverView() {
     <Card className="mx-auto max-w-xl text-center">
       {error ? (
         <>
-          <h1 className="text-xl font-bold text-slate-900">Couldn&apos;t open your data</h1>
+          <h1 className="text-xl font-semibold text-slate-900">Couldn&apos;t open your data</h1>
           <p className="mt-2 text-sm text-slate-600">{error}</p>
           <div className="mt-5 flex justify-center">
             <ButtonLink href="/check">Start a new checkup</ButtonLink>

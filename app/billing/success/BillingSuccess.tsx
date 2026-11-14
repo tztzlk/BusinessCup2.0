@@ -24,7 +24,7 @@ export function BillingSuccess() {
   if (!error) return <p className="text-slate-500">Confirming your payment…</p>;
   return (
     <Card className="mx-auto max-w-xl text-center">
-      <h1 className="text-xl font-bold text-slate-900">We couldn&apos;t confirm the payment</h1>
+      <h1 className="text-xl font-semibold text-slate-900">We couldn&apos;t confirm the payment</h1>
       <div className="mt-3">
         <Notice tone="danger">{error}</Notice>
       </div>

@@ -34,7 +34,7 @@ export const FRIENDLY: Record<string, string> = {
   busy: "Our document reader is busy. Try again in a minute.",
   no_household: "No saved household in this browser yet.",
   internal: "Something went wrong on our side. Try again.",
-  payment_required: "This is part of Annual. Unlock Annual to continue.",
+  payment_required: "This is part of Annual. Get Annual to continue.",
   billing_unavailable: "Payments are not set up on this deployment yet.",
   live_payments_disabled: "Live payments are disabled on this deployment.",
   stripe_error: "Payment provider error. Try again in a minute.",
