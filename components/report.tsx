@@ -19,20 +19,42 @@ import type {
 
 // Report building blocks shared by the demo and the real /report page.
 
-export function ProjectionBanner({ projection }: { projection: Projection }) {
-  const owe = projection.balance > 0;
+export type AprilOutlook = "owe" | "refund" | "on_track";
+
+/**
+ * The engine raises a balance finding only when the gap is worth acting on (UNDERWITHHOLDING /
+ * OVERWITHHOLDING); without one the household is on track, even if the raw balance is a few dollars.
+ */
+export function aprilOutlook(findings: Finding[]): AprilOutlook {
+  if (findings.some((f) => f.code === "UNDERWITHHOLDING")) return "owe";
+  if (findings.some((f) => f.code === "OVERWITHHOLDING")) return "refund";
+  return "on_track";
+}
+
+export function ProjectionBanner({ projection, outlook }: { projection: Projection; outlook: AprilOutlook }) {
   const amount = Math.abs(projection.balance);
+  const tone =
+    outlook === "owe"
+      ? "bg-rose-50 text-rose-950 ring-1 ring-rose-200"
+      : "bg-emerald-50 text-emerald-950 ring-1 ring-emerald-200";
+  const headline =
+    outlook === "owe"
+      ? `You may owe ~${money(amount, true)} in April`
+      : outlook === "refund"
+        ? `You may get a ~${money(amount, true)} refund`
+        : "You're on track for April";
   return (
-    <div
-      className={`rounded-2xl px-6 py-6 ${owe ? "bg-rose-50 text-rose-950 ring-1 ring-rose-200" : "bg-emerald-50 text-emerald-950 ring-1 ring-emerald-200"}`}
-    >
+    <div className={`rounded-2xl px-6 py-6 ${tone}`}>
       <p className="text-sm font-medium uppercase tracking-wide opacity-70">April {projection.taxYear + 1} projection</p>
-      <p className="mt-2 text-2xl font-bold sm:text-3xl">
-        {owe ? `You may owe ~${money(amount, true)} in April` : `You may get a ~${money(amount, true)} refund`}
-      </p>
+      <p className="mt-2 text-2xl font-bold sm:text-3xl">{headline}</p>
       <p className="mt-2 text-sm opacity-80">
         Projected {projection.taxYear} federal tax {money(projection.projectedTax, true)} vs. projected withholding{" "}
-        {money(projection.projectedWithholding, true)}.
+        {money(projection.projectedWithholding, true)}
+        {outlook === "on_track"
+          ? amount < 1
+            ? ": they match."
+            : `: about ${money(amount, true)} apart, so no W-4 change needed.`
+          : "."}
       </p>
     </div>
   );

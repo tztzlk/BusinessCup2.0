@@ -7,7 +7,7 @@ import { RemindersCard } from "./RemindersCard";
 import { Paywall } from "./Paywall";
 import { runCheckup } from "@/lib/engine";
 import { Button, Card, Notice, Section } from "./ui";
-import { ChecklistView, FindingCard, ProjectionBanner, W4Card } from "./report";
+import { aprilOutlook, ChecklistView, FindingCard, ProjectionBanner, W4Card } from "./report";
 import { money } from "@/lib/format";
 import type { ChecklistItem, ChecklistStatus, HouseholdData } from "@/lib/types";
 
@@ -61,7 +61,10 @@ export function CheckupView({
         : f,
     );
   }, [mode, result, locked]);
-  const explained = useExplanations(findings, result.projection);
+  const outlook = aprilOutlook(result.findings);
+  const owes = outlook === "owe" && result.projection !== null;
+  // On track: keep the raw balance away from Claude, so its summary doesn't talk about owing $4.
+  const explained = useExplanations(findings, outlook === "on_track" ? null : result.projection);
 
   return (
     <div>
@@ -170,7 +173,7 @@ export function CheckupView({
 
       {result.projection && (
         <div className="mt-6">
-          <ProjectionBanner projection={result.projection} />
+          <ProjectionBanner projection={result.projection} outlook={outlook} />
         </div>
       )}
 
@@ -193,7 +196,7 @@ export function CheckupView({
         )}
       </Section>
 
-      {mode === "november" && locked && result.projection && result.projection.balance > 0 && (
+      {mode === "november" && locked && owes && result.projection && (
         <Section title="Fix it on your W-4">
           <Paywall
             title="Get the exact W-4 fix"
@@ -202,7 +205,7 @@ export function CheckupView({
         </Section>
       )}
 
-      {mode === "november" && !locked && result.projection && result.projection.balance > 0 && (
+      {mode === "november" && !locked && owes && result.projection && (
         <Section title="Fix it on your W-4" subtitle="Give each employer a new W-4 with this Step 4(c) amount.">
           <div className="grid gap-4 sm:grid-cols-2">
             {result.projection.perEmployer.map((p) => {
@@ -221,8 +224,8 @@ export function CheckupView({
         </div>
       )}
 
-      {/* Free plan with nothing else locked on this tab (e.g. a refund, so no W-4 fix): still offer Annual. */}
-      {locked && mode === "november" && !(result.projection && result.projection.balance > 0) && (
+      {/* Free plan with nothing else locked on this tab (a refund or on track, so no W-4 fix): still offer Annual. */}
+      {locked && mode === "november" && !owes && (
         <Section title="Keep checking all year">
           <Paywall
             title="Check every paycheck with Annual"
