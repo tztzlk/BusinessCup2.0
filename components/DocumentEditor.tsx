@@ -8,6 +8,14 @@ import { inputClass } from "./ui";
 
 type ConfidenceMap = Record<string, Confidence>;
 
+const PAY_FREQUENCIES: Array<[Paystub["payFrequency"], string]> = [
+  ["weekly", "Weekly"],
+  ["biweekly", "Every 2 weeks"],
+  ["semimonthly", "Twice a month"],
+  ["monthly", "Monthly"],
+  ["unknown", "Not sure"],
+];
+
 function tone(conf: ConfidenceMap, path: string): string {
   const c = conf[path];
   if (c === "low") return "border-rose-400 bg-rose-50 ring-1 ring-rose-200";
@@ -37,7 +45,7 @@ function NumberInput({
       step="0.01"
       aria-label={ariaLabel}
       title={conf[path] ? `Please check: ${conf[path]} confidence` : undefined}
-      className={`${inputClass} text-right font-mono ${tone(conf, path)}`}
+      className={`${inputClass} px-2 text-right font-mono [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${tone(conf, path)}`}
       value={value ?? ""}
       placeholder={nullable ? "—" : "0.00"}
       onChange={(e) => {
@@ -89,64 +97,114 @@ function Labeled({ label, children }: { label: string; children: React.ReactNode
 
 type Row = { type: string; current: number; ytd: number | null };
 
+const ITEM_LABELS: Record<string, Record<string, string>> = {
+  earnings: {
+    regular: "Regular pay",
+    overtime: "Overtime",
+    bonus: "Bonus",
+    pto: "Paid time off",
+    holiday: "Holiday pay",
+    other: "Other earnings",
+  },
+  taxes: {
+    federal_income: "Federal income tax",
+    social_security: "Social Security",
+    medicare: "Medicare",
+    state_income: "State income tax",
+    local: "Local tax",
+    other: "Other tax",
+  },
+  deductions: {
+    "401k_pretax": "401(k)",
+    "401k_roth": "Roth 401(k)",
+    health: "Health insurance",
+    dental: "Dental",
+    vision: "Vision",
+    hsa: "HSA",
+    fsa: "FSA",
+    other: "Other deduction",
+  },
+  employerContributions: {
+    "401k_match": "401(k) match",
+    hsa: "HSA contribution",
+    other: "Other",
+  },
+};
+
+function itemLabel(listKey: string, type: string): string {
+  return ITEM_LABELS[listKey]?.[type] ?? type.replace(/_/g, " ");
+}
+
+function Mini({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="min-w-0">
+      <span className="mb-0.5 block text-xs text-slate-500">{label}</span>
+      {children}
+    </div>
+  );
+}
+
 function AmountTable<T extends Row>({
   title,
+  hint,
   listKey,
   rows,
   conf,
   onRowChange,
   extra,
+  aside,
 }: {
   title: string;
+  hint?: string;
   listKey: string;
   rows: T[];
   conf: ConfidenceMap;
   onRowChange: (i: number, row: T) => void;
-  extra?: (row: T, i: number) => React.ReactNode;
+  /** Extra inputs placed before the amounts (e.g. hours and rate). */
+  extra?: (row: T, i: number, name: string) => React.ReactNode;
+  /** Small control shown next to the item name (e.g. pre-tax checkbox). */
+  aside?: (row: T, i: number) => React.ReactNode;
 }) {
   if (rows.length === 0) return null;
   return (
-    <div className="mt-5">
-      <h4 className="mb-2 text-sm font-semibold text-slate-800">{title}</h4>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[420px] text-sm">
-          <thead className="text-left text-xs text-slate-500">
-            <tr>
-              <th className="pb-1 font-medium">Item</th>
-              {extra && <th className="pb-1 font-medium">Details</th>}
-              <th className="pb-1 text-right font-medium">This period</th>
-              <th className="pb-1 text-right font-medium">Year to date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row, i) => (
-              <tr key={i}>
-                <td className="py-1 pr-2 text-slate-700">{row.type.replace(/_/g, " ").replace("401k", "401(k)")}</td>
-                {extra && <td className="py-1 pr-2">{extra(row, i)}</td>}
-                <td className="w-32 py-1 pr-2">
+    <div className="mt-6">
+      <h4 className="text-sm font-semibold text-slate-800">{title}</h4>
+      {hint && <p className="text-xs text-slate-500">{hint}</p>}
+      <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200">
+        {rows.map((row, i) => {
+          const name = itemLabel(listKey, row.type);
+          return (
+            <li key={i} className="grid gap-2 px-3 py-3 sm:grid-cols-[11rem_1fr] sm:items-end">
+              <div className="flex items-center justify-between gap-2 sm:block sm:pb-2">
+                <p className="text-sm font-medium text-slate-800">{name}</p>
+                {aside?.(row, i)}
+              </div>
+              <div className={`grid gap-2 ${extra ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2"}`}>
+                {extra?.(row, i, name)}
+                <Mini label="This paycheck">
                   <NumberInput
-                    ariaLabel={`${title} ${row.type} this period`}
+                    ariaLabel={`${name} this paycheck`}
                     value={row.current}
                     path={`${listKey}[${i}].current`}
                     conf={conf}
                     onChange={(v) => onRowChange(i, { ...row, current: v ?? 0 })}
                   />
-                </td>
-                <td className="w-32 py-1">
+                </Mini>
+                <Mini label="Year to date">
                   <NumberInput
-                    ariaLabel={`${title} ${row.type} year to date`}
+                    ariaLabel={`${name} year to date`}
                     value={row.ytd}
                     nullable
                     path={`${listKey}[${i}].ytd`}
                     conf={conf}
                     onChange={(v) => onRowChange(i, { ...row, ytd: v })}
                   />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </Mini>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }
@@ -205,19 +263,19 @@ export function PaystubEditor({
             value={value.payFrequency}
             onChange={(e) => set("payFrequency", e.target.value as Paystub["payFrequency"])}
           >
-            {["weekly", "biweekly", "semimonthly", "monthly", "unknown"].map((f) => (
+            {PAY_FREQUENCIES.map(([f, text]) => (
               <option key={f} value={f}>
-                {f}
+                {text}
               </option>
             ))}
           </select>
         </Labeled>
-        <div className="grid grid-cols-3 gap-2">
-          <Labeled label="Gross">
-            <NumberInput ariaLabel="Gross this period" value={value.grossCurrent} path="grossCurrent" conf={confidence} onChange={(v) => set("grossCurrent", v ?? 0)} />
+        <div className="grid grid-cols-3 gap-2 sm:col-span-2">
+          <Labeled label="Gross pay">
+            <NumberInput ariaLabel="Gross pay this paycheck" value={value.grossCurrent} path="grossCurrent" conf={confidence} onChange={(v) => set("grossCurrent", v ?? 0)} />
           </Labeled>
-          <Labeled label="Net">
-            <NumberInput ariaLabel="Net this period" value={value.netCurrent} path="netCurrent" conf={confidence} onChange={(v) => set("netCurrent", v ?? 0)} />
+          <Labeled label="Net pay">
+            <NumberInput ariaLabel="Net pay this paycheck" value={value.netCurrent} path="netCurrent" conf={confidence} onChange={(v) => set("netCurrent", v ?? 0)} />
           </Labeled>
           <Labeled label="Gross YTD">
             <NumberInput ariaLabel="Gross year to date" value={value.grossYtd} nullable path="grossYtd" conf={confidence} onChange={(v) => set("grossYtd", v)} />
@@ -231,47 +289,54 @@ export function PaystubEditor({
         rows={value.earnings}
         conf={confidence}
         onRowChange={setRow("earnings")}
-        extra={(row, i) => (
-          <div className="flex gap-1">
-            <NumberInput
-              ariaLabel={`Earnings ${row.type} hours`}
-              value={row.hours}
-              nullable
-              path={`earnings[${i}].hours`}
-              conf={confidence}
-              onChange={(v) => setRow("earnings")(i, { ...row, hours: v })}
-            />
-            <NumberInput
-              ariaLabel={`Earnings ${row.type} rate`}
-              value={row.rate}
-              nullable
-              path={`earnings[${i}].rate`}
-              conf={confidence}
-              onChange={(v) => setRow("earnings")(i, { ...row, rate: v })}
-            />
-          </div>
+        hint="Hours and rate are optional for salaried pay."
+        extra={(row, i, name) => (
+          <>
+            <Mini label="Hours">
+              <NumberInput
+                ariaLabel={`${name} hours`}
+                value={row.hours}
+                nullable
+                path={`earnings[${i}].hours`}
+                conf={confidence}
+                onChange={(v) => setRow("earnings")(i, { ...row, hours: v })}
+              />
+            </Mini>
+            <Mini label="Rate ($/h)">
+              <NumberInput
+                ariaLabel={`${name} hourly rate`}
+                value={row.rate}
+                nullable
+                path={`earnings[${i}].rate`}
+                conf={confidence}
+                onChange={(v) => setRow("earnings")(i, { ...row, rate: v })}
+              />
+            </Mini>
+          </>
         )}
       />
-      <AmountTable title="Taxes" listKey="taxes" rows={value.taxes} conf={confidence} onRowChange={setRow("taxes")} />
+      <AmountTable title="Taxes withheld" listKey="taxes" rows={value.taxes} conf={confidence} onRowChange={setRow("taxes")} />
       <AmountTable
         title="Deductions"
+        hint="Pre-tax deductions lower your taxable wages. Untick if the stub lists it as after-tax."
         listKey="deductions"
         rows={value.deductions}
         conf={confidence}
         onRowChange={setRow("deductions")}
-        extra={(row, i) => (
+        aside={(row, i) => (
           <label className="inline-flex items-center gap-1 text-xs text-slate-600">
             <input
               type="checkbox"
               checked={row.preTax}
               onChange={(e) => setRow("deductions")(i, { ...row, preTax: e.target.checked })}
             />
-            pre-tax
+            Pre-tax
           </label>
         )}
       />
       <AmountTable
-        title="Employer contributions"
+        title="Paid by your employer"
+        hint="Not taken from your pay, e.g. the 401(k) match."
         listKey="employerContributions"
         rows={value.employerContributions}
         conf={confidence}
@@ -326,10 +391,12 @@ export function W2Editor({ value, onChange, confidence }: { value: W2; onChange:
       </div>
       {value.box12.length > 0 && (
         <div className="mt-5">
-          <h4 className="mb-2 text-sm font-semibold text-slate-800">Box 12</h4>
+          <h4 className="text-sm font-semibold text-slate-800">Box 12</h4>
+          <p className="mb-2 text-xs text-slate-500">A letter code and an amount. Code D is your 401(k) contributions.</p>
           <div className="grid gap-2 sm:grid-cols-2">
             {value.box12.map((b, i) => (
               <div key={i} className="flex items-center gap-2">
+                <span className="text-xs text-slate-500">12{String.fromCharCode(97 + i)}</span>
                 <input
                   aria-label={`Box 12 code ${i + 1}`}
                   className={`${inputClass} w-16 text-center font-mono ${tone(confidence, `box12[${i}].code`)}`}
@@ -362,7 +429,7 @@ export function W2Editor({ value, onChange, confidence }: { value: W2; onChange:
           checked={value.box13RetirementPlan}
           onChange={(e) => onChange({ ...value, box13RetirementPlan: e.target.checked })}
         />
-        Box 13 · Retirement plan
+        Box 13 · &ldquo;Retirement plan&rdquo; is checked
       </label>
     </div>
   );

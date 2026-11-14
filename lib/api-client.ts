@@ -44,7 +44,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const body = await res.json().catch(() => null);
   if (!res.ok) {
     const code: string = body?.error ?? "internal";
-    throw new ApiError(res.status, code, body?.message ?? FRIENDLY[code] ?? FRIENDLY.internal);
+    throw new ApiError(res.status, code, FRIENDLY[code] ?? body?.message ?? FRIENDLY.internal);
   }
   return body as T;
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api-client";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
@@ -136,10 +137,15 @@ export function CheckFlow() {
 
         {step === "done" && (
           <Card>
-            <h2 className="text-lg font-semibold text-slate-900">Saved.</h2>
+            <h2 className="text-lg font-semibold text-slate-900">Saved — your report is ready.</h2>
             <p className="mt-1 text-sm text-slate-600">
               Your confirmed fields are stored encrypted. The original file was not kept.
             </p>
+            {household && household.profile.filingStatus === "married_joint" && household.employers.length < 2 && (
+              <p className="mt-2 text-sm text-slate-600">
+                Both of you work? Add your spouse&apos;s job and a pay stub to see the household&apos;s April forecast.
+              </p>
+            )}
             <div className="mt-4 flex flex-col gap-3 sm:flex-row">
               <ButtonLink href="/report">See my report</ButtonLink>
               <Button variant="secondary" onClick={() => setStep("upload")}>
@@ -196,7 +202,7 @@ function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void
           run(() => onDone(p));
         }}
       >
-        <Field label="Filing status">
+        <Field label="Filing status" hint="How you file your federal tax return.">
           <select
             className={inputClass}
             value={p.filingStatus}
@@ -215,7 +221,7 @@ function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void
             ))}
           </select>
         </Field>
-        <Field label="Children under 17">
+        <Field label="Children under 17" hint="For the Child Tax Credit.">
           <input
             type="number"
             min={0}
@@ -225,7 +231,7 @@ function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void
             onChange={(e) => setP({ ...p, dependentsUnder17: Math.max(0, Math.min(20, Number(e.target.value) || 0)) })}
           />
         </Field>
-        <Field label="Other dependents">
+        <Field label="Other dependents" hint="Older children or relatives you support.">
           <input
             type="number"
             min={0}
@@ -236,7 +242,10 @@ function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void
           />
         </Field>
         <div className="space-y-2 sm:col-span-2">
-          <p className="text-sm font-medium text-slate-700">Do you also have…</p>
+          <div>
+            <p className="text-sm font-medium text-slate-700">Do you also have…</p>
+            <p className="text-xs text-slate-500">So we know which tax forms to expect in January.</p>
+          </div>
           <div className="grid gap-2 sm:grid-cols-2">
             {flag("mortgage", "A mortgage")}
             {flag("bankInterest", "Bank interest (savings)")}
@@ -412,7 +421,10 @@ function EmployerStep({
 
         <div className="rounded-lg border border-slate-200 p-4 sm:col-span-2">
           <p className="text-sm font-medium text-slate-700">Current W-4 at this job</p>
-          <label className="mt-2 flex items-center gap-2 text-sm text-slate-700">
+          <p className="text-xs text-slate-500">
+            From the W-4 you gave HR, or your payroll portal. Not sure? Leave the zeros — most people never fill these in.
+          </p>
+          <label className="mt-3 flex items-center gap-2 text-sm text-slate-700">
             <input type="checkbox" checked={s.w4.step2Checked} onChange={(e) => w4("step2Checked", e.target.checked)} />
             Step 2 checkbox is checked (multiple jobs / spouse works)
           </label>
@@ -471,6 +483,15 @@ function UploadStep({
   const [dragging, setDragging] = useState(false);
   const [notDoc, setNotDoc] = useState<string | null>(null);
   const { busy, err, run } = useSubmit();
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!busy) return;
+    setElapsed(0);
+    const started = Date.now();
+    const t = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [busy]);
 
   const handle = (file: File | undefined) => {
     if (!file) return;
@@ -509,11 +530,14 @@ function UploadStep({
         }`}
       >
         {busy ? (
-          <>
+          <div role="status" aria-live="polite" className="flex flex-col items-center">
             <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-            <p className="mt-3 font-medium text-slate-800">Reading your document… (20–40 s)</p>
-            <p className="text-sm text-slate-500">The file is processed in memory and not stored.</p>
-          </>
+            <p className="mt-3 font-medium text-slate-800">Reading your document… {elapsed > 0 && <span className="tabular-nums">{elapsed}s</span>}</p>
+            <p className="text-sm text-slate-500">
+              {elapsed < 45 ? "Usually 20–40 seconds. Keep this tab open." : "Taking longer than usual — still working."}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">The file is processed in memory and not stored.</p>
+          </div>
         ) : (
           <>
             <p className="font-medium text-slate-800">Drop a PDF or photo here</p>
@@ -538,7 +562,19 @@ function UploadStep({
 
       {(err || notDoc) && (
         <div className="mt-4">
-          <Notice tone="danger">{err ?? notDoc}</Notice>
+          <Notice tone="danger">
+            <p className="font-medium">{err ?? notDoc}</p>
+            <p className="mt-1">
+              {notDoc
+                ? "Upload a pay stub (earnings statement) or a W-2 form."
+                : "Try again in a minute. If it keeps failing, upload the original PDF or a sharper photo."}{" "}
+              Meanwhile you can{" "}
+              <Link href="/demo/couple" className="font-medium underline">
+                see a sample report
+              </Link>
+              .
+            </p>
+          </Notice>
         </div>
       )}
       <p className="mt-4 text-xs text-slate-500">
@@ -586,7 +622,7 @@ function ConfirmStep({
       {extracted.warnings.length > 0 && (
         <div className="mt-3">
           <Notice tone="danger">
-            <p className="font-medium">Please fix before saving:</p>
+            <p className="font-medium">Please check before saving:</p>
             <ul className="mt-1 list-disc pl-5">
               {extracted.warnings.map((w) => (
                 <li key={w}>{w}</li>
