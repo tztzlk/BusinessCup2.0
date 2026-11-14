@@ -7,6 +7,7 @@ import type {
   Paystub,
   W2,
 } from "./types";
+import type { ExplainRequest, ExplainResponse } from "./explain";
 
 // Typed browser-side wrappers for the PayTrail API. Cookies are same-origin.
 
@@ -64,6 +65,7 @@ export const api = {
   recover: (secret: string) => request<{ restored: true }>("/api/household/recover", json("POST", { secret })),
   addEmployer: (settings: Omit<EmploymentSettings, "id">) =>
     request<{ id: string }>("/api/employers", json("POST", settings)),
+  explain: (body: ExplainRequest) => request<ExplainResponse>("/api/explain", json("POST", body)),
   extract: (file: File) => {
     const form = new FormData();
     form.append("file", file);

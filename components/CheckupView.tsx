@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { inputRow } from "@/lib/findingCopy";
+import { useExplanations } from "./useExplanations";
 import { runCheckup } from "@/lib/engine";
 import { Button, Card, Notice, Section } from "./ui";
 import { ChecklistView, FindingCard, ProjectionBanner, W4Card } from "./report";
@@ -45,7 +46,11 @@ export function CheckupView({
   );
   const recMismatches = recRows.filter((r) => !r.matches).length;
 
-  const findings = mode === "january" ? result.findings : result.findings.filter((f) => !f.code.startsWith("W2_"));
+  const findings = useMemo(
+    () => (mode === "january" ? result.findings : result.findings.filter((f) => !f.code.startsWith("W2_"))),
+    [mode, result],
+  );
+  const explained = useExplanations(findings, result.projection);
 
   return (
     <div>
@@ -154,8 +159,15 @@ export function CheckupView({
           <p className="text-sm text-slate-500">No issues found on your pay stubs.</p>
         ) : (
           <div className="grid gap-4">
+            {explained.summary && <p className="text-sm font-medium text-slate-800">{explained.summary}</p>}
             {findings.map((f, i) => (
-              <FindingCard key={`${f.code}-${f.employerId}-${i}`} finding={f} employerName={employerName(f.employerId)} />
+              <FindingCard
+                key={`${f.code}-${f.employerId}-${i}`}
+                finding={f}
+                employerName={employerName(f.employerId)}
+                explanation={explained.bodies.get(i)}
+                explaining={explained.status === "loading"}
+              />
             ))}
           </div>
         )}

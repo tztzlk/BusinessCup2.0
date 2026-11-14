@@ -40,7 +40,18 @@ export function ProjectionBanner({ projection }: { projection: Projection }) {
 const severityTone = { critical: "danger", warning: "warning", info: "info" } as const;
 const severityLabel = { critical: "Fix now", warning: "Worth fixing", info: "FYI" } as const;
 
-export function FindingCard({ finding, employerName }: { finding: Finding; employerName?: string }) {
+export function FindingCard({
+  finding,
+  employerName,
+  explanation,
+  explaining = false,
+}: {
+  finding: Finding;
+  employerName?: string;
+  /** Claude's plain-English text, already checked against the engine's numbers. */
+  explanation?: string;
+  explaining?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <Card>
@@ -57,7 +68,12 @@ export function FindingCard({ finding, employerName }: { finding: Finding; emplo
           <span className="block text-right text-xs font-normal text-slate-500">at stake</span>
         </p>
       </div>
-      <p className="mt-3 text-sm text-slate-700">{finding.action.details}</p>
+      <p className="mt-3 text-sm text-slate-700">{explanation ?? finding.action.details}</p>
+      {explaining && !explanation && (
+        <p className="no-print mt-2 animate-pulse text-xs text-slate-400" aria-live="polite">
+          Writing a plain-English explanation…
+        </p>
+      )}
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -66,6 +82,11 @@ export function FindingCard({ finding, employerName }: { finding: Finding; emplo
       >
         {open ? "Hide calculation" : "Show calculation"}
       </button>
+      {open && explanation && (
+        <p className="mt-3 text-xs text-slate-500">
+          Explanation written by Claude from the numbers below. Rule from our engine: {finding.action.details}
+        </p>
+      )}
       {open && (
         <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2">
           {Object.entries(finding.inputs).map(([k, v]) => {
