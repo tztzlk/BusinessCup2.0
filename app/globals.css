@@ -114,6 +114,19 @@ body {
   }
 }
 
+/* Ticker of findings from the sample households. */
+.ticker {
+  animation: ticker 40s linear infinite;
+}
+.ticker:hover {
+  animation-play-state: paused;
+}
+@keyframes ticker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 /* Hero content rises in after the logo mark draws. */
 .rise-in {
   opacity: 0;
@@ -148,6 +161,10 @@ body {
   }
   .stub-scan {
     display: none;
+  }
+  .ticker {
+    animation: none;
+    flex-wrap: wrap;
   }
 }
 

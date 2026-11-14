@@ -27,33 +27,32 @@ export function HeroStack() {
 // Real findings from the sample households (lib/demo.ts and the sample pay stub), not marketing numbers.
 const CATCHES = [
   ["Overtime paid at 1× instead of 1.5×", "$100 per paycheck"],
-  ["Both jobs left W-4 Step 2 unchecked", "~$7,573 owed in April"],
+  ["Both jobs left W-4 Step 2 unchecked", "owe ~$7,573 in April"],
   ["Free 401(k) match left on the table", "$3,120 a year"],
   ["W-2 box 12 D doesn't match pay stubs", "$1,560"],
   ["401(k) set 1% below the full match", "$475 a year"],
 ];
 
-/** What the checks catch on the sample households, as a plain list. */
-export function CatchList() {
+/** A slow ticker of what the checks catch on the sample households. */
+export function CatchTicker() {
+  const items = [...CATCHES, ...CATCHES];
   return (
-    <section aria-labelledby="catches" className="rounded-2xl border border-slate-200 bg-white">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-slate-100 px-5 py-3">
-        <h2 id="catches" className="text-sm font-medium text-slate-900">
-          What the checks found on the sample households
-        </h2>
-        <p className="text-xs text-slate-500">Fictional data. Your numbers come from your own pay stubs.</p>
-      </div>
-      <ul className="divide-y divide-slate-100">
-        {CATCHES.map(([what, amount]) => (
-          <li key={what} className="flex items-center justify-between gap-4 px-5 py-2.5 text-sm">
-            <span className="flex items-center gap-2.5 text-slate-700">
-              <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
-              {what}
-            </span>
-            <span className="shrink-0 font-mono text-[13px] tabular-nums text-slate-900">{amount}</span>
+    <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white py-3 shadow-sm">
+      <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-0 z-10 w-12 bg-gradient-to-r from-white" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-white" />
+      <ul className="ticker flex w-max gap-3 px-3" aria-label="What PayTrail caught on the sample households">
+        {items.map(([what, amount], i) => (
+          <li
+            key={i}
+            aria-hidden={i >= CATCHES.length}
+            className="flex shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm"
+          >
+            <span className="h-2 w-2 rounded-full bg-rose-500" />
+            <span className="text-slate-700">{what}</span>
+            <span className="font-semibold text-slate-900">{amount}</span>
           </li>
         ))}
       </ul>
-    </section>
+    </div>
   );
 }

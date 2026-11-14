@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { ButtonLink, Card } from "@/components/ui";
-import { CatchList, HeroStack } from "@/components/HeroArt";
+import { CatchTicker, HeroStack } from "@/components/HeroArt";
 import { LogoMark } from "@/components/Logo";
 import { PayStubArt, W2Art } from "@/components/PaperArt";
 
@@ -131,7 +131,10 @@ export default function Home() {
       </section>
 
       <div className="mt-6">
-        <CatchList />
+        <CatchTicker />
+        <p className="mt-2 text-center text-xs text-slate-500">
+          What our checks find on the fictional sample households. Your numbers come from your own pay stubs.
+        </p>
       </div>
 
       <section id="how-to-test" className="mt-12 scroll-mt-20">
