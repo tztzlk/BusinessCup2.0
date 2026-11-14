@@ -22,17 +22,8 @@ import type {
 
 // Report building blocks shared by the demo and the real /report page.
 
-export type AprilOutlook = "owe" | "refund" | "on_track";
-
-/**
- * The engine raises a balance finding only when the gap is worth acting on (UNDERWITHHOLDING /
- * OVERWITHHOLDING); without one the household is on track, even if the raw balance is a few dollars.
- */
-export function aprilOutlook(findings: Finding[]): AprilOutlook {
-  if (findings.some((f) => f.code === "UNDERWITHHOLDING")) return "owe";
-  if (findings.some((f) => f.code === "OVERWITHHOLDING")) return "refund";
-  return "on_track";
-}
+export { aprilOutlook, type AprilOutlook } from "@/lib/engine/overview";
+import type { AprilOutlook } from "@/lib/engine/overview";
 
 export function ProjectionBanner({ projection, outlook }: { projection: Projection; outlook: AprilOutlook }) {
   const amount = Math.abs(projection.balance);
