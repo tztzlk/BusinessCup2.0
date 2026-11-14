@@ -1,0 +1,64 @@
+{
+  "id": "hourly_doc_rosa_1106",
+  "file": "hourly_doc_rosa_1106.pdf",
+  "mime": "application/pdf",
+  "status": 200,
+  "ms": 4989,
+  "at": "2026-11-14T19:26:16.139Z",
+  "response": {
+    "documentType": "paystub",
+    "fields": {
+      "employerName": "Lone Star Distribution (SAMPLE)",
+      "payPeriodStart": "2026-10-19",
+      "payPeriodEnd": "2026-11-01",
+      "payDate": "2026-11-06",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "current": 2024,
+          "ytd": 40744,
+          "type": "regular",
+          "hours": 92,
+          "rate": 22
+        }
+      ],
+      "taxes": [
+        {
+          "current": 149.32,
+          "ytd": 2765.34,
+          "type": "federal_income"
+        },
+        {
+          "current": 125.49,
+          "ytd": 2526.13,
+          "type": "social_security"
+        },
+        {
+          "current": 29.35,
+          "ytd": 590.79,
+          "type": "medicare"
+        }
+      ],
+      "deductions": [
+        {
+          "current": 80.96,
+          "ytd": 1629.76,
+          "type": "401k_pretax",
+          "preTax": true
+        }
+      ],
+      "employerContributions": [
+        {
+          "current": 40.48,
+          "ytd": 814.88,
+          "type": "401k_match"
+        }
+      ],
+      "grossCurrent": 2024,
+      "netCurrent": 1638.88,
+      "grossYtd": 40744
+    },
+    "confidence": {},
+    "warnings": []
+  }
+}

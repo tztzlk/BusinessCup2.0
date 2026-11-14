@@ -1,0 +1,522 @@
+[
+  {
+    "id": "couple_doc_alex_1031",
+    "file": "couple_doc_alex_1031.pdf",
+    "mime": "application/pdf",
+    "docType": "paystub",
+    "layout": "stub-A",
+    "fields": {
+      "employerName": "Northwind Logistics (SAMPLE)",
+      "payPeriodStart": "2026-10-18",
+      "payPeriodEnd": "2026-10-31",
+      "payDate": "2026-10-31",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 80,
+          "rate": null,
+          "current": 3653.85,
+          "ytd": 80384.7
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 149.83,
+          "ytd": 3296.26
+        },
+        {
+          "type": "social_security",
+          "current": 219.1,
+          "ytd": 4820.2
+        },
+        {
+          "type": "medicare",
+          "current": 51.24,
+          "ytd": 1127.28
+        }
+      ],
+      "deductions": [
+        {
+          "type": "401k_pretax",
+          "preTax": true,
+          "current": 182.69,
+          "ytd": 4019.18
+        },
+        {
+          "type": "health",
+          "preTax": true,
+          "current": 120,
+          "ytd": 2640
+        }
+      ],
+      "employerContributions": [
+        {
+          "type": "401k_match",
+          "current": 91.35,
+          "ytd": 2009.7
+        }
+      ],
+      "grossCurrent": 3653.85,
+      "netCurrent": 2930.99,
+      "grossYtd": 80384.7
+    }
+  },
+  {
+    "id": "couple_doc_jordan_1031",
+    "file": "couple_doc_jordan_1031.pdf",
+    "mime": "application/pdf",
+    "docType": "paystub",
+    "layout": "stub-B",
+    "fields": {
+      "employerName": "Bluebonnet Health (SAMPLE)",
+      "payPeriodStart": "2026-10-18",
+      "payPeriodEnd": "2026-10-31",
+      "payDate": "2026-10-31",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 80,
+          "rate": null,
+          "current": 3000,
+          "ytd": 66000
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 192.31,
+          "ytd": 4230.82
+        },
+        {
+          "type": "social_security",
+          "current": 186,
+          "ytd": 4092
+        },
+        {
+          "type": "medicare",
+          "current": 43.5,
+          "ytd": 957
+        }
+      ],
+      "deductions": [
+        {
+          "type": "401k_pretax",
+          "preTax": true,
+          "current": 0,
+          "ytd": 0
+        }
+      ],
+      "employerContributions": [],
+      "grossCurrent": 3000,
+      "netCurrent": 2578.19,
+      "grossYtd": 66000
+    }
+  },
+  {
+    "id": "hourly_doc_rosa_1106",
+    "file": "hourly_doc_rosa_1106.pdf",
+    "mime": "application/pdf",
+    "docType": "paystub",
+    "layout": "stub-A",
+    "fields": {
+      "employerName": "Lone Star Distribution (SAMPLE)",
+      "payPeriodStart": "2026-10-19",
+      "payPeriodEnd": "2026-11-01",
+      "payDate": "2026-11-06",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 92,
+          "rate": 22,
+          "current": 2024,
+          "ytd": 40744
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 149.32,
+          "ytd": 2765.34
+        },
+        {
+          "type": "social_security",
+          "current": 125.49,
+          "ytd": 2526.13
+        },
+        {
+          "type": "medicare",
+          "current": 29.35,
+          "ytd": 590.79
+        }
+      ],
+      "deductions": [
+        {
+          "type": "401k_pretax",
+          "preTax": true,
+          "current": 80.96,
+          "ytd": 1629.76
+        }
+      ],
+      "employerContributions": [
+        {
+          "type": "401k_match",
+          "current": 40.48,
+          "ytd": 814.88
+        }
+      ],
+      "grossCurrent": 2024,
+      "netCurrent": 1638.88,
+      "grossYtd": 40744
+    }
+  },
+  {
+    "id": "hourly_doc_rosa_1106_png",
+    "file": "hourly_doc_rosa_1106.png",
+    "mime": "image/png",
+    "docType": "paystub",
+    "layout": "stub-A (PNG)",
+    "fields": {
+      "employerName": "Lone Star Distribution (SAMPLE)",
+      "payPeriodStart": "2026-10-19",
+      "payPeriodEnd": "2026-11-01",
+      "payDate": "2026-11-06",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 92,
+          "rate": 22,
+          "current": 2024,
+          "ytd": 40744
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 149.32,
+          "ytd": 2765.34
+        },
+        {
+          "type": "social_security",
+          "current": 125.49,
+          "ytd": 2526.13
+        },
+        {
+          "type": "medicare",
+          "current": 29.35,
+          "ytd": 590.79
+        }
+      ],
+      "deductions": [
+        {
+          "type": "401k_pretax",
+          "preTax": true,
+          "current": 80.96,
+          "ytd": 1629.76
+        }
+      ],
+      "employerContributions": [
+        {
+          "type": "401k_match",
+          "current": 40.48,
+          "ytd": 814.88
+        }
+      ],
+      "grossCurrent": 2024,
+      "netCurrent": 1638.88,
+      "grossYtd": 40744
+    }
+  },
+  {
+    "id": "hourly_doc_tom_1106",
+    "file": "hourly_doc_tom_1106.pdf",
+    "mime": "application/pdf",
+    "docType": "paystub",
+    "layout": "stub-B",
+    "fields": {
+      "employerName": "Hill Country Utilities (SAMPLE)",
+      "payPeriodStart": "2026-10-19",
+      "payPeriodEnd": "2026-11-01",
+      "payDate": "2026-11-06",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 80,
+          "rate": null,
+          "current": 2230.77,
+          "ytd": 51307.71
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 14.62,
+          "ytd": 336.26
+        },
+        {
+          "type": "social_security",
+          "current": 138.31,
+          "ytd": 3181.13
+        },
+        {
+          "type": "medicare",
+          "current": 32.35,
+          "ytd": 744.05
+        }
+      ],
+      "deductions": [],
+      "employerContributions": [],
+      "grossCurrent": 2230.77,
+      "netCurrent": 2045.49,
+      "grossYtd": 51307.71
+    }
+  },
+  {
+    "id": "salaried_doc_nina_1031",
+    "file": "salaried_doc_nina_1031.pdf",
+    "mime": "application/pdf",
+    "docType": "paystub",
+    "layout": "stub-A",
+    "fields": {
+      "employerName": "Prairie Analytics (SAMPLE)",
+      "payPeriodStart": "2026-10-18",
+      "payPeriodEnd": "2026-10-31",
+      "payDate": "2026-10-31",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 80,
+          "rate": null,
+          "current": 3692.31,
+          "ytd": 81230.82
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 412.09,
+          "ytd": 9065.98
+        },
+        {
+          "type": "social_security",
+          "current": 228.92,
+          "ytd": 5036.24
+        },
+        {
+          "type": "medicare",
+          "current": 53.54,
+          "ytd": 1177.88
+        }
+      ],
+      "deductions": [
+        {
+          "type": "401k_pretax",
+          "preTax": true,
+          "current": 110.77,
+          "ytd": 2436.94
+        }
+      ],
+      "employerContributions": [
+        {
+          "type": "401k_match",
+          "current": 110.77,
+          "ytd": 2436.94
+        }
+      ],
+      "grossCurrent": 3692.31,
+      "netCurrent": 2886.99,
+      "grossYtd": 81230.82
+    }
+  },
+  {
+    "id": "salaried_doc_marcus_1031",
+    "file": "salaried_doc_marcus_1031.pdf",
+    "mime": "application/pdf",
+    "docType": "paystub",
+    "layout": "stub-B",
+    "fields": {
+      "employerName": "Cedar Park School District (SAMPLE)",
+      "payPeriodStart": "2026-10-18",
+      "payPeriodEnd": "2026-10-31",
+      "payDate": "2026-10-31",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 80,
+          "rate": null,
+          "current": 1307.69,
+          "ytd": 28769.18
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 6.92,
+          "ytd": 152.24
+        },
+        {
+          "type": "social_security",
+          "current": 81.08,
+          "ytd": 1783.76
+        },
+        {
+          "type": "medicare",
+          "current": 18.96,
+          "ytd": 417.12
+        }
+      ],
+      "deductions": [],
+      "employerContributions": [],
+      "grossCurrent": 1307.69,
+      "netCurrent": 1200.73,
+      "grossYtd": 28769.18
+    }
+  },
+  {
+    "id": "couple_doc_alex_1031_w2",
+    "file": "couple_doc_alex_1031_w2.pdf",
+    "mime": "application/pdf",
+    "docType": "w2",
+    "layout": "w2",
+    "fields": {
+      "taxYear": 2026,
+      "employerName": "Northwind Logistics (SAMPLE)",
+      "box1Wages": 87130.16,
+      "box2FederalWithheld": 3895.58,
+      "box3SsWages": 91880.1,
+      "box4SsWithheld": 5696.6,
+      "box5MedicareWages": 91880.1,
+      "box6MedicareWithheld": 1332.24,
+      "box12": [
+        {
+          "code": "D",
+          "amount": 4749.94
+        }
+      ],
+      "box13RetirementPlan": true,
+      "state": []
+    }
+  },
+  {
+    "id": "couple_doc_alex_1031_w2_png",
+    "file": "couple_doc_alex_1031_w2.png",
+    "mime": "image/png",
+    "docType": "w2",
+    "layout": "w2 (PNG)",
+    "fields": {
+      "taxYear": 2026,
+      "employerName": "Northwind Logistics (SAMPLE)",
+      "box1Wages": 87130.16,
+      "box2FederalWithheld": 3895.58,
+      "box3SsWages": 91880.1,
+      "box4SsWithheld": 5696.6,
+      "box5MedicareWages": 91880.1,
+      "box6MedicareWithheld": 1332.24,
+      "box12": [
+        {
+          "code": "D",
+          "amount": 4749.94
+        }
+      ],
+      "box13RetirementPlan": true,
+      "state": []
+    }
+  },
+  {
+    "id": "couple_doc_jordan_1031_w2",
+    "file": "couple_doc_jordan_1031_w2.pdf",
+    "mime": "application/pdf",
+    "docType": "w2",
+    "layout": "w2",
+    "fields": {
+      "taxYear": 2026,
+      "employerName": "Bluebonnet Health (SAMPLE)",
+      "box1Wages": 78000,
+      "box2FederalWithheld": 5000.06,
+      "box3SsWages": 78000,
+      "box4SsWithheld": 4836,
+      "box5MedicareWages": 78000,
+      "box6MedicareWithheld": 1131,
+      "box12": [
+        {
+          "code": "D",
+          "amount": 1560
+        }
+      ],
+      "box13RetirementPlan": true,
+      "state": []
+    }
+  },
+  {
+    "id": "acme_sample_paystub",
+    "file": "acme_sample_paystub.pdf",
+    "mime": "application/pdf",
+    "docType": "paystub",
+    "layout": "public sample (text-only)",
+    "fields": {
+      "employerName": "Acme Logistics LLC (SAMPLE)",
+      "payPeriodStart": "2026-10-19",
+      "payPeriodEnd": "2026-11-01",
+      "payDate": "2026-11-06",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "type": "regular",
+          "hours": 80,
+          "rate": 20,
+          "current": 1600,
+          "ytd": 35200
+        },
+        {
+          "type": "overtime",
+          "hours": 10,
+          "rate": 20,
+          "current": 200,
+          "ytd": 3000
+        }
+      ],
+      "taxes": [
+        {
+          "type": "federal_income",
+          "current": 125.31,
+          "ytd": 2756.82
+        },
+        {
+          "type": "social_security",
+          "current": 111.6,
+          "ytd": 2368.4
+        },
+        {
+          "type": "medicare",
+          "current": 26.1,
+          "ytd": 553.9
+        }
+      ],
+      "deductions": [
+        {
+          "type": "401k_pretax",
+          "preTax": true,
+          "current": 54,
+          "ytd": 1146
+        }
+      ],
+      "employerContributions": [
+        {
+          "type": "401k_match",
+          "current": 27,
+          "ytd": 573
+        }
+      ],
+      "grossCurrent": 1800,
+      "netCurrent": 1482.99,
+      "grossYtd": 38200
+    }
+  }
+]

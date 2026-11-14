@@ -1,0 +1,2310 @@
+{
+  "summary": {
+    "docs": 11,
+    "total": 209,
+    "exact": 209
+  },
+  "docs": [
+    {
+      "id": "couple_doc_alex_1031",
+      "layout": "stub-A",
+      "mime": "application/pdf",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 5391,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 26,
+      "exact": 26,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Northwind Logistics (SAMPLE)",
+          "got": "Northwind Logistics (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-18",
+          "got": "2026-10-18",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 3653.85,
+          "got": 3653.85,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 2930.99,
+          "got": 2930.99,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 80384.7,
+          "got": 80384.7,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 3653.85,
+          "got": 3653.85,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 80384.7,
+          "got": 80384.7,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 80,
+          "got": 80,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": null,
+          "got": null,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 149.83,
+          "got": 149.83,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 3296.26,
+          "got": 3296.26,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 219.1,
+          "got": 219.1,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 4820.2,
+          "got": 4820.2,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 51.24,
+          "got": 51.24,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 1127.28,
+          "got": 1127.28,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].current",
+          "category": "amounts_current",
+          "expected": 182.69,
+          "got": 182.69,
+          "ok": true,
+          "gotPath": "deductions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].ytd",
+          "category": "ytd",
+          "expected": 4019.18,
+          "got": 4019.18,
+          "ok": true,
+          "gotPath": "deductions[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].preTax",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "deductions[0].preTax",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[health].current",
+          "category": "amounts_current",
+          "expected": 120,
+          "got": 120,
+          "ok": true,
+          "gotPath": "deductions[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[health].ytd",
+          "category": "ytd",
+          "expected": 2640,
+          "got": 2640,
+          "ok": true,
+          "gotPath": "deductions[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[health].preTax",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "deductions[1].preTax",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].current",
+          "category": "amounts_current",
+          "expected": 91.35,
+          "got": 91.35,
+          "ok": true,
+          "gotPath": "employerContributions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].ytd",
+          "category": "ytd",
+          "expected": 2009.7,
+          "got": 2009.7,
+          "ok": true,
+          "gotPath": "employerContributions[0].ytd",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "couple_doc_jordan_1031",
+      "layout": "stub-B",
+      "mime": "application/pdf",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 4494,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 21,
+      "exact": 21,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Bluebonnet Health (SAMPLE)",
+          "got": "Bluebonnet Health (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-18",
+          "got": "2026-10-18",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 3000,
+          "got": 3000,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 2578.19,
+          "got": 2578.19,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 66000,
+          "got": 66000,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 3000,
+          "got": 3000,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 66000,
+          "got": 66000,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 80,
+          "got": 80,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": null,
+          "got": null,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 192.31,
+          "got": 192.31,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 4230.82,
+          "got": 4230.82,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 186,
+          "got": 186,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 4092,
+          "got": 4092,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 43.5,
+          "got": 43.5,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 957,
+          "got": 957,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].current",
+          "category": "amounts_current",
+          "expected": 0,
+          "got": 0,
+          "ok": true,
+          "gotPath": "deductions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].ytd",
+          "category": "ytd",
+          "expected": 0,
+          "got": 0,
+          "ok": true,
+          "gotPath": "deductions[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].preTax",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "deductions[0].preTax",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "hourly_doc_rosa_1106",
+      "layout": "stub-A",
+      "mime": "application/pdf",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 4989,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 23,
+      "exact": 23,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Lone Star Distribution (SAMPLE)",
+          "got": "Lone Star Distribution (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-19",
+          "got": "2026-10-19",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-11-01",
+          "got": "2026-11-01",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-11-06",
+          "got": "2026-11-06",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 2024,
+          "got": 2024,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 1638.88,
+          "got": 1638.88,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 40744,
+          "got": 40744,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 2024,
+          "got": 2024,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 40744,
+          "got": 40744,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 92,
+          "got": 92,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": 22,
+          "got": 22,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 149.32,
+          "got": 149.32,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 2765.34,
+          "got": 2765.34,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 125.49,
+          "got": 125.49,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 2526.13,
+          "got": 2526.13,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 29.35,
+          "got": 29.35,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 590.79,
+          "got": 590.79,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].current",
+          "category": "amounts_current",
+          "expected": 80.96,
+          "got": 80.96,
+          "ok": true,
+          "gotPath": "deductions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].ytd",
+          "category": "ytd",
+          "expected": 1629.76,
+          "got": 1629.76,
+          "ok": true,
+          "gotPath": "deductions[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].preTax",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "deductions[0].preTax",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].current",
+          "category": "amounts_current",
+          "expected": 40.48,
+          "got": 40.48,
+          "ok": true,
+          "gotPath": "employerContributions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].ytd",
+          "category": "ytd",
+          "expected": 814.88,
+          "got": 814.88,
+          "ok": true,
+          "gotPath": "employerContributions[0].ytd",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "hourly_doc_rosa_1106_png",
+      "layout": "stub-A (PNG)",
+      "mime": "image/png",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 5627,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 23,
+      "exact": 23,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Lone Star Distribution (SAMPLE)",
+          "got": "Lone Star Distribution (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-19",
+          "got": "2026-10-19",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-11-01",
+          "got": "2026-11-01",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-11-06",
+          "got": "2026-11-06",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 2024,
+          "got": 2024,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 1638.88,
+          "got": 1638.88,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 40744,
+          "got": 40744,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 2024,
+          "got": 2024,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 40744,
+          "got": 40744,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 92,
+          "got": 92,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": 22,
+          "got": 22,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 149.32,
+          "got": 149.32,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 2765.34,
+          "got": 2765.34,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 125.49,
+          "got": 125.49,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 2526.13,
+          "got": 2526.13,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 29.35,
+          "got": 29.35,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 590.79,
+          "got": 590.79,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].current",
+          "category": "amounts_current",
+          "expected": 80.96,
+          "got": 80.96,
+          "ok": true,
+          "gotPath": "deductions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].ytd",
+          "category": "ytd",
+          "expected": 1629.76,
+          "got": 1629.76,
+          "ok": true,
+          "gotPath": "deductions[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].preTax",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "deductions[0].preTax",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].current",
+          "category": "amounts_current",
+          "expected": 40.48,
+          "got": 40.48,
+          "ok": true,
+          "gotPath": "employerContributions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].ytd",
+          "category": "ytd",
+          "expected": 814.88,
+          "got": 814.88,
+          "ok": true,
+          "gotPath": "employerContributions[0].ytd",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "hourly_doc_tom_1106",
+      "layout": "stub-B",
+      "mime": "application/pdf",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 5564,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 18,
+      "exact": 18,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Hill Country Utilities (SAMPLE)",
+          "got": "Hill Country Utilities (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-19",
+          "got": "2026-10-19",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-11-01",
+          "got": "2026-11-01",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-11-06",
+          "got": "2026-11-06",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 2230.77,
+          "got": 2230.77,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 2045.49,
+          "got": 2045.49,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 51307.71,
+          "got": 51307.71,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 2230.77,
+          "got": 2230.77,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 51307.71,
+          "got": 51307.71,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 80,
+          "got": 80,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": null,
+          "got": null,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 14.62,
+          "got": 14.62,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 336.26,
+          "got": 336.26,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 138.31,
+          "got": 138.31,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 3181.13,
+          "got": 3181.13,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 32.35,
+          "got": 32.35,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 744.05,
+          "got": 744.05,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "salaried_doc_nina_1031",
+      "layout": "stub-A",
+      "mime": "application/pdf",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 4650,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 23,
+      "exact": 23,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Prairie Analytics (SAMPLE)",
+          "got": "Prairie Analytics (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-18",
+          "got": "2026-10-18",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 3692.31,
+          "got": 3692.31,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 2886.99,
+          "got": 2886.99,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 81230.82,
+          "got": 81230.82,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 3692.31,
+          "got": 3692.31,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 81230.82,
+          "got": 81230.82,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 80,
+          "got": 80,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": null,
+          "got": null,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 412.09,
+          "got": 412.09,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 9065.98,
+          "got": 9065.98,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 228.92,
+          "got": 228.92,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 5036.24,
+          "got": 5036.24,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 53.54,
+          "got": 53.54,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 1177.88,
+          "got": 1177.88,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].current",
+          "category": "amounts_current",
+          "expected": 110.77,
+          "got": 110.77,
+          "ok": true,
+          "gotPath": "deductions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].ytd",
+          "category": "ytd",
+          "expected": 2436.94,
+          "got": 2436.94,
+          "ok": true,
+          "gotPath": "deductions[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].preTax",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "deductions[0].preTax",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].current",
+          "category": "amounts_current",
+          "expected": 110.77,
+          "got": 110.77,
+          "ok": true,
+          "gotPath": "employerContributions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].ytd",
+          "category": "ytd",
+          "expected": 2436.94,
+          "got": 2436.94,
+          "ok": true,
+          "gotPath": "employerContributions[0].ytd",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "salaried_doc_marcus_1031",
+      "layout": "stub-B",
+      "mime": "application/pdf",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 4572,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 18,
+      "exact": 18,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Cedar Park School District (SAMPLE)",
+          "got": "Cedar Park School District (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-18",
+          "got": "2026-10-18",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-10-31",
+          "got": "2026-10-31",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 1307.69,
+          "got": 1307.69,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 1200.73,
+          "got": 1200.73,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 28769.18,
+          "got": 28769.18,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 1307.69,
+          "got": 1307.69,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 28769.18,
+          "got": 28769.18,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 80,
+          "got": 80,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": null,
+          "got": null,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 6.92,
+          "got": 6.92,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 152.24,
+          "got": 152.24,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 81.08,
+          "got": 81.08,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 1783.76,
+          "got": 1783.76,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 18.96,
+          "got": 18.96,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 417.12,
+          "got": 417.12,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "couple_doc_alex_1031_w2",
+      "layout": "w2",
+      "mime": "application/pdf",
+      "docType": "w2",
+      "status": 200,
+      "ms": 5260,
+      "error": null,
+      "gotDocType": "w2",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 10,
+      "exact": 10,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Northwind Logistics (SAMPLE)",
+          "got": "Northwind Logistics (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxYear",
+          "category": "dates",
+          "expected": 2026,
+          "got": 2026,
+          "ok": true,
+          "gotPath": "taxYear",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box1Wages",
+          "category": "w2_boxes",
+          "expected": 87130.16,
+          "got": 87130.16,
+          "ok": true,
+          "gotPath": "box1Wages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box2FederalWithheld",
+          "category": "w2_boxes",
+          "expected": 3895.58,
+          "got": 3895.58,
+          "ok": true,
+          "gotPath": "box2FederalWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box3SsWages",
+          "category": "w2_boxes",
+          "expected": 91880.1,
+          "got": 91880.1,
+          "ok": true,
+          "gotPath": "box3SsWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box4SsWithheld",
+          "category": "w2_boxes",
+          "expected": 5696.6,
+          "got": 5696.6,
+          "ok": true,
+          "gotPath": "box4SsWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box5MedicareWages",
+          "category": "w2_boxes",
+          "expected": 91880.1,
+          "got": 91880.1,
+          "ok": true,
+          "gotPath": "box5MedicareWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box6MedicareWithheld",
+          "category": "w2_boxes",
+          "expected": 1332.24,
+          "got": 1332.24,
+          "ok": true,
+          "gotPath": "box6MedicareWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box13RetirementPlan",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "box13RetirementPlan",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box12[D].amount",
+          "category": "w2_boxes",
+          "expected": 4749.94,
+          "got": 4749.94,
+          "ok": true,
+          "gotPath": "box12[0].amount",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "couple_doc_alex_1031_w2_png",
+      "layout": "w2 (PNG)",
+      "mime": "image/png",
+      "docType": "w2",
+      "status": 200,
+      "ms": 5025,
+      "error": null,
+      "gotDocType": "w2",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 10,
+      "exact": 10,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Northwind Logistics (SAMPLE)",
+          "got": "Northwind Logistics (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxYear",
+          "category": "dates",
+          "expected": 2026,
+          "got": 2026,
+          "ok": true,
+          "gotPath": "taxYear",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box1Wages",
+          "category": "w2_boxes",
+          "expected": 87130.16,
+          "got": 87130.16,
+          "ok": true,
+          "gotPath": "box1Wages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box2FederalWithheld",
+          "category": "w2_boxes",
+          "expected": 3895.58,
+          "got": 3895.58,
+          "ok": true,
+          "gotPath": "box2FederalWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box3SsWages",
+          "category": "w2_boxes",
+          "expected": 91880.1,
+          "got": 91880.1,
+          "ok": true,
+          "gotPath": "box3SsWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box4SsWithheld",
+          "category": "w2_boxes",
+          "expected": 5696.6,
+          "got": 5696.6,
+          "ok": true,
+          "gotPath": "box4SsWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box5MedicareWages",
+          "category": "w2_boxes",
+          "expected": 91880.1,
+          "got": 91880.1,
+          "ok": true,
+          "gotPath": "box5MedicareWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box6MedicareWithheld",
+          "category": "w2_boxes",
+          "expected": 1332.24,
+          "got": 1332.24,
+          "ok": true,
+          "gotPath": "box6MedicareWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box13RetirementPlan",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "box13RetirementPlan",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box12[D].amount",
+          "category": "w2_boxes",
+          "expected": 4749.94,
+          "got": 4749.94,
+          "ok": true,
+          "gotPath": "box12[0].amount",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "couple_doc_jordan_1031_w2",
+      "layout": "w2",
+      "mime": "application/pdf",
+      "docType": "w2",
+      "status": 200,
+      "ms": 5008,
+      "error": null,
+      "gotDocType": "w2",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 1,
+      "uncertainPaths": {
+        "box6MedicareWithheld": "medium"
+      },
+      "total": 10,
+      "exact": 10,
+      "suffixDropped": 0,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Bluebonnet Health (SAMPLE)",
+          "got": "Bluebonnet Health (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxYear",
+          "category": "dates",
+          "expected": 2026,
+          "got": 2026,
+          "ok": true,
+          "gotPath": "taxYear",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box1Wages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box1Wages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box2FederalWithheld",
+          "category": "w2_boxes",
+          "expected": 5000.06,
+          "got": 5000.06,
+          "ok": true,
+          "gotPath": "box2FederalWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box3SsWages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box3SsWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box4SsWithheld",
+          "category": "w2_boxes",
+          "expected": 4836,
+          "got": 4836,
+          "ok": true,
+          "gotPath": "box4SsWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box5MedicareWages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box5MedicareWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box6MedicareWithheld",
+          "category": "w2_boxes",
+          "expected": 1131,
+          "got": 1131,
+          "ok": true,
+          "gotPath": "box6MedicareWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box13RetirementPlan",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "box13RetirementPlan",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box12[D].amount",
+          "category": "w2_boxes",
+          "expected": 1560,
+          "got": 1560,
+          "ok": true,
+          "gotPath": "box12[0].amount",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "acme_sample_paystub",
+      "layout": "public sample (text-only)",
+      "mime": "application/pdf",
+      "docType": "paystub",
+      "status": 200,
+      "ms": 5836,
+      "error": null,
+      "gotDocType": "paystub",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 27,
+      "exact": 27,
+      "suffixDropped": 1,
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Acme Logistics LLC (SAMPLE)",
+          "got": "Acme Logistics LLC",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": "suffix (SAMPLE) dropped"
+        },
+        {
+          "field": "payPeriodStart",
+          "category": "dates",
+          "expected": "2026-10-19",
+          "got": "2026-10-19",
+          "ok": true,
+          "gotPath": "payPeriodStart",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payPeriodEnd",
+          "category": "dates",
+          "expected": "2026-11-01",
+          "got": "2026-11-01",
+          "ok": true,
+          "gotPath": "payPeriodEnd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payDate",
+          "category": "dates",
+          "expected": "2026-11-06",
+          "got": "2026-11-06",
+          "ok": true,
+          "gotPath": "payDate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "payFrequency",
+          "category": "dates",
+          "expected": "biweekly",
+          "got": "biweekly",
+          "ok": true,
+          "gotPath": "payFrequency",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossCurrent",
+          "category": "amounts_current",
+          "expected": 1800,
+          "got": 1800,
+          "ok": true,
+          "gotPath": "grossCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "netCurrent",
+          "category": "amounts_current",
+          "expected": 1482.99,
+          "got": 1482.99,
+          "ok": true,
+          "gotPath": "netCurrent",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "grossYtd",
+          "category": "ytd",
+          "expected": 38200,
+          "got": 38200,
+          "ok": true,
+          "gotPath": "grossYtd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].current",
+          "category": "amounts_current",
+          "expected": 1600,
+          "got": 1600,
+          "ok": true,
+          "gotPath": "earnings[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].ytd",
+          "category": "ytd",
+          "expected": 35200,
+          "got": 35200,
+          "ok": true,
+          "gotPath": "earnings[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].hours",
+          "category": "hours_rate",
+          "expected": 80,
+          "got": 80,
+          "ok": true,
+          "gotPath": "earnings[0].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[regular].rate",
+          "category": "hours_rate",
+          "expected": 20,
+          "got": 20,
+          "ok": true,
+          "gotPath": "earnings[0].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[overtime].current",
+          "category": "amounts_current",
+          "expected": 200,
+          "got": 200,
+          "ok": true,
+          "gotPath": "earnings[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[overtime].ytd",
+          "category": "ytd",
+          "expected": 3000,
+          "got": 3000,
+          "ok": true,
+          "gotPath": "earnings[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[overtime].hours",
+          "category": "hours_rate",
+          "expected": 10,
+          "got": 10,
+          "ok": true,
+          "gotPath": "earnings[1].hours",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "earnings[overtime].rate",
+          "category": "hours_rate",
+          "expected": 20,
+          "got": 20,
+          "ok": true,
+          "gotPath": "earnings[1].rate",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].current",
+          "category": "amounts_current",
+          "expected": 125.31,
+          "got": 125.31,
+          "ok": true,
+          "gotPath": "taxes[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[federal_income].ytd",
+          "category": "ytd",
+          "expected": 2756.82,
+          "got": 2756.82,
+          "ok": true,
+          "gotPath": "taxes[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].current",
+          "category": "amounts_current",
+          "expected": 111.6,
+          "got": 111.6,
+          "ok": true,
+          "gotPath": "taxes[1].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[social_security].ytd",
+          "category": "ytd",
+          "expected": 2368.4,
+          "got": 2368.4,
+          "ok": true,
+          "gotPath": "taxes[1].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].current",
+          "category": "amounts_current",
+          "expected": 26.1,
+          "got": 26.1,
+          "ok": true,
+          "gotPath": "taxes[2].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxes[medicare].ytd",
+          "category": "ytd",
+          "expected": 553.9,
+          "got": 553.9,
+          "ok": true,
+          "gotPath": "taxes[2].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].current",
+          "category": "amounts_current",
+          "expected": 54,
+          "got": 54,
+          "ok": true,
+          "gotPath": "deductions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].ytd",
+          "category": "ytd",
+          "expected": 1146,
+          "got": 1146,
+          "ok": true,
+          "gotPath": "deductions[0].ytd",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "deductions[401k_pretax].preTax",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "deductions[0].preTax",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].current",
+          "category": "amounts_current",
+          "expected": 27,
+          "got": 27,
+          "ok": true,
+          "gotPath": "employerContributions[0].current",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "employerContributions[401k_match].ytd",
+          "category": "ytd",
+          "expected": 573,
+          "got": 573,
+          "ok": true,
+          "gotPath": "employerContributions[0].ytd",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    }
+  ]
+}

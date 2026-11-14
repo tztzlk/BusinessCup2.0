@@ -1,0 +1,71 @@
+{
+  "id": "acme_sample_paystub",
+  "file": "acme_sample_paystub.pdf",
+  "mime": "application/pdf",
+  "status": 200,
+  "ms": 5836,
+  "at": "2026-11-14T19:27:45.714Z",
+  "response": {
+    "documentType": "paystub",
+    "fields": {
+      "employerName": "Acme Logistics LLC",
+      "payPeriodStart": "2026-10-19",
+      "payPeriodEnd": "2026-11-01",
+      "payDate": "2026-11-06",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "current": 1600,
+          "ytd": 35200,
+          "type": "regular",
+          "hours": 80,
+          "rate": 20
+        },
+        {
+          "current": 200,
+          "ytd": 3000,
+          "type": "overtime",
+          "hours": 10,
+          "rate": 20
+        }
+      ],
+      "taxes": [
+        {
+          "current": 125.31,
+          "ytd": 2756.82,
+          "type": "federal_income"
+        },
+        {
+          "current": 111.6,
+          "ytd": 2368.4,
+          "type": "social_security"
+        },
+        {
+          "current": 26.1,
+          "ytd": 553.9,
+          "type": "medicare"
+        }
+      ],
+      "deductions": [
+        {
+          "current": 54,
+          "ytd": 1146,
+          "type": "401k_pretax",
+          "preTax": true
+        }
+      ],
+      "employerContributions": [
+        {
+          "current": 27,
+          "ytd": 573,
+          "type": "401k_match"
+        }
+      ],
+      "grossCurrent": 1800,
+      "netCurrent": 1482.99,
+      "grossYtd": 38200
+    },
+    "confidence": {},
+    "warnings": []
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "id": "couple_doc_alex_1031",
+  "file": "couple_doc_alex_1031.pdf",
+  "mime": "application/pdf",
+  "status": 200,
+  "ms": 5391,
+  "at": "2026-11-14T19:25:56.275Z",
+  "response": {
+    "documentType": "paystub",
+    "fields": {
+      "employerName": "Northwind Logistics (SAMPLE)",
+      "payPeriodStart": "2026-10-18",
+      "payPeriodEnd": "2026-10-31",
+      "payDate": "2026-10-31",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "current": 3653.85,
+          "ytd": 80384.7,
+          "type": "regular",
+          "hours": 80,
+          "rate": null
+        }
+      ],
+      "taxes": [
+        {
+          "current": 149.83,
+          "ytd": 3296.26,
+          "type": "federal_income"
+        },
+        {
+          "current": 219.1,
+          "ytd": 4820.2,
+          "type": "social_security"
+        },
+        {
+          "current": 51.24,
+          "ytd": 1127.28,
+          "type": "medicare"
+        }
+      ],
+      "deductions": [
+        {
+          "current": 182.69,
+          "ytd": 4019.18,
+          "type": "401k_pretax",
+          "preTax": true
+        },
+        {
+          "current": 120,
+          "ytd": 2640,
+          "type": "health",
+          "preTax": true
+        }
+      ],
+      "employerContributions": [
+        {
+          "current": 91.35,
+          "ytd": 2009.7,
+          "type": "401k_match"
+        }
+      ],
+      "grossCurrent": 3653.85,
+      "netCurrent": 2930.99,
+      "grossYtd": 80384.7
+    },
+    "confidence": {},
+    "warnings": []
+  }
+}

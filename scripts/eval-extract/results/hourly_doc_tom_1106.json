@@ -1,0 +1,51 @@
+{
+  "id": "hourly_doc_tom_1106",
+  "file": "hourly_doc_tom_1106.pdf",
+  "mime": "application/pdf",
+  "status": 200,
+  "ms": 5564,
+  "at": "2026-11-14T19:26:39.339Z",
+  "response": {
+    "documentType": "paystub",
+    "fields": {
+      "employerName": "Hill Country Utilities (SAMPLE)",
+      "payPeriodStart": "2026-10-19",
+      "payPeriodEnd": "2026-11-01",
+      "payDate": "2026-11-06",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "current": 2230.77,
+          "ytd": 51307.71,
+          "type": "regular",
+          "hours": 80,
+          "rate": null
+        }
+      ],
+      "taxes": [
+        {
+          "current": 14.62,
+          "ytd": 336.26,
+          "type": "federal_income"
+        },
+        {
+          "current": 138.31,
+          "ytd": 3181.13,
+          "type": "social_security"
+        },
+        {
+          "current": 32.35,
+          "ytd": 744.05,
+          "type": "medicare"
+        }
+      ],
+      "deductions": [],
+      "employerContributions": [],
+      "grossCurrent": 2230.77,
+      "netCurrent": 2045.49,
+      "grossYtd": 51307.71
+    },
+    "confidence": {},
+    "warnings": []
+  }
+}

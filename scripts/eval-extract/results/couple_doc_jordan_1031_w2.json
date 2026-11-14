@@ -1,0 +1,33 @@
+{
+  "id": "couple_doc_jordan_1031_w2",
+  "file": "couple_doc_jordan_1031_w2.pdf",
+  "mime": "application/pdf",
+  "status": 200,
+  "ms": 5008,
+  "at": "2026-11-14T19:27:33.874Z",
+  "response": {
+    "documentType": "w2",
+    "fields": {
+      "taxYear": 2026,
+      "employerName": "Bluebonnet Health (SAMPLE)",
+      "box1Wages": 78000,
+      "box2FederalWithheld": 5000.06,
+      "box3SsWages": 78000,
+      "box4SsWithheld": 4836,
+      "box5MedicareWages": 78000,
+      "box6MedicareWithheld": 1131,
+      "box12": [
+        {
+          "code": "D",
+          "amount": 1560
+        }
+      ],
+      "box13RetirementPlan": true,
+      "state": []
+    },
+    "confidence": {
+      "box6MedicareWithheld": "medium"
+    },
+    "warnings": []
+  }
+}

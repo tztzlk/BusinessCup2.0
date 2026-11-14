@@ -1,0 +1,50 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Pay statement hourly_doc_tom_1106</title>
+<style>
+  @page { size: Letter; margin: 0.5in; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { font-family: "DejaVu Sans", Arial, Helvetica, sans-serif; color: #111; font-size: 10.5pt; }
+  .page { position: relative; width: 7.5in; min-height: 9.8in; }
+  .wm { position: fixed; top: 42%; left: -0.4in; width: 8.3in; text-align: center; transform: rotate(-35deg);
+        font-size: 54pt; font-weight: 700; color: rgba(200, 0, 0, 0.13); z-index: 0; pointer-events: none; white-space: nowrap; }
+  .content { position: relative; z-index: 1; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { padding: 3px 6px; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .muted { color: #555; }
+  .note { font-size: 8pt; color: #666; margin-top: 14px; }
+  @media screen { body { padding: 0.5in; } .wm { left: 0.1in; } }
+
+    .top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 10px; }
+    .co { font-size: 15pt; font-weight: 700; } .doc { font-size: 11pt; letter-spacing: 1px; color: #2d6a4f; font-weight: 700; }
+    .meta { display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid #b7c9bd; margin-bottom: 10px; }
+    .meta div { padding: 5px 8px; border-right: 1px solid #b7c9bd; } .meta div:last-child { border-right: 0; }
+    .meta .k { font-size: 8pt; color: #555; text-transform: uppercase; display: block; }
+    .bar { display: grid; grid-template-columns: repeat(4, 1fr); background: #edf6f0; border: 1px solid #b7c9bd; margin-bottom: 12px; }
+    .bar div { padding: 6px 8px; text-align: center; } .bar .k { font-size: 8pt; color: #555; display: block; text-transform: uppercase; }
+    .bar .v { font-size: 12pt; font-weight: 700; }
+    .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .box h3 { margin: 0 0 4px; font-size: 9.5pt; text-transform: uppercase; color: #2d6a4f; border-bottom: 1.5px solid #2d6a4f; padding-bottom: 2px; }
+    .box { margin-bottom: 12px; } .box th { font-size: 8.5pt; color: #555; font-weight: 600; text-align: left; }
+    .box th.num { text-align: right; } .box td { border-bottom: 1px dotted #ccc; font-size: 9.5pt; }
+    .tot td { font-weight: 700; border-bottom: 0; border-top: 1px solid #333; }
+  </style></head><body><div class="page"><div class="wm">SAMPLE — fictional data</div><div class="content">
+    <div class="top"><div><div class="co">Hill Country Utilities (SAMPLE)</div><div class="muted">Pay statement prepared by LedgerLine Payroll (fictional)</div></div><div class="doc">PAY STATEMENT</div></div>
+    <div class="meta"><div><span class="k">Employee</span>Tom Sample (fictional)</div><div><span class="k">Period Beginning</span>10/19/2026</div>
+      <div><span class="k">Period Ending</span>11/01/2026</div><div><span class="k">Check Date</span>11/06/2026</div></div>
+    <div class="muted" style="margin:-4px 0 10px">Pay frequency: Bi-Weekly &nbsp;·&nbsp; Employee no. 9019</div>
+    <div class="bar"><div><span class="k">Gross Pay</span><span class="v">$2,230.77</span></div><div><span class="k">Taxes</span><span class="v">$185.28</span></div>
+      <div><span class="k">Deductions</span><span class="v">$0.00</span></div><div><span class="k">Net Pay</span><span class="v">$2,045.49</span></div></div>
+    <div class="cols"><div>
+      <div class="box"><h3>Earnings</h3><table><tr><th>Description</th><th class="num">Rate</th><th class="num">Hours</th><th class="num">This Period</th><th class="num">YTD</th></tr>
+        <tr><td>Regular</td><td class="num"></td><td class="num">80.00</td><td class="num">2,230.77</td><td class="num">51,307.71</td></tr>
+        <tr class="tot"><td>Gross</td><td></td><td></td><td class="num">2,230.77</td><td class="num">51,307.71</td></tr></table></div>
+      
+    </div><div>
+      <div class="box"><h3>Taxes</h3><table><tr><th>Description</th><th class="num">This Period</th><th class="num">YTD</th></tr>
+        <tr><td>Federal Income Tax</td><td class="num">14.62</td><td class="num">336.26</td></tr><tr><td>Social Security (OASDI)</td><td class="num">138.31</td><td class="num">3,181.13</td></tr><tr><td>Medicare</td><td class="num">32.35</td><td class="num">744.05</td></tr>
+        <tr class="tot"><td>Total</td><td class="num">185.28</td><td class="num">4,261.44</td></tr></table></div>
+      
+      <div class="box"><h3>Net Pay</h3><table><tr><th>Description</th><th class="num">This Period</th><th class="num">YTD</th></tr><tr class="tot"><td>Net Pay</td><td class="num">2,045.49</td><td class="num">47,046.27</td></tr></table></div>
+    </div></div>
+    <div class="note">SAMPLE — fictional data generated for software testing. Not a real pay statement.</div></div></div></body></html>

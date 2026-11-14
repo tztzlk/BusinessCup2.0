@@ -1,0 +1,31 @@
+{
+  "id": "couple_doc_alex_1031_w2",
+  "file": "couple_doc_alex_1031_w2.pdf",
+  "mime": "application/pdf",
+  "status": 200,
+  "ms": 5260,
+  "at": "2026-11-14T19:27:11.832Z",
+  "response": {
+    "documentType": "w2",
+    "fields": {
+      "taxYear": 2026,
+      "employerName": "Northwind Logistics (SAMPLE)",
+      "box1Wages": 87130.16,
+      "box2FederalWithheld": 3895.58,
+      "box3SsWages": 91880.1,
+      "box4SsWithheld": 5696.6,
+      "box5MedicareWages": 91880.1,
+      "box6MedicareWithheld": 1332.24,
+      "box12": [
+        {
+          "code": "D",
+          "amount": 4749.94
+        }
+      ],
+      "box13RetirementPlan": true,
+      "state": []
+    },
+    "confidence": {},
+    "warnings": []
+  }
+}

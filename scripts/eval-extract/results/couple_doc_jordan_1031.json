@@ -1,0 +1,58 @@
+{
+  "id": "couple_doc_jordan_1031",
+  "file": "couple_doc_jordan_1031.pdf",
+  "mime": "application/pdf",
+  "status": 200,
+  "ms": 4494,
+  "at": "2026-11-14T19:26:05.147Z",
+  "response": {
+    "documentType": "paystub",
+    "fields": {
+      "employerName": "Bluebonnet Health (SAMPLE)",
+      "payPeriodStart": "2026-10-18",
+      "payPeriodEnd": "2026-10-31",
+      "payDate": "2026-10-31",
+      "payFrequency": "biweekly",
+      "earnings": [
+        {
+          "current": 3000,
+          "ytd": 66000,
+          "type": "regular",
+          "hours": 80,
+          "rate": null
+        }
+      ],
+      "taxes": [
+        {
+          "current": 192.31,
+          "ytd": 4230.82,
+          "type": "federal_income"
+        },
+        {
+          "current": 186,
+          "ytd": 4092,
+          "type": "social_security"
+        },
+        {
+          "current": 43.5,
+          "ytd": 957,
+          "type": "medicare"
+        }
+      ],
+      "deductions": [
+        {
+          "current": 0,
+          "ytd": 0,
+          "type": "401k_pretax",
+          "preTax": true
+        }
+      ],
+      "employerContributions": [],
+      "grossCurrent": 3000,
+      "netCurrent": 2578.19,
+      "grossYtd": 66000
+    },
+    "confidence": {},
+    "warnings": []
+  }
+}
