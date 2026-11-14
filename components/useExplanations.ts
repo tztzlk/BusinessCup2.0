@@ -11,6 +11,7 @@ import {
   type ExplainRequest,
   type ExplainResponse,
 } from "@/lib/explain";
+import { EXPLANATIONS_KEY } from "@/lib/browserData";
 import type { Finding, Projection } from "@/lib/types";
 
 export interface Explanations {
@@ -28,7 +29,7 @@ const cache = new Map<string, Promise<Result>>();
 
 // Responses are also kept in this browser, so reloading the report doesn't pay for the same texts
 // again. Requests and responses hold only finding codes and numbers, no personal data.
-const STORE = "pt_explain_v2";
+const STORE = EXPLANATIONS_KEY;
 const STORE_MAX = 20;
 
 function stored(key: string): ExplainResponse | null {

@@ -7,6 +7,7 @@ import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/u
 import { ProfileForm } from "@/components/ProfileForm";
 import { EmployerForm } from "@/components/EmployerForm";
 import { SaveLinkCard } from "@/components/SaveLinkCard";
+import { DeletionScope } from "@/components/DeletionScope";
 import { Paywall } from "@/components/Paywall";
 import { IconBriefcase, IconCheckCircle, IconFileText, IconHousehold, IconLock, IconPerson } from "@/components/Icons";
 import { money, shortDate } from "@/lib/format";
@@ -264,13 +265,12 @@ export function AccountView() {
             </ButtonLink>
           </div>
           <div className="mt-5 border-t border-slate-100 pt-5">
-            <p className="text-sm text-slate-600">
-              Deleting removes your account immediately: household, jobs, documents, checklist and activity log. Your private link stops working. This can&apos;t be
-              undone.
-            </p>
+            <DeletionScope />
             {confirmingDelete ? (
               <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
-                <p className="text-sm font-medium text-red-900">Delete your account and all its data now?</p>
+                <p className="text-sm font-medium text-red-900">
+                  Delete your account now? Everything listed above goes immediately and your private link stops working.
+                </p>
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <Button
                     type="button"
