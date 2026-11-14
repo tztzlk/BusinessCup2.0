@@ -72,6 +72,8 @@ export async function createCheckout(householdId: string, origin: string): Promi
     client_reference_id: householdId,
     // Charge in USD as priced on the landing page; adaptive pricing would show the visitor's local currency.
     "adaptive_pricing[enabled]": "false",
+    // Card only (test card 4242 on screen); hides wallets and buy-now-pay-later methods.
+    "payment_method_types[0]": "card",
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "usd",
     "line_items[0][price_data][unit_amount]": String(ANNUAL_PRICE_CENTS),

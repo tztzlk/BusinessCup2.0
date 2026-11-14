@@ -181,6 +181,21 @@ export async function addDocument(
   return id;
 }
 
+/** Replaces a job's settings. False if the job is not in this household. */
+export function updateEmployer(s: Session, id: string, settings: Omit<EmploymentSettings, "id">): boolean {
+  const res = getDb()
+    .prepare("UPDATE employers SET member = ?, enc_settings = ? WHERE id = ? AND household_id = ?")
+    .run(settings.member, encryptJson(s.key, settings, aadFor("employers", id, s.householdId)), id, s.householdId);
+  return res.changes === 1;
+}
+
+/** Deletes one document. False if it is not in this household. */
+export async function deleteDocument(s: Session, id: string): Promise<boolean> {
+  const res = getDb().prepare("DELETE FROM documents WHERE id = ? AND household_id = ?").run(id, s.householdId);
+  if (res.changes === 1) audit(s.householdId, "delete_document", await clientIpHash());
+  return res.changes === 1;
+}
+
 export function upsertChecklistItem(s: Session, item: Omit<ChecklistItem, "id"> & { id?: string }): string {
   const id = item.id ?? randomUUID();
   getDb()

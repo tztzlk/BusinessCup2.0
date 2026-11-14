@@ -57,9 +57,11 @@ B2C веб-продукт для работающих семей в США (W-2)
 | `PUT /api/household/profile` | Обновить профиль |
 | `DELETE /api/household` | Удалить всё |
 | `POST /api/household/recover` | Восстановить cookie по секрету из ссылки |
-| `POST /api/employers` | Добавить работодателя (настройки, правило 401(k), W-4) |
+| `POST /api/employers` | Добавить работодателя (настройки, правило 401(k), W-4), не больше 4 на семью |
+| `PUT /api/employers/:id` | Заменить настройки работы своей семьи |
 | `POST /api/extract` | multipart `file` → `{documentType, fields, confidence, warnings}`; файл только в памяти; лимит 15 / 10 мин на IP |
-| `POST /api/documents` | Сохранить подтверждённые поля листка или W-2 |
+| `POST /api/documents` | Сохранить подтверждённые поля листка или W-2; 409 на дубль (та же работа и дата выплаты / год W-2) |
+| `DELETE /api/documents/:id` | Удалить один документ своей семьи |
 | `POST /api/checklist`, `PATCH /api/checklist/:id` | Чек-лист документов |
 | `POST /api/explain` | Коды и числа находок → тексты (без PII) |
 | `POST /api/billing/checkout` | Stripe Checkout (test mode) на Annual $79/год → `{url}`; живые ключи отклоняются без `ALLOW_LIVE_PAYMENTS=true` |
@@ -73,10 +75,12 @@ B2C веб-продукт для работающих семей в США (W-2)
 
 ## Статус (обновлять по ходу)
 - [x] Хранилище: шифрование, SQLite, API семьи, тесты crypto (6/6), проверено end-to-end
-- [x] `/api/extract`, `/api/explain` — написаны, typecheck ок; **живой прогон ждёт ключ Claude**
+- [x] `/api/extract`, `/api/explain` — проверены вживую в проде (sample, свой листок, не-документ)
 - [x] Ядро `lib/engine` + `params/2026` (сверено с Pub 15-T, Rev. Proc. 2025-32, SSA, IRS 401(k)) + тесты (24/24), подключено к демо и /report
-- [ ] Фронт (Алдик): лендинг, демо, загрузка + подтверждение, отчёт, январь
-- [ ] Первый деплой на Fly (нужны flyctl + вход)
+- [x] Фронт (Алдик): лендинг, демо, загрузка + подтверждение, отчёт, январь, пейвол
+- [x] Деплой на Fly: автодеплой из main через GitHub Actions (typecheck, eslint, тесты), карта привязана, триал снят
 - [x] Персонаж 1 (пара): ноябрь и январь считаются ядром (`lib/demo.ts`), сюжет закреплён в `tests/demo.test.ts`
-- [ ] Персонажи 2 и 3, бланки W-2 для питча
+- [x] Персонажи 2 и 3 (Манс): `mocks/hourly.json`, `mocks/salaried.json`, `tests/personas.test.ts`; страницы в /demo — Алдик
+- [x] Аудит бэкенда (14.11): CSRF (`middleware.ts`), лимиты тела (`lib/http.ts`), потолок Claude `CLAUDE_HOURLY_CAP`=100/ч, правки ядра, ручной QA-прогон
+- [ ] Бланки W-2 для питча
 - [ ] Январский режим (решение в 23:00)

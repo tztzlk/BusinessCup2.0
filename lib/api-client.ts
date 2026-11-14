@@ -103,6 +103,10 @@ export const api = {
     form.append("file", file);
     return request<ExtractResult>("/api/extract", { method: "POST", body: form });
   },
+  updateEmployer: (id: string, settings: Omit<EmploymentSettings, "id">) =>
+    request<{ ok: true }>(`/api/employers/${encodeURIComponent(id)}`, json("PUT", settings)),
+  deleteDocument: (id: string) =>
+    request<{ deleted: true }>(`/api/documents/${encodeURIComponent(id)}`, { method: "DELETE" }),
   addDocument: (doc: { docType: "paystub"; employerId: string | null; taxYear: number; fields: Paystub } | {
     docType: "w2";
     employerId: string | null;
