@@ -57,6 +57,7 @@ B2C веб-продукт для работающих семей в США (W-2)
 | `PUT /api/household/profile` | Обновить профиль |
 | `DELETE /api/household` | Удалить всё |
 | `POST /api/household/recover` | Восстановить cookie по секрету из ссылки |
+| `GET /api/household/recovery-link` | Ссылка восстановления для текущей cookie (no-store) |
 | `POST /api/employers` | Добавить работодателя (настройки, правило 401(k), W-4), не больше 4 на семью |
 | `PUT /api/employers/:id` | Заменить настройки работы своей семьи |
 | `POST /api/extract` | multipart `file` → `{documentType, fields, confidence, warnings}`; файл только в памяти; лимит 15 / 10 мин на IP |

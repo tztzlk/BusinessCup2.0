@@ -8,6 +8,7 @@ import { HouseholdSummary } from "@/components/report";
 import { ReportEngineSection } from "@/components/ReportEngineSection";
 import { ProfileForm } from "@/components/ProfileForm";
 import { EmployerForm } from "@/components/EmployerForm";
+import { SaveLinkCard } from "@/components/SaveLinkCard";
 import { money, shortDate } from "@/lib/format";
 import type { EmploymentSettings, HouseholdData, Paystub, W2 } from "@/lib/types";
 
@@ -101,6 +102,9 @@ export function ReportView() {
             <span className="font-medium">Annual is active{data.plan.until ? ` until ${shortDate(data.plan.until)}` : ""}.</span>{" "}
             Add every pay stub for both of you; the W-4 fix, tax season and reminders are now open.
           </Notice>
+          <div className="mt-3">
+            <SaveLinkCard annual prominent />
+          </div>
         </div>
       )}
       {checkoutNotice === "cancelled" && (
@@ -244,6 +248,11 @@ export function ReportView() {
 
 
       <Section title="Your data">
+        {!(checkoutNotice === "upgraded" && data.plan?.tier === "annual") && (
+          <div className="mb-4">
+            <SaveLinkCard annual={data.plan?.tier === "annual"} />
+          </div>
+        )}
         <Card>
           <p className="text-sm text-slate-600">
             Deleting removes your household, jobs, documents and checklist from our servers immediately. This can&apos;t be undone.

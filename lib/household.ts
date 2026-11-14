@@ -52,9 +52,14 @@ export async function setSessionCookie(secret: string): Promise<void> {
   });
 }
 
+/** The household secret from this request's cookie, if any. Never log it. */
+export async function currentSecret(): Promise<string | null> {
+  return (await cookies()).get(COOKIE_NAME)?.value ?? null;
+}
+
 /** Extends the cookie's lifetime from now. Call after a successful session lookup. */
 export async function refreshSessionCookie(): Promise<void> {
-  const secret = (await cookies()).get(COOKIE_NAME)?.value;
+  const secret = await currentSecret();
   if (secret) await setSessionCookie(secret);
 }
 
@@ -72,7 +77,7 @@ export function sessionFromSecret(secret: string): Session | null {
 }
 
 export async function currentSession(): Promise<Session | null> {
-  const secret = (await cookies()).get(COOKIE_NAME)?.value;
+  const secret = await currentSecret();
   if (!secret) return null;
   try {
     return sessionFromSecret(secret);

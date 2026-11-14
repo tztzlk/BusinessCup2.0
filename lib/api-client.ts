@@ -94,6 +94,7 @@ export const api = {
     request<{ householdId: string; recoveryUrl: string }>("/api/household", json("POST", { profile })),
   saveProfile: (profile: HouseholdProfile) => request<{ ok: true }>("/api/household/profile", json("PUT", profile)),
   deleteHousehold: () => request<{ deleted: true }>("/api/household", { method: "DELETE" }),
+  getRecoveryLink: () => request<{ recoveryUrl: string }>("/api/household/recovery-link"),
   recover: (secret: string) => request<{ restored: true }>("/api/household/recover", json("POST", { secret })),
   addEmployer: (settings: Omit<EmploymentSettings, "id">) =>
     request<{ id: string }>("/api/employers", json("POST", settings)),
