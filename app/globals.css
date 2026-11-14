@@ -53,6 +53,17 @@
   --color-danger-soft: #fdeceb;
   --color-info: #1f62c6;
   --color-info-soft: #e7effc;
+  /* Borders and darker text for messages on the soft backgrounds. */
+  --color-success-border: #bfe6d3;
+  --color-success-strong: #08583a;
+  --color-warning-border: #f3d9a6;
+  --color-warning-strong: #6b3d00;
+  --color-danger-border: #f5c2c0;
+  --color-danger-strong: #8a1a20;
+  --color-danger-hover: #a91f27;
+  --color-danger-active: #8f1a21;
+  --color-info-border: #c5d8f6;
+  --color-info-strong: #173f80;
 
   /* Radii: cards, controls; pills use rounded-full. */
   --radius-card: 1rem;
