@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api-client";
 import {
+  aprilYearMatches,
   buildExplainRequest,
   directionMatches,
   groundedBodies,
@@ -27,7 +28,7 @@ const cache = new Map<string, Promise<Result>>();
 
 // Responses are also kept in this browser, so reloading the report doesn't pay for the same texts
 // again. Requests and responses hold only finding codes and numbers, no personal data.
-const STORE = "pt_explain_v1";
+const STORE = "pt_explain_v2";
 const STORE_MAX = 20;
 
 function stored(key: string): ExplainResponse | null {
@@ -69,7 +70,10 @@ function fetchExplanations(req: ExplainRequest): Promise<Result> {
         if (req.projection) allNumbers.push(req.projection.balance);
         const text = res.summary?.trim();
         const summary =
-          text && numbersAreGrounded(text, allNumbers) && directionMatches(text, req.projection?.balance) ? text : null;
+          text && numbersAreGrounded(text, allNumbers) && directionMatches(text, req.projection?.balance) &&
+          aprilYearMatches(text, req.projection?.taxYear)
+            ? text
+            : null;
         return { bodies: groundedBodies(req, res), summary };
       })
       .catch(() => {

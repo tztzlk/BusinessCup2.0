@@ -48,6 +48,7 @@ Rules:
 - One item per finding, with the same code (and the same id, if the finding has one). Title: max 8 words. Body: 2-3 sentences, what it means and what to do.
 - Only quote dollar amounts that appear in that finding (amountUsd or inputs) or in projection.balance. If an amount is not given, describe it in words.
 - summary: one sentence about the whole picture. If projection.balance > 0 the household is projected to owe that amount in April; if < 0, to get that refund.
+- The return for projection.taxYear is filed in April of the following year (tax year 2026 → April 2027). Write "in April" without a year, or with that following year.
 - Calm, specific tone. No legal or tax advice wording such as "you must"; say "consider" or "you can".`;
 
 export async function POST(req: Request) {
