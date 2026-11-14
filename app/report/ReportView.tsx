@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/ui";
-import { ChecklistView, HouseholdSummary } from "@/components/report";
+import { HouseholdSummary } from "@/components/report";
 import { ReportEngineSection } from "@/components/ReportEngineSection";
 import { money, shortDate } from "@/lib/format";
-import type { ChecklistStatus, HouseholdData, Paystub, W2 } from "@/lib/types";
+import type { HouseholdData, Paystub, W2 } from "@/lib/types";
 
 export function ReportView() {
   const router = useRouter();
@@ -50,14 +50,6 @@ export function ReportView() {
       </Card>
     );
 
-  const setStatus = async (id: string, status: ChecklistStatus) => {
-    try {
-      await api.setChecklistStatus(id, status);
-      setData({ ...data, checklist: data.checklist.map((i) => (i.id === id ? { ...i, status } : i)) });
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Could not update.");
-    }
-  };
 
   const employerName = (id: string | null) => data.employers.find((e) => e.id === id)?.employerName ?? "Unassigned";
 
@@ -76,7 +68,7 @@ export function ReportView() {
         </div>
       )}
 
-      <ReportEngineSection data={data} />
+      <ReportEngineSection data={data} onChanged={() => api.getHousehold().then(setData).catch(() => undefined)} />
 
       <Section title="Household">
         <HouseholdSummary profile={data.profile} employers={data.employers} documents={data.documents} />
@@ -111,9 +103,6 @@ export function ReportView() {
         )}
       </Section>
 
-      <Section title="Tax documents checklist">
-        <ChecklistView items={data.checklist} onStatusChange={setStatus} />
-      </Section>
 
       <Section title="Your data">
         <Card>

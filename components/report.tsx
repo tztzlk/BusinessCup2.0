@@ -53,7 +53,7 @@ export function FindingCard({ finding, employerName }: { finding: Finding; emplo
         </div>
         <p className="text-xl font-bold text-slate-900">
           {money(finding.amountUsd, true)}
-          <span className="block text-right text-xs font-normal text-slate-500">per year at stake</span>
+          <span className="block text-right text-xs font-normal text-slate-500">at stake</span>
         </p>
       </div>
       <p className="mt-3 text-sm text-slate-700">{finding.action.details}</p>

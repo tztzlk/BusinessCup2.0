@@ -75,6 +75,8 @@ export const api = {
     taxYear: number;
     fields: W2;
   }) => request<{ id: string }>("/api/documents", json("POST", doc)),
+  saveChecklist: (items: Array<{ formType: string; source: string; status: ChecklistStatus; dueDate: string | null }>) =>
+    request<{ ids: string[] }>("/api/checklist", json("POST", items)),
   setChecklistStatus: (id: string, status: ChecklistStatus) =>
     request<{ ok: true }>(`/api/checklist/${encodeURIComponent(id)}`, json("PATCH", { status })),
 };

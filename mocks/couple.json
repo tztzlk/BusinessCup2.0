@@ -1,12 +1,17 @@
 {
-  "_note": "UI mock for persona 1 (fictional two-earner couple). Numbers are placeholders for layout only; the synthetic generator will replace them with engine-consistent values.",
+  "_note": "Fictional two-earner household for the demo. Pay stub numbers are consistent with Pub. 15-T 2026 (see tests/engine.test.ts); the report is computed by lib/engine at runtime.",
   "household": {
     "profile": {
       "filingStatus": "married_joint",
       "state": "TX",
       "dependentsUnder17": 1,
       "otherDependents": 0,
-      "flags": { "mortgage": true, "bankInterest": true, "brokerage": false, "hsa": false }
+      "flags": {
+        "mortgage": true,
+        "bankInterest": true,
+        "brokerage": false,
+        "hsa": false
+      }
     },
     "employers": [
       {
@@ -16,8 +21,17 @@
         "payType": "salary",
         "annualSalary": 95000,
         "overtimeEligible": false,
-        "match401k": { "matchPercent": 50, "upToPercentOfPay": 6 },
-        "w4": { "step2Checked": false, "step3Credits": 2200, "step4aOtherIncome": 0, "step4bDeductions": 0, "step4cExtraWithholding": 0 }
+        "match401k": {
+          "matchPercent": 50,
+          "upToPercentOfPay": 6
+        },
+        "w4": {
+          "step2Checked": false,
+          "step3Credits": 2200,
+          "step4aOtherIncome": 0,
+          "step4bDeductions": 0,
+          "step4cExtraWithholding": 0
+        }
       },
       {
         "id": "emp_jordan",
@@ -26,8 +40,17 @@
         "payType": "salary",
         "annualSalary": 78000,
         "overtimeEligible": false,
-        "match401k": { "matchPercent": 100, "upToPercentOfPay": 4 },
-        "w4": { "step2Checked": false, "step3Credits": 0, "step4aOtherIncome": 0, "step4bDeductions": 0, "step4cExtraWithholding": 0 }
+        "match401k": {
+          "matchPercent": 100,
+          "upToPercentOfPay": 4
+        },
+        "w4": {
+          "step2Checked": false,
+          "step3Credits": 0,
+          "step4aOtherIncome": 0,
+          "step4bDeductions": 0,
+          "step4cExtraWithholding": 0
+        }
       }
     ],
     "documents": [
@@ -43,20 +66,56 @@
           "payPeriodEnd": "2026-10-31",
           "payDate": "2026-10-31",
           "payFrequency": "biweekly",
-          "earnings": [{ "type": "regular", "hours": 80, "rate": null, "current": 3653.85, "ytd": 80384.70 }],
+          "earnings": [
+            {
+              "type": "regular",
+              "hours": 80,
+              "rate": null,
+              "current": 3653.85,
+              "ytd": 80384.7
+            }
+          ],
           "taxes": [
-            { "type": "federal_income", "current": 250.00, "ytd": 5500.00 },
-            { "type": "social_security", "current": 210.95, "ytd": 4640.90 },
-            { "type": "medicare", "current": 49.33, "ytd": 1085.26 }
+            {
+              "type": "federal_income",
+              "current": 149.83,
+              "ytd": 3296.26
+            },
+            {
+              "type": "social_security",
+              "current": 219.1,
+              "ytd": 4820.2
+            },
+            {
+              "type": "medicare",
+              "current": 51.24,
+              "ytd": 1127.28
+            }
           ],
           "deductions": [
-            { "type": "401k_pretax", "preTax": true, "current": 182.69, "ytd": 4019.18 },
-            { "type": "health", "preTax": true, "current": 120.00, "ytd": 2640.00 }
+            {
+              "type": "401k_pretax",
+              "preTax": true,
+              "current": 182.69,
+              "ytd": 4019.18
+            },
+            {
+              "type": "health",
+              "preTax": true,
+              "current": 120,
+              "ytd": 2640
+            }
           ],
-          "employerContributions": [{ "type": "401k_match", "current": 91.35, "ytd": 2009.70 }],
+          "employerContributions": [
+            {
+              "type": "401k_match",
+              "current": 91.35,
+              "ytd": 2009.7
+            }
+          ],
           "grossCurrent": 3653.85,
-          "netCurrent": 2840.88,
-          "grossYtd": 80384.70
+          "netCurrent": 2930.99,
+          "grossYtd": 80384.7
         }
       },
       {
@@ -71,57 +130,47 @@
           "payPeriodEnd": "2026-10-31",
           "payDate": "2026-10-31",
           "payFrequency": "biweekly",
-          "earnings": [{ "type": "regular", "hours": 80, "rate": null, "current": 3000.00, "ytd": 66000.00 }],
+          "earnings": [
+            {
+              "type": "regular",
+              "hours": 80,
+              "rate": null,
+              "current": 3000,
+              "ytd": 66000
+            }
+          ],
           "taxes": [
-            { "type": "federal_income", "current": 230.00, "ytd": 5060.00 },
-            { "type": "social_security", "current": 186.00, "ytd": 4092.00 },
-            { "type": "medicare", "current": 43.50, "ytd": 957.00 }
+            {
+              "type": "federal_income",
+              "current": 192.31,
+              "ytd": 4230.82
+            },
+            {
+              "type": "social_security",
+              "current": 186,
+              "ytd": 4092
+            },
+            {
+              "type": "medicare",
+              "current": 43.5,
+              "ytd": 957
+            }
           ],
           "deductions": [
-            { "type": "401k_pretax", "preTax": true, "current": 0, "ytd": 0 }
+            {
+              "type": "401k_pretax",
+              "preTax": true,
+              "current": 0,
+              "ytd": 0
+            }
           ],
           "employerContributions": [],
-          "grossCurrent": 3000.00,
-          "netCurrent": 2540.50,
-          "grossYtd": 66000.00
+          "grossCurrent": 3000,
+          "netCurrent": 2578.19,
+          "grossYtd": 66000
         }
       }
     ],
-    "checklist": [
-      { "id": "chk_1", "formType": "W-2", "source": "Northwind Logistics (SAMPLE)", "status": "expected", "dueDate": "2027-02-01" },
-      { "id": "chk_2", "formType": "W-2", "source": "Bluebonnet Health (SAMPLE)", "status": "expected", "dueDate": "2027-02-01" },
-      { "id": "chk_3", "formType": "1098", "source": "Mortgage lender", "status": "expected", "dueDate": "2027-02-01" },
-      { "id": "chk_4", "formType": "1099-INT", "source": "Bank", "status": "expected", "dueDate": "2027-02-01" }
-    ]
-  },
-  "report": {
-    "projection": {
-      "taxYear": 2026,
-      "projectedTax": 14800,
-      "projectedWithholding": 12650,
-      "balance": 2150,
-      "perEmployer": [
-        { "employerId": "emp_alex", "remainingPayPeriods": 4, "recommendedStep4c": 270 },
-        { "employerId": "emp_jordan", "remainingPayPeriods": 4, "recommendedStep4c": 270 }
-      ]
-    },
-    "findings": [
-      {
-        "code": "UNDERWITHHOLDING",
-        "severity": "critical",
-        "amountUsd": 2150,
-        "employerId": null,
-        "inputs": { "projectedTax": 14800, "projectedWithholding": 12650 },
-        "action": { "kind": "w4_change", "details": "Both jobs: W-4 Step 2 not checked. Add $270 per paycheck in Step 4(c) at each job for the rest of the year." }
-      },
-      {
-        "code": "MATCH_LEFT_ON_TABLE",
-        "severity": "warning",
-        "amountUsd": 3120,
-        "employerId": "emp_jordan",
-        "inputs": { "matchPercent": 100, "upToPercentOfPay": 4, "currentContributionPercent": 0, "annualSalary": 78000 },
-        "action": { "kind": "contribution_change", "details": "Contribute at least 4% to the 401(k) to get the full employer match." }
-      }
-    ]
+    "checklist": []
   }
 }

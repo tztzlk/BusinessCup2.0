@@ -43,7 +43,9 @@ B2C веб-продукт для работающих семей в США (W-2)
 - `lib/crypto.ts`, `lib/db.ts` (миграции встроены, `PRAGMA user_version`), `lib/household.ts` (сессия по cookie, CRUD с шифрованием, аудит, автоочистка 30 дней).
 - `lib/claude.ts`, `lib/extraction.ts` (схема и промпт извлечения листка/W-2), `lib/ratelimit.ts`.
 - `app/api/*` — эндпоинты (таблица ниже). `instrumentation*.ts` — почасовая автоочистка.
-- `mocks/couple.json` — главный демо-персонаж (цифры пока условные, для вёрстки).
+- `mocks/couple.json` — главный демо-персонаж (цифры согласованы с Pub 15-T 2026). `lib/demo.ts` строит из него январь: листки на конец года + W-2 с подложенным расхождением в box 12 D у Jordan.
+- `lib/engine/` — ядро: `params/2026/federal.json`, `withholding.ts` (Worksheet 1A), `tax.ts` (ставки, CTC, вычет за сверхурочные, доп. Medicare), `checks.ts` (проверки листка), `projection.ts` (прогноз и W-4), `reconcileW2.ts`, `expectedDocs.ts`, `index.ts` (`runCheckup`).
+- `components/CheckupView.tsx` — отрисовка результата ядра (демо и /report).
 - `tests/` — Vitest.
 
 ## API
@@ -64,8 +66,9 @@ B2C веб-продукт для работающих семей в США (W-2)
 ## Статус (обновлять по ходу)
 - [x] Хранилище: шифрование, SQLite, API семьи, тесты crypto (6/6), проверено end-to-end
 - [x] `/api/extract`, `/api/explain` — написаны, typecheck ок; **живой прогон ждёт ключ Claude**
-- [ ] Ядро `lib/engine` + `params/2026` (сверка с IRS) + тесты
+- [x] Ядро `lib/engine` + `params/2026` (сверено с Pub 15-T, Rev. Proc. 2025-32, SSA, IRS 401(k)) + тесты (24/24), подключено к демо и /report
 - [ ] Фронт (Алдик): лендинг, демо, загрузка + подтверждение, отчёт, январь
 - [ ] Первый деплой на Fly (нужны flyctl + вход)
-- [ ] Генератор синтетики, 3 персонажа, бланки W-2
+- [x] Персонаж 1 (пара): ноябрь и январь считаются ядром (`lib/demo.ts`), сюжет закреплён в `tests/demo.test.ts`
+- [ ] Персонажи 2 и 3, бланки W-2 для питча
 - [ ] Январский режим (решение в 23:00)

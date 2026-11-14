@@ -1,0 +1,76 @@
+{
+  "taxYear": 2026,
+  "sources": {
+    "revProc": "https://www.irs.gov/pub/irs-drop/rp-25-32.pdf",
+    "brackets": "https://www.irs.gov/newsroom/working-families-tax-cuts-individuals-and-workers",
+    "pub15t": "https://www.irs.gov/publications/p15t",
+    "ssWageBase": "https://www.ssa.gov/oact/COLA/cbb.html",
+    "limit401k": "https://www.irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500",
+    "childTaxCredit": "https://www.irs.gov/credits-deductions/individuals/child-tax-credit",
+    "overtimeDeduction": "https://www.irs.gov/newsroom/what-to-know-about-the-no-tax-on-overtime-deduction",
+    "additionalMedicare": "https://www.irs.gov/taxtopics/tc560"
+  },
+  "standardDeduction": {
+    "_source": "revProc",
+    "single": 16100,
+    "married_joint": 32200,
+    "married_separate": 16100,
+    "head_of_household": 24150
+  },
+  "brackets": {
+    "_source": "brackets (single, married_joint); head_of_household derived from pub15t annual table minus the 15-T standard-deduction offset; married_separate = single per pub15t",
+    "_format": "[upper bound of taxable income, rate]; last bound null = no limit",
+    "single": [[12400, 0.10], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [null, 0.37]],
+    "married_joint": [[24800, 0.10], [100800, 0.12], [211400, 0.22], [403550, 0.24], [512450, 0.32], [768700, 0.35], [null, 0.37]],
+    "married_separate": [[12400, 0.10], [50400, 0.12], [105700, 0.22], [201775, 0.24], [256225, 0.32], [640600, 0.35], [null, 0.37]],
+    "head_of_household": [[17700, 0.10], [67450, 0.12], [105700, 0.22], [201750, 0.24], [256200, 0.32], [640600, 0.35], [null, 0.37]]
+  },
+  "withholding": {
+    "_source": "pub15t, Worksheet 1A and Section 1 annual Percentage Method tables",
+    "_format": "rows of [A at least, C tentative amount, D percentage]; E = A",
+    "step2NotCheckedAdjustment": { "married_joint": 12900, "other": 8600 },
+    "payPeriods": { "weekly": 52, "biweekly": 26, "semimonthly": 24, "monthly": 12 },
+    "standard": {
+      "married_joint": [[0, 0, 0], [19300, 0, 0.10], [44100, 2480, 0.12], [120100, 11600, 0.22], [230700, 35932, 0.24], [422850, 82048, 0.32], [531750, 116896, 0.35], [788000, 206583.5, 0.37]],
+      "single": [[0, 0, 0], [7500, 0, 0.10], [19900, 1240, 0.12], [57900, 5800, 0.22], [113200, 17966, 0.24], [209275, 41024, 0.32], [263725, 58448, 0.35], [648100, 192979.25, 0.37]],
+      "head_of_household": [[0, 0, 0], [15550, 0, 0.10], [33250, 1770, 0.12], [83000, 7740, 0.22], [121250, 16155, 0.24], [217300, 39207, 0.32], [271750, 56631, 0.35], [656150, 191171, 0.37]]
+    },
+    "step2Checked": {
+      "married_joint": [[0, 0, 0], [16100, 0, 0.10], [28500, 1240, 0.12], [66500, 5800, 0.22], [121800, 17966, 0.24], [217875, 41024, 0.32], [272325, 58448, 0.35], [400450, 103291.75, 0.37]],
+      "single": [[0, 0, 0], [8050, 0, 0.10], [14250, 620, 0.12], [33250, 2900, 0.22], [60900, 8983, 0.24], [108938, 20512, 0.32], [136163, 29224, 0.35], [328350, 96489.63, 0.37]],
+      "head_of_household": [[0, 0, 0], [12075, 0, 0.10], [20925, 885, 0.12], [45800, 3870, 0.22], [64925, 8077.5, 0.24], [112950, 19603.5, 0.32], [140175, 28315.5, 0.35], [332375, 95585.5, 0.37]]
+    }
+  },
+  "fica": {
+    "_source": "ssWageBase; additionalMedicare",
+    "socialSecurityRate": 0.062,
+    "socialSecurityWageBase": 184500,
+    "medicareRate": 0.0145,
+    "additionalMedicareRate": 0.009,
+    "additionalMedicareEmployerWithholdingThreshold": 200000,
+    "additionalMedicareThreshold": { "single": 200000, "married_joint": 250000, "married_separate": 125000, "head_of_household": 200000 }
+  },
+  "retirement": {
+    "_source": "limit401k",
+    "electiveDeferralLimit": 24500
+  },
+  "childTaxCredit": {
+    "_source": "revProc; childTaxCredit (phase-out $50 per $1,000 per IRC 24(b))",
+    "perChild": 2200,
+    "refundablePerChild": 1700,
+    "refundableEarnedIncomeFloor": 2500,
+    "refundableRate": 0.15,
+    "otherDependentCredit": 500,
+    "phaseOutThreshold": { "married_joint": 400000, "other": 200000 },
+    "phaseOutPer1000": 50
+  },
+  "overtimeDeduction": {
+    "_source": "overtimeDeduction (2025-2028; only the half-time premium counts; married must file jointly)",
+    "cap": { "married_joint": 25000, "other": 12500 },
+    "phaseOutThreshold": { "married_joint": 300000, "other": 150000 },
+    "phaseOutPer1000": 100
+  },
+  "flsa": {
+    "overtimeMultiplier": 1.5
+  }
+}
