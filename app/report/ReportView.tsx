@@ -6,6 +6,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/ui";
 import { HouseholdSummary } from "@/components/report";
 import { ReportEngineSection } from "@/components/ReportEngineSection";
+import { ProfileForm } from "@/components/ProfileForm";
 import { money, shortDate } from "@/lib/format";
 import type { HouseholdData, Paystub, W2 } from "@/lib/types";
 
@@ -15,6 +16,7 @@ export function ReportView() {
   const [state, setState] = useState<"loading" | "none" | "ready" | "error">("loading");
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
 
   useEffect(() => {
     api
@@ -75,8 +77,33 @@ export function ReportView() {
 
       <ReportEngineSection data={data} onChanged={() => api.getHousehold().then(setData).catch(() => undefined)} />
 
-      <Section title="Household">
-        <HouseholdSummary profile={data.profile} employers={data.employers} documents={data.documents} />
+      <Section
+        title="Household"
+        subtitle={editingProfile ? "Changes update your projection and the forms to expect in January." : undefined}
+        action={
+          !editingProfile && (
+            <Button type="button" variant="secondary" onClick={() => setEditingProfile(true)}>
+              Edit profile
+            </Button>
+          )
+        }
+      >
+        {editingProfile ? (
+          <Card>
+            <ProfileForm
+              initial={data.profile}
+              submitLabel="Save profile"
+              onCancel={() => setEditingProfile(false)}
+              onSubmit={async (profile) => {
+                await api.saveProfile(profile);
+                setData(await api.getHousehold());
+                setEditingProfile(false);
+              }}
+            />
+          </Card>
+        ) : (
+          <HouseholdSummary profile={data.profile} employers={data.employers} documents={data.documents} />
+        )}
       </Section>
 
       <Section title="Documents" subtitle="Confirmed fields only — original files are never stored.">
