@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api-client";
 import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/ui";
@@ -9,6 +9,7 @@ import { ReportEngineSection } from "@/components/ReportEngineSection";
 import { ProfileForm } from "@/components/ProfileForm";
 import { EmployerForm } from "@/components/EmployerForm";
 import { SaveLinkCard } from "@/components/SaveLinkCard";
+import { pendingDocumentLabel, takePendingDocument } from "@/lib/pendingDocument";
 import { money, shortDate } from "@/lib/format";
 import type { EmploymentSettings, HouseholdData, Paystub, W2 } from "@/lib/types";
 
@@ -54,6 +55,33 @@ export function ReportView() {
         }
       });
   }, []);
+
+  // Back from Stripe on Annual: save the document that hit the free-plan limit before checkout.
+  const [pendingNotice, setPendingNotice] = useState<{ tone: "success" | "warning"; text: string } | null>(null);
+  const pendingTried = useRef(false);
+  const tier = data?.plan?.tier;
+  useEffect(() => {
+    if (pendingTried.current || checkoutNotice !== "upgraded" || tier !== "annual") return;
+    pendingTried.current = true;
+    const doc = takePendingDocument();
+    if (!doc) return;
+    const label = pendingDocumentLabel(doc);
+    api
+      .addDocument(doc)
+      .then(() => api.getHousehold())
+      .then((d) => {
+        setData(d);
+        setPendingNotice({ tone: "success", text: `We saved the ${label} you confirmed before checkout. Your report below includes it.` });
+      })
+      .catch((e: unknown) => {
+        if (e instanceof ApiError && e.status === 409) setPendingNotice({ tone: "success", text: `Your ${label} was already saved.` });
+        else
+          setPendingNotice({
+            tone: "warning",
+            text: `We couldn't save the ${label} you confirmed before checkout (${e instanceof Error ? e.message : "unknown error"}). Upload it again from "Add a document".`,
+          });
+      });
+  }, [checkoutNotice, tier]);
 
   if (state === "loading") return <p className="text-slate-500">Loading…</p>;
   if (state === "error") return <Notice tone="danger">{error}</Notice>;
@@ -102,6 +130,11 @@ export function ReportView() {
             <span className="font-medium">Annual is active{data.plan.until ? ` until ${shortDate(data.plan.until)}` : ""}.</span>{" "}
             Add every pay stub for both of you; the W-4 fix, tax season and reminders are now open.
           </Notice>
+          {pendingNotice && (
+            <div className="mt-3">
+              <Notice tone={pendingNotice.tone}>{pendingNotice.text}</Notice>
+            </div>
+          )}
           <div className="mt-3">
             <SaveLinkCard annual prominent />
           </div>
