@@ -63,7 +63,16 @@ export function directionMatches(text: string, balance: number | null | undefine
   return balance > 0 ? !(saysRefund && !saysOwe) : !(saysOwe && !saysRefund);
 }
 
-const BALANCE_CODES = new Set(["UNDERWITHHOLDING", "OVERWITHHOLDING"]);
+/**
+ * False when a text dates the filing deadline wrong: the return for tax year Y is filed in
+ * April of Y + 1, so "owe in April 2026" for tax year 2026 is a year early.
+ */
+export function aprilYearMatches(text: string, taxYear: number | null | undefined): boolean {
+  if (!taxYear) return true;
+  return [...text.matchAll(/\bApril,?\s+(\d{4})\b/gi)].every((m) => Number(m[1]) === taxYear + 1);
+}
+
+const BALANCE_CODES =new Set(["UNDERWITHHOLDING", "OVERWITHHOLDING"]);
 
 /**
  * Maps a response to finding index → body, keeping only items whose numbers are grounded
@@ -80,6 +89,7 @@ export function groundedBodies(req: ExplainRequest, res: ExplainResponse): Map<n
     const allowed = [f.amountUsd, ...Object.values(f.inputs), ...(req.projection ? [req.projection.balance] : [])];
     if (!numbersAreGrounded(body, allowed)) return;
     if (BALANCE_CODES.has(f.code) && !directionMatches(body, req.projection?.balance)) return;
+    if (!aprilYearMatches(body, req.projection?.taxYear)) return;
     out.set(i, body);
   });
   return out;

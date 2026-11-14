@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildExplainRequest, directionMatches, groundedBodies, numbersAreGrounded, quotedDollars } from "../lib/explain";
+import { aprilYearMatches, buildExplainRequest, directionMatches, groundedBodies, numbersAreGrounded, quotedDollars } from "../lib/explain";
 import type { Finding } from "../lib/types";
 
 const match = (employerId: string, amountUsd: number): Finding => ({
@@ -82,5 +82,21 @@ describe("directionMatches", () => {
   });
   it("accepts text that names neither", () => {
     expect(directionMatches("Update your W-4 with $999 per paycheck.", 7573)).toBe(true);
+  });
+});
+
+describe("aprilYearMatches", () => {
+  it("rejects an April in the tax year itself", () => {
+    expect(aprilYearMatches("You may owe about $7,573 in April 2026.", 2026)).toBe(false);
+    expect(aprilYearMatches("You may owe about $7,573 in April, 2026.", 2026)).toBe(false);
+  });
+  it("accepts April of the following year or no year", () => {
+    expect(aprilYearMatches("You may owe about $7,573 in April 2027.", 2026)).toBe(true);
+    expect(aprilYearMatches("You may owe about $7,573 in April.", 2026)).toBe(true);
+  });
+  it("drops a finding text with the wrong April year", () => {
+    const req = { ...buildExplainRequest([w2], null), projection: { balance: 1560, taxYear: 2026 } };
+    const bodies = groundedBodies(req, { summary: "", items: [{ id: "f0", code: "W2_BOX12D_MISMATCH", title: "", body: "Fix $1,560 before April 2026." }] });
+    expect(bodies.has(0)).toBe(false);
   });
 });
