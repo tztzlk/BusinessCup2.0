@@ -52,8 +52,8 @@ export async function POST(req: Request) {
           error: "payment_required",
           message:
             parsed.data.docType === "paystub"
-              ? "The free plan includes one pay stub. Unlock Annual to add every pay stub for both earners."
-              : "W-2 reconciliation is part of Annual. Unlock it to add your W-2s.",
+              ? "The free plan includes one pay stub. Annual adds every pay stub for both earners."
+              : "W-2 reconciliation is part of Annual. Annual adds your W-2s.",
         },
         { status: 402 },
       );

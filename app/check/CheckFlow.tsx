@@ -92,7 +92,7 @@ export function CheckFlow() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Check my pay stub</h1>
+      <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">Check my pay stub</h1>
       <p className="mt-1 text-slate-600">About 3 minutes. No account needed — your data is tied to this browser.</p>
 
       {step !== "loading" && step !== "intro" && (

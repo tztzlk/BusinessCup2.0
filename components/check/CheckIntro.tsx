@@ -19,18 +19,18 @@ export function CheckIntro({ onStart }: { onStart: () => void }) {
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="grid gap-8 p-5 sm:p-8 md:grid-cols-[1fr_220px]">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 sm:text-2xl">How it works</h2>
+          <h2 className="text-xl font-semibold text-slate-900 sm:text-2xl">How it works</h2>
           <ol className="mt-5 space-y-4">
             {STEPS.map(({ icon: Icon, title, text }, i) => (
               <li key={title} className="flex gap-4">
                 <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600 ring-1 ring-brand-100">
                   <Icon className="h-5 w-5" />
-                  <span className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand-600 text-[11px] font-semibold text-white">
-                    {i + 1}
-                  </span>
                 </span>
                 <div>
-                  <p className="font-semibold text-slate-900">{title}</p>
+                  <p className="font-medium text-slate-900">
+                    <span className="mr-1.5 font-mono text-sm text-slate-400">{i + 1}</span>
+                    {title}
+                  </p>
                   <p className="text-sm text-slate-600">{text}</p>
                 </div>
               </li>
@@ -38,8 +38,7 @@ export function CheckIntro({ onStart }: { onStart: () => void }) {
           </ol>
         </div>
         <div aria-hidden className="relative hidden items-center justify-center md:flex">
-          <div className="absolute inset-4 rounded-full bg-brand-100/60 blur-2xl" />
-          <PayStubArt scan className="relative w-full rotate-[-3deg] drop-shadow-xl" />
+          <PayStubArt scan className="relative w-full rotate-[-3deg] rounded-[14px] shadow-md ring-1 ring-slate-200" />
         </div>
       </div>
 

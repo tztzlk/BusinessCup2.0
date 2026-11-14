@@ -4,7 +4,7 @@ import { Badge, Card } from "@/components/ui";
 export default function DemoPage() {
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Try PayTrail with a sample household</h1>
+      <h1 className="text-2xl font-semibold text-slate-900">Try PayTrail with a sample household</h1>
       <p className="mt-2 text-slate-600">
         These households are fictional. Pick one to see the full checkup — no upload, no sign-up.
       </p>

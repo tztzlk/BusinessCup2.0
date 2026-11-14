@@ -55,7 +55,7 @@ export function Nav() {
             href={CTA.href}
             title={CTA.hint}
             aria-current={active(CTA.href) ? "page" : undefined}
-            className="ml-1 flex items-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-3 py-2 font-medium text-white shadow-sm shadow-brand-900/40 hover:bg-brand-400"
+            className="ml-1 flex items-center gap-2 whitespace-nowrap rounded-lg bg-brand-500 px-3 py-2 font-medium text-white transition-colors hover:bg-brand-400"
           >
             <CTA.icon className="h-4 w-4" />
             <span className="sm:hidden">{CTA.short}</span>

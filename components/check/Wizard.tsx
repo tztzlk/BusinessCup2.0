@@ -80,7 +80,7 @@ export function QuestionShell({
         aria-valuemax={total}
         aria-valuenow={index}
       >
-        <div className="h-full rounded-full bg-brand-500 transition-all duration-300" style={{ width: `${(index / total) * 100}%` }} />
+        <div className="h-full origin-left rounded-full bg-brand-500 transition-transform duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]" style={{ transform: `scaleX(${index / total})` }} />
       </div>
 
       <div className="mt-6 flex items-start gap-4">
@@ -88,7 +88,7 @@ export function QuestionShell({
           <Icon className="h-6 w-6" />
         </div>
         <div className="min-w-0">
-          <h2 ref={heading} tabIndex={-1} className="text-xl font-bold text-slate-900 outline-none sm:text-2xl">
+          <h2 ref={heading} tabIndex={-1} className="text-xl font-semibold text-slate-900 outline-none sm:text-2xl">
             {question}
           </h2>
           {hint && <p className="mt-1 text-slate-600">{hint}</p>}

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { api } from "@/lib/api-client";
 import { ANNUAL_PRICE_LABEL } from "@/lib/plan";
+import { IconCheckCircle } from "./Icons";
 import { Button, Card, Notice } from "./ui";
 
 const ANNUAL_FEATURES = [
@@ -30,20 +31,20 @@ export function Paywall({ title, reason }: { title: string; reason: string }) {
   };
 
   return (
-    <Card className="no-print border-brand-300 ring-2 ring-brand-100">
-      <p className="text-xs font-medium uppercase tracking-wide text-brand-700">Annual · {ANNUAL_PRICE_LABEL}</p>
+    <Card className="no-print border-brand-500">
+      <p className="text-sm font-medium text-brand-700">Annual · {ANNUAL_PRICE_LABEL}</p>
       <h3 className="mt-1 text-lg font-semibold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-600">{reason}</p>
       <ul className="mt-4 space-y-1.5 text-sm text-slate-700">
         {ANNUAL_FEATURES.map((f) => (
-          <li key={f} className="flex gap-2">
-            <span aria-hidden className="text-brand-600">✓</span>
+          <li key={f} className="flex gap-2.5">
+            <IconCheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
             {f}
           </li>
         ))}
       </ul>
       <Button type="button" className="mt-5 w-full sm:w-auto" disabled={busy} onClick={unlock}>
-        {busy ? "Opening checkout…" : `Unlock Annual — ${ANNUAL_PRICE_LABEL}`}
+        {busy ? "Opening checkout…" : `Get Annual — ${ANNUAL_PRICE_LABEL}`}
       </Button>
       <p className="mt-3 rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
         Test mode, no real charge. Card <span className="font-mono font-semibold">4242 4242 4242 4242</span>, any future
