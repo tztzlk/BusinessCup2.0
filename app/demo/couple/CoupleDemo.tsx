@@ -7,8 +7,8 @@ import { CheckupView } from "@/components/CheckupView";
 import { coupleJanuary, coupleNovember, DEMO_JANUARY_AS_OF, DEMO_NOVEMBER_AS_OF } from "@/lib/demo";
 import type { ChecklistItem, ChecklistStatus } from "@/lib/types";
 
-export function CoupleDemo() {
-  const [mode, setMode] = useState<"november" | "january">("november");
+export function CoupleDemo({ initialMode = "november" }: { initialMode?: "november" | "january" }) {
+  const [mode, setMode] = useState<"november" | "january">(initialMode);
   const november = useMemo(() => coupleNovember(), []);
   const januaryBase = useMemo(() => coupleJanuary(), []);
   const [manual, setManual] = useState<ChecklistItem[]>([]);

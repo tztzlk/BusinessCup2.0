@@ -15,6 +15,40 @@ const VALUE = [
   },
 ];
 
+// Only steps that work end to end today. Add "Pay with a test card" when Stripe Checkout is live.
+const HOW_TO_TEST = [
+  {
+    title: "November: the paycheck checkup",
+    points: [
+      "Open the sample two-income household",
+      "See the April projection and the Step 4(c) amount for each W-4",
+      "Open “Show calculation” on any finding",
+    ],
+    cta: "Open the sample household",
+    href: "/demo/couple",
+  },
+  {
+    title: "January: tax season",
+    points: [
+      "The same household after year end, with both W-2s in",
+      "W-2 reconciliation catches a $1,560 box 12 D error",
+      "Mark a form received, download the accountant packet, add reminders to your calendar",
+    ],
+    cta: "Open the January view",
+    href: "/demo/couple?view=january",
+  },
+  {
+    title: "Your own pay stub",
+    points: [
+      "Upload a PDF or a phone photo of a pay stub or W-2",
+      "Confirm the fields Claude read, then see your report",
+      "Only confirmed fields are kept, encrypted; delete them anytime from My report",
+    ],
+    cta: "Check a pay stub",
+    href: "/check",
+  },
+];
+
 const PRIVACY = [
   ["Claude reads, code calculates", "AI only reads your document. Every number comes from a tested tax engine with IRS-sourced parameters."],
   ["Documents never stored", "Your file is processed in memory and discarded. Only the fields you confirm are kept."],
@@ -42,7 +76,33 @@ export default function Home() {
             Check my pay stub
           </ButtonLink>
         </div>
-        <p className="mt-4 text-xs text-indigo-300">No sign-up. The demo uses a fictional household.</p>
+        <p className="mt-4 text-xs text-indigo-300">
+          No sign-up. The demo uses a fictional household.{" "}
+          <a href="#how-to-test" className="underline hover:text-white">
+            Judges: how to test in 3 minutes
+          </a>
+        </p>
+      </section>
+
+      <section id="how-to-test" className="mt-10 scroll-mt-6 rounded-2xl border border-indigo-200 bg-indigo-50/60 p-6 sm:p-8">
+        <h2 className="text-xl font-bold text-slate-900">How to test PayTrail</h2>
+        <p className="mt-1 text-sm text-slate-600">About 3 minutes. No sign-up, nothing to install.</p>
+        <ol className="mt-5 grid gap-4 sm:grid-cols-3">
+          {HOW_TO_TEST.map((s, i) => (
+            <li key={s.title} className="rounded-xl border border-slate-200 bg-white p-5">
+              <p className="text-xs font-semibold uppercase tracking-wide text-indigo-700">Step {i + 1}</p>
+              <h3 className="mt-1 font-semibold text-slate-900">{s.title}</h3>
+              <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-slate-600">
+                {s.points.map((p) => (
+                  <li key={p}>{p}</li>
+                ))}
+              </ul>
+              <ButtonLink href={s.href} variant={i === 0 ? "primary" : "secondary"} className="mt-4 w-full">
+                {s.cta}
+              </ButtonLink>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section className="mt-10 grid gap-4 sm:grid-cols-3">
@@ -93,13 +153,10 @@ export default function Home() {
               <li>April projection and W-4 fixes per job</li>
               <li>January checklist, W-2 reconciliation, accountant packet</li>
             </ul>
-            {/* TODO: replace "#" with the Stripe Payment Link (test mode). */}
-            <a
-              href="#"
-              className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-500"
-            >
-              Get Annual
-            </a>
+            {/* Until Stripe Checkout is live this shows the Annual features on the sample household. */}
+            <ButtonLink href="/demo/couple" className="mt-6 w-full">
+              See everything in Annual
+            </ButtonLink>
           </Card>
         </div>
       </section>
