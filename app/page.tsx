@@ -1,5 +1,7 @@
 import { ButtonLink, Card } from "@/components/ui";
 import { LogoMark } from "@/components/Logo";
+import { CatchTicker, HeroBackdrop, HeroStack } from "@/components/HeroArt";
+import { PayStubArt, W2Art } from "@/components/PaperArt";
 
 const VALUE = [
   {
@@ -58,19 +60,50 @@ const PRIVACY = [
   ["Delete anytime", "One click removes everything. Inactive data is erased automatically after 30 days."],
 ];
 
+/** Small illustration on top of each value card. */
+function ValueArt({ index }: { index: number }) {
+  return (
+    <div aria-hidden="true" className="relative h-36 overflow-hidden bg-gradient-to-br from-brand-50 to-brand-100">
+      {index === 0 && (
+        <PayStubArt className="absolute left-1/2 top-5 w-48 -translate-x-1/2 -rotate-3 rounded-xl shadow-lg transition-transform duration-500 group-hover:-translate-y-2" />
+      )}
+      {index === 1 && (
+        <div className="absolute inset-x-5 top-6 -rotate-2 rounded-xl bg-rose-50 p-4 shadow-lg ring-1 ring-rose-200 transition-transform duration-500 group-hover:-translate-y-2">
+          <p className="text-[10px] font-medium uppercase tracking-wide text-rose-800/70">April 2027 projection · sample</p>
+          <p className="mt-1 text-lg font-bold text-rose-950">You may owe ~$7,573</p>
+          <p className="mt-2 inline-block rounded-md bg-white px-2 py-1 font-mono text-xs text-brand-700 ring-1 ring-brand-200">
+            W-4 Step 4(c): +$999 / paycheck
+          </p>
+        </div>
+      )}
+      {index === 2 && (
+        <W2Art className="absolute left-1/2 top-5 w-60 -translate-x-1/2 rotate-2 rounded-lg shadow-lg transition-transform duration-500 group-hover:-translate-y-2" />
+      )}
+    </div>
+  );
+}
+
 export default function Home() {
   return (
     <div>
       <section className="relative overflow-hidden rounded-3xl bg-ink px-6 py-10 text-white sm:px-10 sm:py-14">
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full bg-brand-500/25 blur-3xl"
+          className="pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-brand-500/25 blur-3xl"
         />
-        <div className="relative grid items-center gap-8 md:grid-cols-[1fr_auto]">
-        <div className="order-2 md:order-1">
-        <p className="rise-in text-sm font-medium uppercase tracking-wide text-brand-300" style={{ animationDelay: "0.5s" }}>
-          For two-income W-2 households
-        </p>
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-32 -left-20 h-80 w-80 rounded-full bg-brand-700/30 blur-3xl"
+        />
+        <HeroBackdrop />
+        <div className="relative grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_330px] lg:grid-cols-[minmax(0,1fr)_380px]">
+        <div className="relative z-10">
+        <div className="flex items-center gap-3">
+          <LogoMark animate breathe size={64} className="logo-glow h-auto w-12 text-white sm:w-14" />
+          <p className="rise-in text-sm font-medium uppercase tracking-wide text-brand-300" style={{ animationDelay: "0.5s" }}>
+            For two-income W-2 households
+          </p>
+        </div>
         <h1 className="rise-in mt-3 max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-4xl" style={{ animationDelay: "0.65s" }}>
           Catch paycheck mistakes now — not a surprise tax bill in April.
         </h1>
@@ -93,11 +126,18 @@ export default function Home() {
           </a>
         </p>
         </div>
-        <div className="order-1 flex justify-start md:order-2 md:justify-end">
-          <LogoMark animate size={180} className="logo-glow h-auto w-24 text-white sm:w-32 md:w-44" />
+        <div className="rise-in md:pr-6" style={{ animationDelay: "0.3s" }}>
+          <HeroStack />
         </div>
         </div>
       </section>
+
+      <div className="mt-6">
+        <CatchTicker />
+        <p className="mt-2 text-center text-xs text-slate-500">
+          What our checks find on the fictional sample households. Your numbers come from your own pay stubs.
+        </p>
+      </div>
 
       <section id="how-to-test" className="mt-10 scroll-mt-20 rounded-2xl border border-brand-200 bg-brand-50/60 p-6 sm:p-8">
         <h2 className="text-xl font-bold text-slate-900">How to test PayTrail</h2>
@@ -122,13 +162,16 @@ export default function Home() {
 
       <section className="mt-10 grid gap-4 sm:grid-cols-3">
         {VALUE.map((v, i) => (
-          <Card key={v.title}>
+          <div key={v.title} className="group overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md">
+            <ValueArt index={i} />
+            <div className="p-5">
             <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-brand-100 text-sm font-semibold text-brand-700">
               {i + 1}
             </div>
             <h2 className="font-semibold text-slate-900">{v.title}</h2>
             <p className="mt-2 text-sm text-slate-600">{v.body}</p>
-          </Card>
+            </div>
+          </div>
         ))}
       </section>
 

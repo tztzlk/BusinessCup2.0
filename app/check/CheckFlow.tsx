@@ -6,6 +6,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
 import { Paywall } from "@/components/Paywall";
+import { ProfileForm } from "@/components/ProfileForm";
 import { isSampleEmployer, SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
 import { FREE_LIMITS } from "@/lib/plan";
 import type { EmploymentSettings, ExtractResult, HouseholdData, HouseholdProfile, Paystub, W2 } from "@/lib/types";
@@ -19,11 +20,6 @@ const STEPS: Array<[Step, string]> = [
   ["upload", "Upload"],
   ["confirm", "Confirm"],
 ];
-
-const US_STATES =
-  "AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY".split(
-    " ",
-  );
 
 export function CheckFlow() {
   const [step, setStep] = useState<Step>("loading");
@@ -270,93 +266,12 @@ function useSubmit() {
 }
 
 function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void> }) {
-  const [p, setP] = useState<HouseholdProfile>({
-    filingStatus: "married_joint",
-    state: "TX",
-    dependentsUnder17: 0,
-    otherDependents: 0,
-    flags: { mortgage: false, bankInterest: false, brokerage: false, hsa: false },
-  });
-  const { busy, err, run } = useSubmit();
-  const flag = (k: keyof HouseholdProfile["flags"], text: string) => (
-    <label className="flex items-center gap-2 text-sm text-slate-700">
-      <input type="checkbox" checked={p.flags[k]} onChange={(e) => setP({ ...p, flags: { ...p.flags, [k]: e.target.checked } })} />
-      {text}
-    </label>
-  );
-
   return (
     <Card>
       <h2 className="font-semibold text-slate-900">Your household</h2>
-      <form
-        className="mt-4 grid gap-4 sm:grid-cols-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          run(() => onDone(p));
-        }}
-      >
-        <Field label="Filing status" hint="How you file your federal tax return.">
-          <select
-            className={inputClass}
-            value={p.filingStatus}
-            onChange={(e) => setP({ ...p, filingStatus: e.target.value as HouseholdProfile["filingStatus"] })}
-          >
-            <option value="married_joint">Married filing jointly</option>
-            <option value="single">Single</option>
-            <option value="head_of_household">Head of household</option>
-            <option value="married_separate">Married filing separately</option>
-          </select>
-        </Field>
-        <Field label="State">
-          <select className={inputClass} value={p.state} onChange={(e) => setP({ ...p, state: e.target.value })}>
-            {US_STATES.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label="Children under 17" hint="For the Child Tax Credit.">
-          <input
-            type="number"
-            min={0}
-            max={20}
-            className={inputClass}
-            value={p.dependentsUnder17}
-            onChange={(e) => setP({ ...p, dependentsUnder17: Math.max(0, Math.min(20, Number(e.target.value) || 0)) })}
-          />
-        </Field>
-        <Field label="Other dependents" hint="Older children or relatives you support.">
-          <input
-            type="number"
-            min={0}
-            max={20}
-            className={inputClass}
-            value={p.otherDependents}
-            onChange={(e) => setP({ ...p, otherDependents: Math.max(0, Math.min(20, Number(e.target.value) || 0)) })}
-          />
-        </Field>
-        <div className="space-y-2 sm:col-span-2">
-          <div>
-            <p className="text-sm font-medium text-slate-700">Do you also have…</p>
-            <p className="text-xs text-slate-500">So we know which tax forms to expect in January.</p>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {flag("mortgage", "A mortgage")}
-            {flag("bankInterest", "Bank interest (savings)")}
-            {flag("brokerage", "A brokerage account")}
-            {flag("hsa", "An HSA")}
-          </div>
-        </div>
-        {err && (
-          <div className="sm:col-span-2">
-            <Notice tone="danger">{err}</Notice>
-          </div>
-        )}
-        <div className="sm:col-span-2">
-          <Button type="submit" disabled={busy}>
-            {busy ? "Saving…" : "Continue"}
-          </Button>
-        </div>
-      </form>
+      <div className="mt-4">
+        <ProfileForm submitLabel="Continue" onSubmit={onDone} />
+      </div>
     </Card>
   );
 }
@@ -775,6 +690,7 @@ function ConfirmStep({
         )
       )}
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+        {errCode !== "payment_required" && (
         <Button
           type="button"
           disabled={busy}
@@ -793,9 +709,16 @@ function ConfirmStep({
         >
           {busy ? "Saving…" : "Looks right — save"}
         </Button>
-        <Button type="button" variant="secondary" onClick={onBack} disabled={busy}>
-          Upload a different file
-        </Button>
+        )}
+        {errCode === "payment_required" ? (
+          <ButtonLink href="/report" variant="secondary">
+            Back to my report
+          </ButtonLink>
+        ) : (
+          <Button type="button" variant="secondary" onClick={onBack} disabled={busy}>
+            Upload a different file
+          </Button>
+        )}
       </div>
     </Card>
   );

@@ -30,14 +30,14 @@ export function Paywall({ title, reason }: { title: string; reason: string }) {
   };
 
   return (
-    <Card className="no-print border-indigo-300 ring-2 ring-indigo-100">
-      <p className="text-xs font-medium uppercase tracking-wide text-indigo-700">Annual · {ANNUAL_PRICE_LABEL}</p>
+    <Card className="no-print border-brand-300 ring-2 ring-brand-100">
+      <p className="text-xs font-medium uppercase tracking-wide text-brand-700">Annual · {ANNUAL_PRICE_LABEL}</p>
       <h3 className="mt-1 text-lg font-semibold text-slate-900">{title}</h3>
       <p className="mt-1 text-sm text-slate-600">{reason}</p>
       <ul className="mt-4 space-y-1.5 text-sm text-slate-700">
         {ANNUAL_FEATURES.map((f) => (
           <li key={f} className="flex gap-2">
-            <span aria-hidden className="text-indigo-600">✓</span>
+            <span aria-hidden className="text-brand-600">✓</span>
             {f}
           </li>
         ))}

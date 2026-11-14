@@ -6,6 +6,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/ui";
 import { HouseholdSummary } from "@/components/report";
 import { ReportEngineSection } from "@/components/ReportEngineSection";
+import { ProfileForm } from "@/components/ProfileForm";
 import { money, shortDate } from "@/lib/format";
 import type { HouseholdData, Paystub, W2 } from "@/lib/types";
 
@@ -15,6 +16,15 @@ export function ReportView() {
   const [state, setState] = useState<"loading" | "none" | "ready" | "error">("loading");
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [checkoutNotice, setCheckoutNotice] = useState<"upgraded" | "cancelled" | null>(null);
+
+  // Stripe returns here with ?upgraded=1 (after /billing/success) or ?checkout=cancelled.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("upgraded") === "1") setCheckoutNotice("upgraded");
+    else if (q.get("checkout") === "cancelled") setCheckoutNotice("cancelled");
+  }, []);
 
   useEffect(() => {
     api
@@ -72,11 +82,49 @@ export function ReportView() {
           <Notice tone="danger">{error}</Notice>
         </div>
       )}
+      {checkoutNotice === "upgraded" && data.plan?.tier === "annual" && (
+        <div className="mt-4">
+          <Notice tone="success">
+            <span className="font-medium">Annual is active{data.plan.until ? ` until ${shortDate(data.plan.until)}` : ""}.</span>{" "}
+            Add every pay stub for both of you; the W-4 fix, tax season and reminders are now open.
+          </Notice>
+        </div>
+      )}
+      {checkoutNotice === "cancelled" && (
+        <div className="mt-4">
+          <Notice tone="neutral">Checkout was cancelled. Nothing was charged.</Notice>
+        </div>
+      )}
 
       <ReportEngineSection data={data} onChanged={() => api.getHousehold().then(setData).catch(() => undefined)} />
 
-      <Section title="Household">
-        <HouseholdSummary profile={data.profile} employers={data.employers} documents={data.documents} />
+      <Section
+        title="Household"
+        subtitle={editingProfile ? "Changes update your projection and the forms to expect in January." : undefined}
+        action={
+          !editingProfile && (
+            <Button type="button" variant="secondary" onClick={() => setEditingProfile(true)}>
+              Edit profile
+            </Button>
+          )
+        }
+      >
+        {editingProfile ? (
+          <Card>
+            <ProfileForm
+              initial={data.profile}
+              submitLabel="Save profile"
+              onCancel={() => setEditingProfile(false)}
+              onSubmit={async (profile) => {
+                await api.saveProfile(profile);
+                setData(await api.getHousehold());
+                setEditingProfile(false);
+              }}
+            />
+          </Card>
+        ) : (
+          <HouseholdSummary profile={data.profile} employers={data.employers} documents={data.documents} />
+        )}
       </Section>
 
       <Section title="Documents" subtitle="Confirmed fields only — original files are never stored.">
