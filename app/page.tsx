@@ -199,7 +199,7 @@ export default function Home() {
           <Card className="border-brand-500">
             <h3 className="font-semibold text-slate-900">Annual</h3>
             <p className="mt-1 text-3xl font-semibold tabular-nums text-slate-900">
-              $79<span className="text-base font-medium text-slate-500">/year</span>
+              $99<span className="text-base font-medium text-slate-500">/year</span>
             </p>
             <ul className="mt-4 space-y-2 text-sm text-slate-600">
               <li>Every pay stub, both earners, all year</li>

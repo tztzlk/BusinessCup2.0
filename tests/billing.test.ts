@@ -20,7 +20,7 @@ describe("billing guards", () => {
     await expect(createCheckout("hh", "https://x")).rejects.toMatchObject({ code: "live_payments_disabled" });
   });
 
-  it("sends an annual $79 subscription bound to the household", async () => {
+  it("sends an annual $99 subscription bound to the household", async () => {
     process.env.STRIPE_SECRET_KEY = "sk_test_123";
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ id: "cs_test_1", url: "https://checkout.stripe.com/x" }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
@@ -30,7 +30,7 @@ describe("billing guards", () => {
     const form = new URLSearchParams(String(init.body));
     expect(form.get("mode")).toBe("subscription");
     expect(form.get("client_reference_id")).toBe("hh_1");
-    expect(form.get("line_items[0][price_data][unit_amount]")).toBe("7900");
+    expect(form.get("line_items[0][price_data][unit_amount]")).toBe("9900");
     expect(form.get("line_items[0][price_data][recurring][interval]")).toBe("year");
     expect(form.get("success_url")).toBe("https://paytrail.example/billing/success?session_id={CHECKOUT_SESSION_ID}");
   });

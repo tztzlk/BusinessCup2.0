@@ -2,10 +2,10 @@ import "server-only";
 import { getDb } from "./db";
 import type { Plan } from "./types";
 
-// Stripe Checkout through the REST API (no SDK). Annual plan, $79/year.
+// Stripe Checkout through the REST API (no SDK). Annual plan, $99/year.
 // Live keys are refused unless ALLOW_LIVE_PAYMENTS=true, so a judge can never be charged by accident.
 
-export const ANNUAL_PRICE_CENTS = 7900;
+export const ANNUAL_PRICE_CENTS = 9900;
 const STRIPE = "https://api.stripe.com/v1";
 
 type BillingErrorCode =
