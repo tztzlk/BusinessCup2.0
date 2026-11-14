@@ -36,8 +36,8 @@ Or with Docker: `docker compose up --build`.
 ```bash
 fly launch --no-deploy        # first time only, uses fly.toml
 fly volumes create paytrail_data --size 1 --region fra
-fly secrets set ANTHROPIC_API_KEY=... MASTER_KEY=...
-fly deploy
+fly secrets set ANTHROPIC_API_KEY=... MASTER_KEY=... STRIPE_SECRET_KEY=sk_test_... CLAUDE_HOURLY_CAP=100
+fly deploy                    # afterwards every push to main deploys via GitHub Actions
 ```
 
 ## Docs

@@ -217,7 +217,7 @@ export default function Home() {
               <li>April projection and W-4 fixes per job</li>
               <li>January checklist, W-2 reconciliation, accountant packet</li>
             </ul>
-            {/* Until Stripe Checkout is live this shows the Annual features on the sample household. */}
+            {/* Checkout starts from a household's report; from the landing page this shows Annual on the sample household. */}
             <ButtonLink href="/demo/couple" className="mt-6 w-full">
               See everything in Annual
             </ButtonLink>
