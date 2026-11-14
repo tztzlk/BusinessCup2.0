@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { ButtonLink, Card } from "@/components/ui";
 import { CatchList, HeroStack } from "@/components/HeroArt";
 import { PayStubArt, W2Art } from "@/components/PaperArt";
@@ -174,7 +175,7 @@ export default function Home() {
 
       <section className="mt-12" id="pricing">
         <h2 className="text-2xl font-semibold text-slate-900">Pricing</h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_190px]">
           <Card>
             <h3 className="font-semibold text-slate-900">Free</h3>
             <p className="mt-1 text-3xl font-semibold tabular-nums text-slate-900">$0</p>
@@ -201,6 +202,14 @@ export default function Home() {
               See everything in Annual
             </ButtonLink>
           </Card>
+          {/* Mirrored so she points left, at the Annual card. */}
+          <Image
+            src="/illustrations/annual-guide.webp"
+            alt="Illustration: a woman holding her pay stubs points to the Annual plan"
+            width={400}
+            height={531}
+            className="hidden h-auto w-[190px] -scale-x-100 self-end lg:block"
+          />
         </div>
       </section>
     </div>
