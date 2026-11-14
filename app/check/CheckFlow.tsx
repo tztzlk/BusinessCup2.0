@@ -5,14 +5,14 @@ import { useCallback, useEffect, useRef, useState, type ComponentType, type SVGP
 import { api, ApiError, FRIENDLY } from "@/lib/api-client";
 import { uploadProblem } from "@/lib/upload";
 import { keepPendingDocument, type PendingDocument } from "@/lib/pendingDocument";
-import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
+import { Button, ButtonLink, Card, Field, inputClass, Alert } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
 import { Paywall } from "@/components/Paywall";
 import { ProfileWizard } from "@/components/check/ProfileWizard";
 import { EmployerWizard } from "@/components/check/EmployerWizard";
 import { CheckIntro } from "@/components/check/CheckIntro";
 import { DocumentPreview } from "@/components/check/DocumentPreview";
-import { IconBriefcase, IconCheckCircle, IconHousehold, IconUpload } from "@/components/Icons";
+import { BriefcaseIcon, CircleCheckIcon, HouseIcon, UploadIcon } from "lucide-react";
 import { isSampleEmployer, SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
 import { FREE_LIMITS } from "@/lib/plan";
 import type { EmploymentSettings, ExtractResult, HouseholdData, Paystub, W2 } from "@/lib/types";
@@ -21,10 +21,10 @@ type Step = "loading" | "intro" | "profile" | "recovery" | "employer" | "upload"
 type Extracted = Exclude<ExtractResult, { documentType: "other" }>;
 
 const STEPS: Array<[Step, string, ComponentType<SVGProps<SVGSVGElement>>]> = [
-  ["profile", "Household", IconHousehold],
-  ["employer", "Job", IconBriefcase],
-  ["upload", "Upload", IconUpload],
-  ["confirm", "Check", IconCheckCircle],
+  ["profile", "Household", HouseIcon],
+  ["employer", "Job", BriefcaseIcon],
+  ["upload", "Upload", UploadIcon],
+  ["confirm", "Check", CircleCheckIcon],
 ];
 
 export function CheckFlow() {
@@ -117,7 +117,7 @@ export function CheckFlow() {
                           : "bg-white text-slate-400 ring-slate-200"
                     }`}
                   >
-                    {state === "done" ? <IconCheckCircle className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                    {state === "done" ? <CircleCheckIcon className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
                   </span>
                   <span className={`h-0.5 flex-1 ${i === STEPS.length - 1 ? "invisible" : i < stepIndex ? "bg-brand-500" : "bg-slate-200"}`} />
                 </div>
@@ -133,7 +133,7 @@ export function CheckFlow() {
 
       {error && (
         <div className="mt-4">
-          <Notice tone="danger">{error}</Notice>
+          <Alert tone="danger">{error}</Alert>
         </div>
       )}
 
@@ -323,9 +323,9 @@ function RecoveryStep({ url, onDone }: { url: string; onDone?: () => void }) {
   return (
     <Card>
       <h2 className="font-semibold text-slate-900">Save your private link</h2>
-      <Notice tone="warning">
+      <Alert tone="warning">
         Save this link — it&apos;s the only way back to your data. We can&apos;t recover it.
-      </Notice>
+      </Alert>
       <div className="mt-4 flex flex-col gap-2 sm:flex-row">
         <input readOnly aria-label="Private recovery link" className={`${inputClass} font-mono text-xs`} value={url} onFocus={(e) => e.target.select()} />
         <Button
@@ -461,7 +461,7 @@ function UploadStep({
 
       {(fileErr || err || notDoc) && (
         <div className="mt-4">
-          <Notice tone="danger">
+          <Alert tone="danger">
             <p className="font-medium">{fileErr ?? err ?? notDoc}</p>
             <p className="mt-1">
               {notDoc
@@ -475,7 +475,7 @@ function UploadStep({
               </Link>
               .
             </p>
-          </Notice>
+          </Alert>
         </div>
       )}
       <p className="mt-4 text-xs text-slate-500">
@@ -518,23 +518,23 @@ function ConfirmStep({
       </p>
       {flagged > 0 && (
         <div className="mt-3">
-          <Notice tone="warning">
+          <Alert tone="warning">
             {flagged} field{flagged === 1 ? " was" : "s were"} hard to read — highlighted in{" "}
             <span className="font-semibold text-amber-700">amber</span> (please check) or{" "}
             <span className="font-semibold text-rose-700">red</span> (likely wrong). Check each one against your document.
-          </Notice>
+          </Alert>
         </div>
       )}
       {extracted.warnings.length > 0 && (
         <div className="mt-3">
-          <Notice tone="danger">
+          <Alert tone="danger">
             <p className="font-medium">Please check before saving:</p>
             <ul className="mt-1 list-disc pl-5">
               {extracted.warnings.map((w) => (
                 <li key={w}>{w}</li>
               ))}
             </ul>
-          </Notice>
+          </Alert>
         </div>
       )}
 
@@ -563,7 +563,7 @@ function ConfirmStep({
       ) : (
         err && (
           <div className="mt-4">
-            <Notice tone="danger">{err}</Notice>
+            <Alert tone="danger">{err}</Alert>
           </div>
         )
       )}

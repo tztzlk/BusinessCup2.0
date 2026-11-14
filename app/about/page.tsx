@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Badge, ButtonLink, Card, Notice, Section } from "@/components/ui";
-import { IconUsers } from "@/components/Icons";
+import { Badge, ButtonLink, Card, Alert, Section } from "@/components/ui";
+import { UsersIcon } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About — PayTrail",
@@ -54,7 +54,7 @@ export default function AboutPage() {
       <Section title="Who built it">
         <Card>
           <div className="flex items-start gap-3">
-            <IconUsers className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+            <UsersIcon className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
             <p className="text-sm text-slate-700">
               Team <strong className="text-slate-900">ENUshniki</strong>, students at Nazarbayev University in Astana, Kazakhstan.
             </p>
@@ -82,9 +82,9 @@ export default function AboutPage() {
             </li>
           </ul>
           <div className="mt-4">
-            <Notice tone="warning">
+            <Alert tone="warning">
               <strong>Estimates only. Not tax advice. Not affiliated with the IRS. Not reviewed by a CPA.</strong>
-            </Notice>
+            </Alert>
           </div>
         </Card>
       </Section>

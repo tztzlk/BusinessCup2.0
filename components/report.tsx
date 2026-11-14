@@ -308,7 +308,7 @@ export function ChecklistView({
 }) {
   if (items.length === 0) return <p className="text-sm text-slate-500">No documents expected yet.</p>;
   return (
-    <Card className="p-0">
+    <Card padding="none">
       <ul className="divide-y divide-slate-100">
         {items.map((item) => (
           <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3">

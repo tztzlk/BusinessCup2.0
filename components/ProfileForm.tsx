@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Field, inputClass, Notice } from "./ui";
+import { Button, Field, inputClass, Alert } from "./ui";
 import type { HouseholdProfile } from "@/lib/types";
 
 // Household profile form, shared by the first step of /check and "Edit profile" on /report.
@@ -112,7 +112,7 @@ export function ProfileForm({
       </div>
       {err && (
         <div className="sm:col-span-2">
-          <Notice tone="danger">{err}</Notice>
+          <Alert tone="danger">{err}</Alert>
         </div>
       )}
       <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row">

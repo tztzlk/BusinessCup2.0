@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useRef, type ComponentType, type ReactNode, type SVGProps } from "react";
-import { Button, Notice } from "../ui";
-import { IconArrowLeft, IconArrowRight, IconInfo, IconMinus, IconPlus } from "../Icons";
+import { Button, Alert } from "../ui";
+import { ArrowLeftIcon, ArrowRightIcon, InfoIcon, MinusIcon, PlusIcon } from "lucide-react";
 
 // Building blocks for /check: one question per screen, with a progress bar and a back link.
 
@@ -63,7 +63,7 @@ export function QuestionShell({
             onClick={onBack}
             className="inline-flex items-center gap-1.5 rounded-md py-1 text-sm font-medium text-slate-600 hover:text-slate-900"
           >
-            <IconArrowLeft className="h-4 w-4" /> Back
+            <ArrowLeftIcon className="h-4 w-4" /> Back
           </button>
         ) : (
           <span />
@@ -99,21 +99,21 @@ export function QuestionShell({
 
       {why && (
         <div className="mt-5 flex gap-2.5 rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
-          <IconInfo className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+          <InfoIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
           <div>{why}</div>
         </div>
       )}
 
       {error && (
         <div className="mt-4">
-          <Notice tone="danger">{error}</Notice>
+          <Alert tone="danger">{error}</Alert>
         </div>
       )}
 
       <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center">
         <Button type="submit" disabled={continueDisabled || busy} className="sm:min-w-40">
           {busy ? "Saving…" : continueLabel}
-          {!busy && <IconArrowRight className="h-4 w-4" />}
+          {!busy && <ArrowRightIcon className="h-4 w-4" />}
         </Button>
         {extraAction}
       </div>
@@ -194,7 +194,7 @@ export function Counter({
           onClick={() => onChange(Math.max(min, value - 1))}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40"
         >
-          <IconMinus className="h-4 w-4" />
+          <MinusIcon className="h-4 w-4" />
         </button>
         <span className="w-6 text-center text-lg font-semibold tabular-nums text-slate-900" aria-live="polite" aria-label={`${label}: ${value}`}>
           {value}
@@ -206,7 +206,7 @@ export function Counter({
           onClick={() => onChange(Math.min(max, value + 1))}
           className="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 disabled:opacity-40"
         >
-          <IconPlus className="h-4 w-4" />
+          <PlusIcon className="h-4 w-4" />
         </button>
       </div>
     </div>

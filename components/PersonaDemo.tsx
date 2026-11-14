@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ButtonLink, SampleLabel, Section } from "./ui";
+import { ButtonLink, DemoBadge, Section } from "./ui";
 import { HouseholdSummary } from "./report";
 import { CheckupView } from "./CheckupView";
 import { DEMO_NOVEMBER_AS_OF } from "@/lib/demo";
@@ -24,7 +24,7 @@ export function PersonaDemo({
   const data = useMemo(() => structuredClone(household), [household]);
   return (
     <div>
-      <SampleLabel />
+      <DemoBadge />
       <h1 className="text-2xl font-semibold text-slate-900">{name}</h1>
       <p className="text-slate-600">{subtitle}</p>
       <p className="mt-3 max-w-2xl rounded-lg bg-white/70 px-4 py-3 text-sm text-slate-700 ring-1 ring-slate-200">{story}</p>

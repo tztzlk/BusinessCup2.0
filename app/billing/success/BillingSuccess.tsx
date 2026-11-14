@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "@/lib/api-client";
-import { ButtonLink, Card, Notice } from "@/components/ui";
+import { ButtonLink, Card, Alert } from "@/components/ui";
 
 // Stripe redirects here with ?session_id=cs_... The server verifies the session with Stripe
 // before unlocking Annual.
@@ -26,7 +26,7 @@ export function BillingSuccess() {
     <Card className="mx-auto max-w-xl text-center">
       <h1 className="text-xl font-semibold text-slate-900">We couldn&apos;t confirm the payment</h1>
       <div className="mt-3">
-        <Notice tone="danger">{error}</Notice>
+        <Alert tone="danger">{error}</Alert>
       </div>
       <div className="mt-5">
         <ButtonLink href="/report">Back to my report</ButtonLink>

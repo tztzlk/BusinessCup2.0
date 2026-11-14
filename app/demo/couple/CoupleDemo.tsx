@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ButtonLink, SampleLabel, Section } from "@/components/ui";
+import { ButtonLink, DemoBadge, Section } from "@/components/ui";
 import { HouseholdSummary } from "@/components/report";
 import { CheckupView } from "@/components/CheckupView";
 import { coupleJanuary, coupleNovember, DEMO_JANUARY_AS_OF, DEMO_NOVEMBER_AS_OF } from "@/lib/demo";
@@ -25,7 +25,7 @@ export function CoupleDemo({ initialMode = "november" }: { initialMode?: "novemb
   return (
     <div>
       <div className="no-print">
-        <SampleLabel />
+        <DemoBadge />
       </div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>

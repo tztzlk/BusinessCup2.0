@@ -3,18 +3,7 @@
 import { useState } from "react";
 import { inputClass } from "../ui";
 import { DEFAULT_HOUSEHOLD_PROFILE } from "../ProfileForm";
-import {
-  IconBank,
-  IconCheckCircle,
-  IconHeartPlus,
-  IconHomeKey,
-  IconHousehold,
-  IconMapPin,
-  IconPerson,
-  IconRings,
-  IconTrend,
-  IconUsers,
-} from "../Icons";
+import { CircleCheckIcon, HeartHandshakeIcon, HeartPulseIcon, HouseIcon, KeyRoundIcon, LandmarkIcon, MapPinIcon, TrendingUpIcon, UserIcon, UsersIcon } from "lucide-react";
 import { AnswerList, ChoiceCard, Counter, QuestionShell } from "./Wizard";
 import type { HouseholdProfile } from "@/lib/types";
 
@@ -25,18 +14,18 @@ const US_STATES =
     " ",
   );
 
-const FILING: Array<{ value: HouseholdProfile["filingStatus"]; title: string; description: string; icon: typeof IconRings }> = [
-  { value: "married_joint", title: "Married filing jointly", description: "One return for both of you. Most married couples file this way.", icon: IconRings },
-  { value: "single", title: "Single", description: "Not married, and no one depends on you financially.", icon: IconPerson },
-  { value: "head_of_household", title: "Head of household", description: "Not married, and you pay most of the costs of a home for a child or relative.", icon: IconHousehold },
-  { value: "married_separate", title: "Married filing separately", description: "Married, but each of you files your own return.", icon: IconUsers },
+const FILING: Array<{ value: HouseholdProfile["filingStatus"]; title: string; description: string; icon: typeof HeartHandshakeIcon }> = [
+  { value: "married_joint", title: "Married filing jointly", description: "One return for both of you. Most married couples file this way.", icon: HeartHandshakeIcon },
+  { value: "single", title: "Single", description: "Not married, and no one depends on you financially.", icon: UserIcon },
+  { value: "head_of_household", title: "Head of household", description: "Not married, and you pay most of the costs of a home for a child or relative.", icon: HouseIcon },
+  { value: "married_separate", title: "Married filing separately", description: "Married, but each of you files your own return.", icon: UsersIcon },
 ];
 
-const EXTRAS: Array<{ key: keyof HouseholdProfile["flags"]; title: string; description: string; icon: typeof IconBank }> = [
-  { key: "mortgage", title: "A mortgage", description: "Your lender sends Form 1098.", icon: IconHomeKey },
-  { key: "bankInterest", title: "Savings with interest", description: "Your bank sends Form 1099-INT.", icon: IconBank },
-  { key: "brokerage", title: "A brokerage account", description: "Your broker sends Form 1099-B or 1099-DIV.", icon: IconTrend },
-  { key: "hsa", title: "A health savings account (HSA)", description: "Your HSA provider sends Form 1099-SA and 5498-SA.", icon: IconHeartPlus },
+const EXTRAS: Array<{ key: keyof HouseholdProfile["flags"]; title: string; description: string; icon: typeof LandmarkIcon }> = [
+  { key: "mortgage", title: "A mortgage", description: "Your lender sends Form 1098.", icon: KeyRoundIcon },
+  { key: "bankInterest", title: "Savings with interest", description: "Your bank sends Form 1099-INT.", icon: LandmarkIcon },
+  { key: "brokerage", title: "A brokerage account", description: "Your broker sends Form 1099-B or 1099-DIV.", icon: TrendingUpIcon },
+  { key: "hsa", title: "A health savings account (HSA)", description: "Your HSA provider sends Form 1099-SA and 5498-SA.", icon: HeartPulseIcon },
 ];
 
 const QUESTIONS = ["filing", "dependents", "state", "extras", "review"] as const;
@@ -65,7 +54,7 @@ export function ProfileWizard({ onDone }: { onDone: (p: HouseholdProfile) => Pro
     return (
       <QuestionShell
         {...common}
-        icon={IconRings}
+        icon={HeartHandshakeIcon}
         question="How do you file your federal taxes?"
         hint="Pick the status from your last tax return. This sets your tax brackets."
         why="With two incomes on one joint return, each job withholds as if it were the only one. That is a common reason couples owe in April, so we check both jobs together."
@@ -93,7 +82,7 @@ export function ProfileWizard({ onDone }: { onDone: (p: HouseholdProfile) => Pro
     return (
       <QuestionShell
         {...common}
-        icon={IconUsers}
+        icon={UsersIcon}
         question="Who else is on your return?"
         hint="Count the people you claim as dependents. Leave both at 0 if none."
         why="Each child under 17 can lower your tax through the Child Tax Credit, so it changes whether you owe or get a refund."
@@ -120,7 +109,7 @@ export function ProfileWizard({ onDone }: { onDone: (p: HouseholdProfile) => Pro
     return (
       <QuestionShell
         {...common}
-        icon={IconMapPin}
+        icon={MapPinIcon}
         question="Which state do you live in?"
         hint="The state on your tax return."
         why="Our paycheck checks and April projection cover federal tax. Your state is shown on your report."
@@ -141,7 +130,7 @@ export function ProfileWizard({ onDone }: { onDone: (p: HouseholdProfile) => Pro
     return (
       <QuestionShell
         {...common}
-        icon={IconHomeKey}
+        icon={KeyRoundIcon}
         question="Do you also have any of these?"
         hint="Tick all that apply, or none."
         why="Each one sends you a tax form in January. We add them to your tax-season checklist so nothing is missing when you file."
@@ -169,7 +158,7 @@ export function ProfileWizard({ onDone }: { onDone: (p: HouseholdProfile) => Pro
   return (
     <QuestionShell
       {...common}
-      icon={IconCheckCircle}
+      icon={CircleCheckIcon}
       question="Check your answers"
       hint="You can change any of these later from your report."
       continueLabel="Save and continue"

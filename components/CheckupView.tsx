@@ -7,7 +7,7 @@ import { RemindersCard } from "./RemindersCard";
 import { PaycheckHistory } from "./PaycheckHistory";
 import { Paywall } from "./Paywall";
 import { runCheckup } from "@/lib/engine";
-import { Button, Card, Notice, Section } from "./ui";
+import { Button, Card, Alert, Section } from "./ui";
 import { aprilOutlook, ChecklistView, ChecksSummary, FindingCard, ProjectionBanner, W4Card } from "./report";
 import { money } from "@/lib/format";
 import type { ChecklistItem, ChecklistStatus, HouseholdData } from "@/lib/types";
@@ -72,9 +72,9 @@ export function CheckupView({
       {result.notes.length > 0 && (
         <div className="mt-6 space-y-2">
           {result.notes.map((n) => (
-            <Notice key={n} tone="info">
+            <Alert key={n} tone="info">
               {n}
-            </Notice>
+            </Alert>
           ))}
         </div>
       )}
@@ -126,7 +126,7 @@ export function CheckupView({
                     ? `All ${recRows.length} boxes match your pay stubs.`
                     : `${recMismatches} of ${recRows.length} boxes ${recMismatches === 1 ? "doesn't" : "don't"} match your pay stubs.`}
                 </p>
-                <Card className="p-0">
+                <Card padding="none">
                   <ul className="divide-y divide-slate-100 text-sm">
                     {recRows.map((r) => (
                       <li

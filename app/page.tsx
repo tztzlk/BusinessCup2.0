@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ButtonLink, Card } from "@/components/ui";
-import { IconCheckCircle, IconMinus } from "@/components/Icons";
+import { CircleCheckIcon, MinusIcon } from "lucide-react";
 import { CatchTicker, HeroStack } from "@/components/HeroArt";
 import { LogoMark } from "@/components/Logo";
 import { PayStubArt, W2Art } from "@/components/PaperArt";
@@ -186,14 +186,14 @@ function PlanCell({ value, plan }: { value: string | boolean; plan: string }) {
   if (value === true)
     return (
       <>
-        <IconCheckCircle aria-hidden="true" className="mx-auto h-5 w-5 text-brand-600" />
+        <CircleCheckIcon aria-hidden="true" className="mx-auto h-5 w-5 text-brand-600" />
         <span className="sr-only">Included in {plan}</span>
       </>
     );
   if (value === false)
     return (
       <>
-        <IconMinus aria-hidden="true" className="mx-auto h-5 w-5 text-slate-300" />
+        <MinusIcon aria-hidden="true" className="mx-auto h-5 w-5 text-slate-300" />
         <span className="sr-only">Not in {plan}</span>
       </>
     );
@@ -417,7 +417,7 @@ export default function Home() {
           TurboTax helps you file in April. PayTrail catches problems all year, before you file.
         </p>
         <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_190px]">
-          <Card className="overflow-hidden !p-0">
+          <Card padding="none" className="overflow-hidden">
             <table className="w-full table-fixed text-left text-sm">
               <caption className="sr-only">Free and Annual plans compared</caption>
               <colgroup>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/lib/api-client";
-import { Button, Card, Notice, inputClass } from "@/components/ui";
+import { Button, Card, Alert, inputClass } from "@/components/ui";
 
 // Use the origin the visitor actually sees; the server may sit behind a proxy.
 function visibleRecoveryUrl(serverUrl: string): string {
@@ -68,7 +68,7 @@ export function SaveLinkCard({ annual = false, prominent = false }: { annual?: b
             </Button>
           </div>
           <div className="mt-3">
-            <Notice tone="warning">Anyone with this link can open your data. Keep it like a password.</Notice>
+            <Alert tone="warning">Anyone with this link can open your data. Keep it like a password.</Alert>
           </div>
         </>
       ) : (
@@ -84,7 +84,7 @@ export function SaveLinkCard({ annual = false, prominent = false }: { annual?: b
       )}
       {error && (
         <div className="mt-3">
-          <Notice tone="danger">{error}</Notice>
+          <Alert tone="danger">{error}</Alert>
         </div>
       )}
     </Card>

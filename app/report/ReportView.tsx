@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api-client";
-import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/ui";
+import { Badge, Button, ButtonLink, Card, Alert, Section } from "@/components/ui";
 import { HouseholdSummary } from "@/components/report";
 import { ReportEngineSection } from "@/components/ReportEngineSection";
 import { ProfileForm } from "@/components/ProfileForm";
@@ -85,7 +85,7 @@ export function ReportView() {
   }, [checkoutNotice, tier]);
 
   if (state === "loading") return <p className="text-slate-500">Loading…</p>;
-  if (state === "error") return <Notice tone="danger">{error}</Notice>;
+  if (state === "error") return <Alert tone="danger">{error}</Alert>;
   if (state === "none" || !data)
     return (
       <Card className="mx-auto max-w-xl text-center">
@@ -122,18 +122,18 @@ export function ReportView() {
       </div>
       {error && (
         <div className="mt-4">
-          <Notice tone="danger">{error}</Notice>
+          <Alert tone="danger">{error}</Alert>
         </div>
       )}
       {checkoutNotice === "upgraded" && data.plan?.tier === "annual" && (
         <div className="mt-4">
-          <Notice tone="success">
+          <Alert tone="success">
             <span className="font-medium">Annual is active{data.plan.until ? ` until ${shortDate(data.plan.until)}` : ""}.</span>{" "}
             Add every pay stub for both of you; the W-4 fix, tax season and reminders are now open.
-          </Notice>
+          </Alert>
           {pendingNotice && (
             <div className="mt-3">
-              <Notice tone={pendingNotice.tone}>{pendingNotice.text}</Notice>
+              <Alert tone={pendingNotice.tone}>{pendingNotice.text}</Alert>
             </div>
           )}
           <div className="mt-3">
@@ -143,7 +143,7 @@ export function ReportView() {
       )}
       {checkoutNotice === "cancelled" && (
         <div className="mt-4">
-          <Notice tone="neutral">Checkout was cancelled. Nothing was charged.</Notice>
+          <Alert tone="neutral">Checkout was cancelled. Nothing was charged.</Alert>
         </div>
       )}
 
@@ -211,7 +211,7 @@ export function ReportView() {
         {data.documents.length === 0 ? (
           <p className="text-sm text-slate-500">No documents yet.</p>
         ) : (
-          <Card className="p-0">
+          <Card padding="none">
             <ul className="divide-y divide-slate-100">
               {data.documents.map((d) => (
                 <li key={d.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm">

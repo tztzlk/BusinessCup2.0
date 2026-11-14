@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button, Field, inputClass, Notice } from "../ui";
+import { Button, Field, inputClass, Alert } from "../ui";
 import { newEmployerSettings, type EmployerSettings } from "../EmployerForm";
-import { IconBriefcase, IconCheckCircle, IconClock, IconDollar, IconFileText, IconPerson, IconPiggy, IconUsers } from "../Icons";
+import { BriefcaseIcon, CircleCheckIcon, ClockIcon, DollarSignIcon, FileTextIcon, PiggyBankIcon, UserIcon, UsersIcon } from "lucide-react";
 import { money } from "@/lib/format";
 import { AnswerList, ChoiceCard, QuestionShell } from "./Wizard";
 import type { EmploymentSettings } from "@/lib/types";
@@ -55,7 +55,7 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconBriefcase}
+        icon={BriefcaseIcon}
         question="Whose job is this, and where?"
         hint="Add one job at a time. If you both work, you can add the second job right after."
         continueDisabled={s.employerName.trim() === ""}
@@ -70,26 +70,26 @@ export function EmployerWizard({
       >
         <fieldset className="grid gap-3 sm:grid-cols-2">
           <legend className="sr-only">Whose job</legend>
-          <ChoiceCard name="member" value="self" checked={s.member === "self"} onChange={() => setS({ ...s, member: "self" })} icon={IconPerson} title="Mine" />
+          <ChoiceCard name="member" value="self" checked={s.member === "self"} onChange={() => setS({ ...s, member: "self" })} icon={UserIcon} title="Mine" />
           <ChoiceCard
             name="member"
             value="spouse"
             checked={s.member === "spouse"}
             onChange={() => setS({ ...s, member: "spouse" })}
-            icon={IconUsers}
+            icon={UsersIcon}
             title="My spouse's"
           />
         </fieldset>
         {s.member === "spouse" && notMarried && (
           <div className="mt-4">
-            <Notice tone="warning">
+            <Alert tone="warning">
               Your household is set to file as single or head of household, so a spouse&apos;s income won&apos;t be counted the
               way a joint return does. If you&apos;re married, change the filing status on your{" "}
               <Link href="/report" className="font-medium underline">
                 report
               </Link>{" "}
               (Edit profile). If this is your own second job, choose &quot;Mine&quot;.
-            </Notice>
+            </Alert>
           </div>
         )}
         <div className="mt-5 max-w-md">
@@ -111,7 +111,7 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconDollar}
+        icon={DollarSignIcon}
         question="How are you paid at this job?"
         hint="Before taxes, as on your offer letter or pay stub."
         why="We use your pay to check each pay stub, like overtime paid at the regular rate, and to project your tax for the year."
@@ -125,7 +125,7 @@ export function EmployerWizard({
             value="salary"
             checked={s.payType === "salary"}
             onChange={() => setS({ ...s, payType: "salary" })}
-            icon={IconBriefcase}
+            icon={BriefcaseIcon}
             title="Salary"
             description="A fixed amount per year"
           />
@@ -134,7 +134,7 @@ export function EmployerWizard({
             value="hourly"
             checked={s.payType === "hourly"}
             onChange={() => setS({ ...s, payType: "hourly", overtimeEligible: true })}
-            icon={IconClock}
+            icon={ClockIcon}
             title="Hourly"
             description="Paid for each hour you work"
           />
@@ -189,7 +189,7 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconPiggy}
+        icon={PiggyBankIcon}
         question="Does this employer match your 401(k)?"
         hint="Many employers add money when you save for retirement. Check your benefits page if you're not sure."
         why="If you save less than the match, you leave free money on the table. We show exactly how much."
@@ -248,7 +248,7 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconFileText}
+        icon={FileTextIcon}
         question="What's on your W-4 at this job?"
         hint="The form you filled in for HR when you started. Optional — most people left these empty."
         why="We compare it with what your household really needs, then tell you the exact numbers to put on a new W-4."
@@ -289,7 +289,7 @@ export function EmployerWizard({
   return (
     <QuestionShell
       {...common}
-      icon={IconCheckCircle}
+      icon={CircleCheckIcon}
       question="Check your answers"
       hint="You can edit this job later from your report."
       continueLabel="Save job and continue"

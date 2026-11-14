@@ -3,13 +3,13 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api-client";
-import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/ui";
+import { Badge, Button, ButtonLink, Card, Alert, Section } from "@/components/ui";
 import { ProfileForm } from "@/components/ProfileForm";
 import { EmployerForm } from "@/components/EmployerForm";
 import { SaveLinkCard } from "@/components/SaveLinkCard";
 import { DeletionScope } from "@/components/DeletionScope";
 import { Paywall } from "@/components/Paywall";
-import { IconBriefcase, IconCheckCircle, IconFileText, IconHousehold, IconLock, IconPerson } from "@/components/Icons";
+import { BriefcaseIcon, CircleCheckIcon, FileTextIcon, HouseIcon, LockIcon, UserIcon } from "lucide-react";
 import { money, shortDate } from "@/lib/format";
 import { ANNUAL_PRICE_LABEL } from "@/lib/plan";
 import type { EmploymentSettings, HouseholdData, HouseholdProfile } from "@/lib/types";
@@ -74,12 +74,12 @@ export function AccountView() {
   }, []);
 
   if (state === "loading") return <p className="text-slate-500">Loading…</p>;
-  if (state === "error") return <Notice tone="danger">{error}</Notice>;
+  if (state === "error") return <Alert tone="danger">{error}</Alert>;
   if (state === "none" || !data)
     return (
       <Card className="mx-auto max-w-xl text-center">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500">
-          <IconPerson className="h-6 w-6" />
+          <UserIcon className="h-6 w-6" />
         </div>
         <h1 className="mt-4 text-xl font-semibold text-slate-900">No account in this browser yet</h1>
         <p className="mt-2 text-sm text-slate-600">
@@ -106,7 +106,7 @@ export function AccountView() {
     <div className="mx-auto max-w-3xl">
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white">
-          <IconHousehold className="h-7 w-7" />
+          <HouseIcon className="h-7 w-7" />
         </div>
         <div className="min-w-0">
           <h1 className="flex flex-wrap items-center gap-2 text-2xl font-semibold text-slate-900">
@@ -124,7 +124,7 @@ export function AccountView() {
 
       {error && (
         <div className="mt-4">
-          <Notice tone="danger">{error}</Notice>
+          <Alert tone="danger">{error}</Alert>
         </div>
       )}
 
@@ -132,7 +132,7 @@ export function AccountView() {
         {annual ? (
           <Card>
             <div className="flex items-start gap-3">
-              <IconCheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
+              <CircleCheckIcon className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
               <div>
                 <p className="font-medium text-slate-900">
                   Annual · {ANNUAL_PRICE_LABEL}
@@ -155,7 +155,7 @@ export function AccountView() {
       <Section title="Sign in on another device" subtitle="There's no password. Your private link is the key to this account.">
         <SaveLinkCard annual={annual} />
         <p className="mt-3 flex items-start gap-2 text-sm text-slate-600">
-          <IconLock className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+          <LockIcon className="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
           Open the link in any browser to sign in there. Anyone with it can see your data, so keep it like a password.
         </p>
       </Section>
@@ -224,12 +224,12 @@ export function AccountView() {
             <p className="text-sm text-slate-600">No jobs yet. Add one when you check your first pay stub.</p>
           </Card>
         ) : (
-          <Card className="p-0">
+          <Card padding="none">
             <ul className="divide-y divide-slate-100">
               {data.employers.map((e) => (
                 <li key={e.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
                   <div className="flex min-w-0 items-start gap-3">
-                    <IconBriefcase className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
+                    <BriefcaseIcon className="mt-0.5 h-5 w-5 shrink-0 text-slate-400" />
                     <div className="min-w-0">
                       <p className="font-medium text-slate-900">{e.employerName}</p>
                       <p className="text-sm text-slate-600">
@@ -253,11 +253,11 @@ export function AccountView() {
         <Card>
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-700">
             <span className="flex items-center gap-2">
-              <IconFileText className="h-4 w-4 text-slate-400" />
+              <FileTextIcon className="h-4 w-4 text-slate-400" />
               {stubs} pay stub{stubs === 1 ? "" : "s"}
             </span>
             <span className="flex items-center gap-2">
-              <IconFileText className="h-4 w-4 text-slate-400" />
+              <FileTextIcon className="h-4 w-4 text-slate-400" />
               {w2s} W-2{w2s === 1 ? "" : "s"}
             </span>
             <ButtonLink href="/report" variant="ghost" className="px-0 sm:ml-auto">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button, Field, inputClass, Notice } from "./ui";
+import { Button, Field, inputClass, Alert } from "./ui";
 import type { EmploymentSettings } from "@/lib/types";
 
 // Job settings form, shared by the employer step of /check and "Edit job" on /report.
@@ -76,14 +76,14 @@ export function EmployerForm({
       </Field>
       {s.member === "spouse" && notMarried && (
         <div className="sm:col-span-2">
-          <Notice tone="warning">
+          <Alert tone="warning">
             Your household is set to file as single or head of household, so the forecast won&apos;t count a spouse&apos;s
             income the way a joint return does. If you&apos;re married, change the filing status on your{" "}
             <Link href="/report" className="font-medium underline">
               report
             </Link>{" "}
             (Edit profile). If this is your own second job, choose &quot;Mine&quot;.
-          </Notice>
+          </Alert>
         </div>
       )}
       <Field label="Employer name">
@@ -189,7 +189,7 @@ export function EmployerForm({
 
       {err && (
         <div className="sm:col-span-2">
-          <Notice tone="danger">{err}</Notice>
+          <Alert tone="danger">{err}</Alert>
         </div>
       )}
       <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row">
