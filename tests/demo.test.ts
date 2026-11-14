@@ -8,7 +8,9 @@ describe("demo couple", () => {
     const r = runCheckup(coupleNovember(), DEMO_NOVEMBER_AS_OF);
     const codes = r.findings.map((f) => f.code);
     console.log("november", r.projection, codes, r.findings.map((f) => [f.code, f.amountUsd]));
-    expect(r.projection!.balance).toBeGreaterThan(1000);
+    // The pitch quotes these numbers: about $7,573 owed in April, Step 4(c) $999 + $895 per paycheck.
+    expect(Math.round(r.projection!.balance)).toBe(7573);
+    expect(r.projection!.perEmployer.map((e) => e.recommendedStep4c).sort((x, y) => y - x)).toEqual([999, 895]);
     expect(codes[0]).toBe("UNDERWITHHOLDING");
     expect(codes.filter((c) => c === "MATCH_LEFT_ON_TABLE")).toHaveLength(2);
     expect(codes).not.toContain("NET_PAY_MISMATCH");
