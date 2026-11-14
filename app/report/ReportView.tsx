@@ -7,8 +7,16 @@ import { Badge, Button, ButtonLink, Card, Notice, Section } from "@/components/u
 import { HouseholdSummary } from "@/components/report";
 import { ReportEngineSection } from "@/components/ReportEngineSection";
 import { ProfileForm } from "@/components/ProfileForm";
+import { EmployerForm } from "@/components/EmployerForm";
 import { money, shortDate } from "@/lib/format";
-import type { HouseholdData, Paystub, W2 } from "@/lib/types";
+import type { EmploymentSettings, HouseholdData, Paystub, W2 } from "@/lib/types";
+
+// The job id travels in the URL, not in the body.
+function withoutId(e: EmploymentSettings): Omit<EmploymentSettings, "id"> {
+  const settings: Partial<EmploymentSettings> = { ...e };
+  delete settings.id;
+  return settings as Omit<EmploymentSettings, "id">;
+}
 
 export function ReportView() {
   const router = useRouter();
@@ -18,6 +26,9 @@ export function ReportView() {
   const [deleting, setDeleting] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [editingEmployer, setEditingEmployer] = useState<string | null>(null);
+  const [confirmingDoc, setConfirmingDoc] = useState<string | null>(null);
+  const [deletingDoc, setDeletingDoc] = useState(false);
   const [checkoutNotice, setCheckoutNotice] = useState<"upgraded" | "cancelled" | null>(null);
 
   // Stripe returns here with ?upgraded=1 (after /billing/success) or ?checkout=cancelled.
@@ -62,6 +73,7 @@ export function ReportView() {
     );
 
 
+  const editingEmployerSettings = data.employers.find((e) => e.id === editingEmployer) ?? null;
   const employerName = (id: string | null) => data.employers.find((e) => e.id === id)?.employerName ?? "Unassigned";
 
   return (
@@ -101,9 +113,15 @@ export function ReportView() {
 
       <Section
         title="Household"
-        subtitle={editingProfile ? "Changes update your projection and the forms to expect in January." : undefined}
+        subtitle={
+          editingProfile
+            ? "Changes update your projection and the forms to expect in January."
+            : editingEmployer
+              ? "Pay, 401(k) match and W-4 for this job. Your findings and projection update when you save."
+              : undefined
+        }
         action={
-          !editingProfile && (
+          !editingProfile && !editingEmployer && (
             <Button type="button" variant="secondary" onClick={() => setEditingProfile(true)}>
               Edit profile
             </Button>
@@ -123,8 +141,31 @@ export function ReportView() {
               }}
             />
           </Card>
+        ) : editingEmployerSettings ? (
+          <Card>
+            <EmployerForm
+              key={editingEmployerSettings.id}
+              initial={withoutId(editingEmployerSettings)}
+              notMarried={data.profile.filingStatus === "single" || data.profile.filingStatus === "head_of_household"}
+              submitLabel="Save job"
+              onCancel={() => setEditingEmployer(null)}
+              onSubmit={async (settings) => {
+                await api.updateEmployer(editingEmployerSettings.id, settings);
+                setData(await api.getHousehold());
+                setEditingEmployer(null);
+              }}
+            />
+          </Card>
         ) : (
-          <HouseholdSummary profile={data.profile} employers={data.employers} documents={data.documents} />
+          <HouseholdSummary
+            profile={data.profile}
+            employers={data.employers}
+            documents={data.documents}
+            onEditEmployer={(id) => {
+              setEditingProfile(false);
+              setEditingEmployer(id);
+            }}
+          />
         )}
       </Section>
 
@@ -147,9 +188,53 @@ export function ReportView() {
                         : `Tax year ${(d.fields as W2).taxYear}`}
                     </p>
                   </div>
-                  <p className="font-mono text-slate-800">
-                    {d.docType === "paystub" ? `${money((d.fields as Paystub).grossCurrent)} gross` : `${money((d.fields as W2).box1Wages)} box 1`}
-                  </p>
+                  <div className="flex items-center gap-3">
+                    <p className="font-mono text-slate-800">
+                      {d.docType === "paystub" ? `${money((d.fields as Paystub).grossCurrent)} gross` : `${money((d.fields as W2).box1Wages)} box 1`}
+                    </p>
+                    {confirmingDoc !== d.id && (
+                      <button
+                        type="button"
+                        className="rounded-md px-2 py-1 text-sm font-medium text-red-700 hover:bg-red-50"
+                        aria-label={`Delete ${d.docType === "w2" ? "W-2" : "pay stub"} from ${employerName(d.employerId)}`}
+                        onClick={() => setConfirmingDoc(d.id)}
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                  {confirmingDoc === d.id && (
+                    <div className="w-full rounded-lg border border-red-200 bg-red-50 p-3">
+                      <p className="text-sm text-red-900">
+                        Delete this {d.docType === "w2" ? "W-2" : "pay stub"}? Your findings and projection will be recalculated without it.
+                      </p>
+                      <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+                        <Button
+                          type="button"
+                          variant="danger"
+                          disabled={deletingDoc}
+                          onClick={async () => {
+                            setDeletingDoc(true);
+                            setError(null);
+                            try {
+                              await api.deleteDocument(d.id);
+                              setData(await api.getHousehold());
+                            } catch (e) {
+                              setError(e instanceof Error ? e.message : "Could not delete the document.");
+                            } finally {
+                              setDeletingDoc(false);
+                              setConfirmingDoc(null);
+                            }
+                          }}
+                        >
+                          {deletingDoc ? "Deleting…" : "Yes, delete it"}
+                        </Button>
+                        <Button type="button" variant="secondary" disabled={deletingDoc} onClick={() => setConfirmingDoc(null)}>
+                          Keep it
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

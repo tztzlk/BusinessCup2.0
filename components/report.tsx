@@ -159,10 +159,12 @@ export function HouseholdSummary({
   profile,
   employers,
   documents,
+  onEditEmployer,
 }: {
   profile: HouseholdProfile;
   employers: EmploymentSettings[];
   documents: StoredDocument[];
+  onEditEmployer?: (id: string) => void;
 }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
@@ -188,8 +190,22 @@ export function HouseholdSummary({
         const tax = (type: string) => latest?.fields.taxes.find((t) => t.type === type)?.current ?? null;
         return (
           <Card key={e.id}>
-            <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{e.member === "self" ? "You" : "Spouse"}</p>
-            <h3 className="font-semibold text-slate-900">{e.employerName}</h3>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{e.member === "self" ? "You" : "Spouse"}</p>
+                <h3 className="font-semibold text-slate-900">{e.employerName}</h3>
+              </div>
+              {onEditEmployer && (
+                <button
+                  type="button"
+                  className="shrink-0 rounded-md px-2 py-1 text-sm font-medium text-brand-700 hover:bg-brand-50"
+                  aria-label={`Edit job: ${e.employerName}`}
+                  onClick={() => onEditEmployer(e.id)}
+                >
+                  Edit job
+                </button>
+              )}
+            </div>
             <p className="text-sm text-slate-500">
               {e.payType === "salary" ? `${money(e.annualSalary ?? null, true)} salary` : `${money(e.hourlyRate ?? null)}/hour`}
               {e.match401k ? ` · match ${e.match401k.matchPercent}% up to ${e.match401k.upToPercentOfPay}%` : ""}
