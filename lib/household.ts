@@ -32,7 +32,7 @@ export interface Session {
 
 const now = () => new Date().toISOString();
 
-async function clientIpHash(): Promise<string | null> {
+export async function clientIpHash(): Promise<string | null> {
   const h = await headers();
   const ip = h.get("fly-client-ip") ?? h.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null;
   return hashIp(ip);

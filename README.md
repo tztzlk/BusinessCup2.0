@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PayTrail
 
-## Getting Started
+Paycheck checkups and tax-season prep for working US households.
 
-First, run the development server:
+PayTrail reads your pay stubs, checks withholding, overtime and your 401(k) match, projects whether your household will owe or get a refund in April, and tells you exactly what to change on your W-4. In January it builds your tax-document checklist, reconciles your W-2 with your pay stubs, and packages everything for your accountant.
+
+Built in 24 hours at Business Cup 2.0 by team ENUshniki.
+
+> Estimates only. Not tax advice. Not affiliated with the IRS.
+
+## How it works
+
+- **Claude reads, code calculates.** Claude (Anthropic API) only extracts fields from a pay stub or W-2 and writes plain-English explanations. Every number is computed by a deterministic, tested engine with tax parameters versioned by year and linked to IRS sources.
+- **You confirm every field** before anything is saved.
+- **Documents are never stored.** Files live in memory during extraction; only the fields you confirm are kept.
+- **Encrypted at the field level.** Each household's data is encrypted with AES-256-GCM using a key derived from a secret that only your browser holds (httpOnly cookie) plus a server key. A copy of the database alone is unreadable.
+- **Delete anytime.** One click removes everything; inactive households are purged after 30 days.
+
+## Stack
+
+Next.js 15 (TypeScript, Node.js) · SQLite (better-sqlite3) · Claude API · Docker · Fly.io
+
+## Run locally
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env          # set ANTHROPIC_API_KEY and MASTER_KEY (openssl rand -base64 32)
+npm install
+npm run dev                   # http://localhost:3000
+npm test                      # unit tests
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Or with Docker: `docker compose up --build`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Deploy
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+fly launch --no-deploy        # first time only, uses fly.toml
+fly volumes create paytrail_data --size 1 --region fra
+fly secrets set ANTHROPIC_API_KEY=... MASTER_KEY=...
+fly deploy
+```
 
-## Learn More
+## Docs
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Case and judging criteria](docs/CASE.md)
+- [Research log: idea selection, competitors, market](docs/RESEARCH-LOG.md)
+- [Team tasks](docs/TASKS.md)
