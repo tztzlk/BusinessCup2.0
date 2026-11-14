@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { api, ApiError, FRIENDLY } from "@/lib/api-client";
 import { uploadProblem } from "@/lib/upload";
+import { keepPendingDocument, type PendingDocument } from "@/lib/pendingDocument";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
 import { Paywall } from "@/components/Paywall";
@@ -542,7 +543,7 @@ function ConfirmStep({
 
       {err && errCode === "payment_required" ? (
         <div className="mt-4">
-          <Paywall title="Add more documents with Annual" reason={err} />
+          <Paywall title="Add more documents with Annual" reason={`${err} The fields you just confirmed are kept in this tab and saved as soon as Annual is active.`} />
         </div>
       ) : (
         err && (
@@ -559,11 +560,19 @@ function ConfirmStep({
           onClick={() =>
             run(async () => {
               const id = employerId || null;
-              if (paystub) {
-                const year = Number(paystub.payDate.slice(0, 4)) || new Date().getFullYear();
-                await api.addDocument({ docType: "paystub", employerId: id, taxYear: year, fields: paystub });
-              } else if (w2) {
-                await api.addDocument({ docType: "w2", employerId: id, taxYear: w2.taxYear, fields: w2 });
+              const doc: PendingDocument | null = paystub
+                ? { docType: "paystub", employerId: id, taxYear: Number(paystub.payDate.slice(0, 4)) || new Date().getFullYear(), fields: paystub }
+                : w2
+                  ? { docType: "w2", employerId: id, taxYear: w2.taxYear, fields: w2 }
+                  : null;
+              if (doc) {
+                try {
+                  await api.addDocument(doc);
+                } catch (e) {
+                  // Over the free plan: keep the confirmed fields for this tab, so they are saved after checkout.
+                  if (e instanceof ApiError && e.code === "payment_required") keepPendingDocument(doc);
+                  throw e;
+                }
               }
               await onSaved();
             })
