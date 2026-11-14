@@ -88,7 +88,9 @@ export function CheckFlow() {
             onDone={async (profile) => {
               setError(null);
               const res = await api.createHousehold(profile);
-              setRecoveryUrl(res.recoveryUrl);
+              // Use the origin the visitor actually sees; the server may sit behind a proxy.
+              const link = new URL(res.recoveryUrl);
+              setRecoveryUrl(`${window.location.origin}${link.pathname}${link.hash}`);
               await refresh();
               setStep("recovery");
             }}
