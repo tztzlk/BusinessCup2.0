@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ButtonLink, Card } from "@/components/ui";
 import { CatchTicker, HeroStack } from "@/components/HeroArt";
 import { LogoMark } from "@/components/Logo";
@@ -54,6 +55,107 @@ const HOW_TO_TEST = [
     href: "/check",
   },
 ];
+
+// Engine results for the sample households, locked by tests/demo.test.ts and tests/personas.test.ts.
+const SAMPLE_REPORTS = [
+  {
+    href: "/demo/couple",
+    who: "Alex & Jordan",
+    tag: "Two salaries",
+    finding: "Owe ~$7,573 in April",
+    detail: "Fix: W-4 Step 4(c) +$999 and +$895 per paycheck",
+  },
+  {
+    href: "/demo/hourly",
+    who: "Rosa & Tom",
+    tag: "Hourly + salaried",
+    finding: "$132 of overtime missing",
+    detail: "92 hours in two weeks, no overtime line on the stub",
+  },
+  {
+    href: "/demo/salaried",
+    who: "Nina & Marcus",
+    tag: "Two salaries",
+    finding: "$1,920 a year of 401(k) match unclaimed",
+    detail: "Saves 3% of pay, employer matches up to 5%",
+  },
+];
+
+// Only what each product's own page says (checked 15 Nov 2026, links under the table). "—" = not mentioned there.
+const COMPARE_COLUMNS = [
+  { name: "PayTrail", note: "this site" },
+  { name: "IRS Tax Withholding Estimator", note: "irs.gov", url: "https://www.irs.gov/individuals/tax-withholding-estimator" },
+  {
+    name: "Paycheck Optimizer by april",
+    note: "inside Gusto",
+    url: "https://support.gusto.com/article/250923184715297/Paycheck-Optimizer-powered-by-april",
+  },
+  { name: "WageWatch", note: "iPhone app", url: "https://apps.apple.com/us/app/id6744068979" },
+  { name: "TurboTax W-4 Calculator", note: "turbotax.com", url: "https://turbotax.intuit.com/tax-tools/calculators/w4/" },
+];
+
+const COMPARE_ROWS: { label: string; cells: [string, string, string, string, string] }[] = [
+  {
+    label: "Price",
+    cells: ["Free for one pay stub, Annual $99/year", "Free", "Free", "Free", "—"],
+  },
+  {
+    label: "Who can use it",
+    cells: [
+      "Any W-2 household, in a browser",
+      "Anyone, in a browser, no login",
+      "Only employees paid through Gusto, after 3 Gusto paychecks this year, in the Gusto mobile app",
+      "iPhone users",
+      "In a browser, on turbotax.com",
+    ],
+  },
+  {
+    label: "How it gets your pay data",
+    cells: [
+      "Reads a PDF or photo of your pay stub or W-2; you confirm each field",
+      "You enter figures from your recent pay statements",
+      "Your Gusto payroll profile plus questions in the app",
+      "Your schedule and pay rate, plus paycheck photos",
+      "You enter your taxable income per pay period from your pay stubs",
+    ],
+  },
+  {
+    label: "Checks each paycheck for mistakes",
+    cells: [
+      "Withholding vs. W-4, Social Security, Medicare, overtime, 401(k) match, net pay",
+      "—",
+      "—",
+      "Underpayments, missed overtime, unpaid breaks",
+      "—",
+    ],
+  },
+  {
+    label: "April owe-or-refund estimate and W-4 fix",
+    cells: [
+      "Both earners, exact Step 4(c) for each job",
+      "Yes, including a working spouse; pre-filled W-4",
+      "Federal only; your W-4 is updated in Gusto if you accept",
+      "—",
+      "Refund or balance due; shows how to fill out your W-4",
+    ],
+  },
+  {
+    label: "January: W-2 vs. pay stubs, form checklist",
+    cells: ["Yes, plus a packet for your accountant", "—", "—", "—", "—"],
+  },
+  {
+    label: "Keeps your data",
+    cells: [
+      "Confirmed fields only, encrypted; delete anytime",
+      "No: cleared when you close the browser window",
+      "—",
+      "—",
+      "—",
+    ],
+  },
+];
+
+const NATP_FEES = "https://dam.natptax.com/m/39796eb5ee56a576/original/TAXPROPages.pdf";
 
 const PRIVACY = [
   ["Claude reads, code calculates", "AI only reads your document. Every number comes from a tested tax engine with IRS-sourced parameters."],
@@ -173,6 +275,32 @@ export default function Home() {
         ))}
       </section>
 
+      <section className="mt-12 scroll-mt-20" id="samples">
+        <div className="flex flex-wrap items-end justify-between gap-2">
+          <div>
+            <h2 className="text-2xl font-semibold text-slate-900">See a full report before you upload</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Three fictional households, computed by the same engine. Open &ldquo;Show calculation&rdquo; on any finding to see every step.
+            </p>
+          </div>
+          <Link href="/accuracy" className="text-sm font-medium text-brand-700 hover:underline">
+            How accurate is this? →
+          </Link>
+        </div>
+        <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          {SAMPLE_REPORTS.map((r) => (
+            <Link key={r.href} href={r.href} className="group flex flex-col rounded-xl border border-slate-200 bg-white p-5 transition-shadow hover:shadow-md">
+              <p className="text-xs text-slate-500">
+                {r.who} · {r.tag}
+              </p>
+              <p className="mt-2 text-lg font-semibold leading-snug text-slate-900">{r.finding}</p>
+              <p className="mt-1 text-sm text-slate-600">{r.detail}</p>
+              <p className="mt-auto pt-4 text-sm font-medium text-brand-700 group-hover:underline">Open the report with calculations →</p>
+            </Link>
+          ))}
+        </div>
+      </section>
+
       <section className="mt-12">
         <h2 className="text-2xl font-semibold text-slate-900">Built for documents with your salary on them</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -183,6 +311,74 @@ export default function Home() {
             </div>
           ))}
         </div>
+        <p className="mt-4 text-sm text-slate-600">
+          What we keep, where it goes and how deletion works:{" "}
+          <Link href="/privacy" className="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-900">
+            Privacy policy
+          </Link>
+          {" · "}
+          <Link href="/accuracy" className="font-medium text-brand-700 underline underline-offset-2 hover:text-brand-900">
+            Accuracy and limits
+          </Link>
+        </p>
+      </section>
+
+      <section className="mt-12 scroll-mt-20" id="compare">
+        <h2 className="text-2xl font-semibold text-slate-900">How PayTrail compares</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Good free withholding calculators exist. PayTrail is the one that reads your pay stubs, checks each paycheck and closes the
+          year with your W-2s.
+        </p>
+        <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+          <table className="w-full min-w-[820px] text-left text-sm">
+            <thead>
+              <tr className="border-b border-slate-200">
+                <th scope="col" className="w-40 px-4 py-3 font-medium text-slate-500">
+                  <span className="sr-only">Feature</span>
+                </th>
+                {COMPARE_COLUMNS.map((c, i) => (
+                  <th key={c.name} scope="col" className={`px-4 py-3 align-bottom ${i === 0 ? "bg-brand-50" : ""}`}>
+                    <span className="block font-semibold text-slate-900">{c.name}</span>
+                    <span className="block text-xs font-normal text-slate-500">{c.note}</span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 align-top">
+              {COMPARE_ROWS.map((row) => (
+                <tr key={row.label}>
+                  <th scope="row" className="px-4 py-3 font-medium text-slate-700">
+                    {row.label}
+                  </th>
+                  {row.cells.map((cell, i) => (
+                    <td
+                      key={i}
+                      className={`px-4 py-3 ${i === 0 ? "bg-brand-50 font-medium text-slate-900" : cell === "—" ? "text-slate-400" : "text-slate-600"}`}
+                    >
+                      {cell}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-slate-500">
+          &ldquo;—&rdquo; means the product&apos;s own page doesn&apos;t mention it. Checked 15 November 2026 on each product&apos;s page:{" "}
+          {COMPARE_COLUMNS.filter((c) => c.url).map((c, i, all) => (
+            <span key={c.name}>
+              <a href={c.url} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-slate-700">
+                {c.name}
+              </a>
+              {i < all.length - 1 ? " · " : "."}
+            </span>
+          ))}{" "}
+          PayTrail checks federal tax only; see{" "}
+          <Link href="/accuracy" className="underline underline-offset-2 hover:text-slate-700">
+            what it doesn&apos;t cover
+          </Link>
+          .
+        </p>
       </section>
 
       <section className="mt-12" id="pricing">
@@ -223,6 +419,15 @@ export default function Home() {
             className="hidden h-auto w-[190px] -scale-x-100 self-end lg:block"
           />
         </div>
+        <p className="mt-4 max-w-3xl text-sm text-slate-600">
+          <strong className="font-semibold text-slate-900">Why $99:</strong> one finding can pay for the year. On our sample households,
+          a single paycheck was $132 short on overtime, and a 401(k) match worth $1,920 a year went unclaimed. A tax pro charges
+          $184–$280 on average to prepare a basic Form 1040, depending on credentials (
+          <a href={NATP_FEES} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-slate-900">
+            NATP 2025 Fee Study
+          </a>
+          ).
+        </p>
       </section>
     </div>
   );

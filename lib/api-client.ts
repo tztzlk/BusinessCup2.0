@@ -9,6 +9,7 @@ import type {
   W2,
 } from "./types";
 import type { ExplainRequest, ExplainResponse } from "./explain";
+import { clearBrowserData } from "./browserData";
 
 // Typed browser-side wrappers for the PayTrail API. Cookies are same-origin.
 
@@ -93,7 +94,12 @@ export const api = {
   createHousehold: (profile: HouseholdProfile) =>
     request<{ householdId: string; recoveryUrl: string }>("/api/household", json("POST", { profile })),
   saveProfile: (profile: HouseholdProfile) => request<{ ok: true }>("/api/household/profile", json("PUT", profile)),
-  deleteHousehold: () => request<{ deleted: true }>("/api/household", { method: "DELETE" }),
+  // Deleting the household also clears what this browser cached (the server clears the cookie).
+  deleteHousehold: async () => {
+    const res = await request<{ deleted: true }>("/api/household", { method: "DELETE" });
+    clearBrowserData();
+    return res;
+  },
   getRecoveryLink: () => request<{ recoveryUrl: string }>("/api/household/recovery-link"),
   recover: (secret: string) => request<{ restored: true }>("/api/household/recover", json("POST", { secret })),
   addEmployer: (settings: Omit<EmploymentSettings, "id">) =>

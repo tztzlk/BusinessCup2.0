@@ -9,6 +9,7 @@ import { ReportEngineSection } from "@/components/ReportEngineSection";
 import { ProfileForm } from "@/components/ProfileForm";
 import { EmployerForm } from "@/components/EmployerForm";
 import { SaveLinkCard } from "@/components/SaveLinkCard";
+import { DeletionScope } from "@/components/DeletionScope";
 import { pendingDocumentLabel, takePendingDocument } from "@/lib/pendingDocument";
 import { money, shortDate } from "@/lib/format";
 import type { EmploymentSettings, HouseholdData, Paystub, W2 } from "@/lib/types";
@@ -287,12 +288,12 @@ export function ReportView() {
           </div>
         )}
         <Card>
-          <p className="text-sm text-slate-600">
-            Deleting removes your household, jobs, documents and checklist from our servers immediately. This can&apos;t be undone.
-          </p>
+          <DeletionScope />
           {confirmingDelete ? (
             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-900">Delete everything now? Your private link will stop working too.</p>
+              <p className="text-sm font-medium text-red-900">
+                Delete everything listed above now? Your private link will stop working too.
+              </p>
               <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                 <Button
                   type="button"

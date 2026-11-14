@@ -1,4 +1,5 @@
 import type { Paystub, W2 } from "./types";
+import { PENDING_DOCUMENT_KEY } from "./browserData";
 
 // A document the user confirmed but could not save because the free plan was used up. It is kept in
 // sessionStorage (this tab only, cleared when the tab closes) while they go through Stripe Checkout,
@@ -8,7 +9,7 @@ export type PendingDocument =
   | { docType: "paystub"; employerId: string | null; taxYear: number; fields: Paystub }
   | { docType: "w2"; employerId: string | null; taxYear: number; fields: W2 };
 
-const KEY = "pt_pending_document";
+const KEY = PENDING_DOCUMENT_KEY;
 /** Long enough for a checkout, short enough that a forgotten tab doesn't keep pay data around. */
 const MAX_AGE_MS = 60 * 60 * 1000;
 
