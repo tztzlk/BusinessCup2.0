@@ -4,10 +4,10 @@ import type { ComponentProps, ReactNode } from "react";
 type Variant = "primary" | "secondary" | "danger" | "ghost";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-indigo-600 text-white hover:bg-indigo-500 disabled:bg-indigo-300",
+  primary: "bg-brand-600 text-white hover:bg-brand-500 disabled:bg-brand-300",
   secondary: "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 disabled:text-slate-400",
   danger: "bg-rose-600 text-white hover:bg-rose-500 disabled:bg-rose-300",
-  ghost: "text-indigo-700 hover:bg-indigo-50",
+  ghost: "text-brand-700 hover:bg-brand-50",
 };
 
 const base =
@@ -72,7 +72,7 @@ type Tone = "neutral" | "info" | "success" | "warning" | "danger";
 
 const tones: Record<Tone, string> = {
   neutral: "bg-slate-100 text-slate-700",
-  info: "bg-indigo-100 text-indigo-800",
+  info: "bg-brand-100 text-brand-800",
   success: "bg-emerald-100 text-emerald-800",
   warning: "bg-amber-100 text-amber-800",
   danger: "bg-rose-100 text-rose-800",
@@ -87,7 +87,7 @@ export function Badge({ tone = "neutral", children }: { tone?: Tone; children: R
 export function Notice({ tone = "info", children }: { tone?: Tone; children: ReactNode }) {
   const border: Record<Tone, string> = {
     neutral: "border-slate-200 bg-slate-50 text-slate-700",
-    info: "border-indigo-200 bg-indigo-50 text-indigo-900",
+    info: "border-brand-200 bg-brand-50 text-brand-900",
     success: "border-emerald-200 bg-emerald-50 text-emerald-900",
     warning: "border-amber-200 bg-amber-50 text-amber-900",
     danger: "border-rose-200 bg-rose-50 text-rose-900",
@@ -114,4 +114,4 @@ export function Field({ label, children, hint }: { label: string; children: Reac
 }
 
 export const inputClass =
-  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200";
+  "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200";

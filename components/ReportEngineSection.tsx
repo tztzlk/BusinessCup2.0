@@ -28,7 +28,7 @@ export function ReportEngineSection({ data, onChanged }: { data: HouseholdData; 
             role="tab"
             aria-selected={mode === m}
             onClick={() => setMode(m)}
-            className={`rounded-md px-4 py-1.5 font-medium ${mode === m ? "bg-indigo-600 text-white" : "text-slate-700 hover:bg-slate-100"}`}
+            className={`rounded-md px-4 py-1.5 font-medium ${mode === m ? "bg-brand-600 text-white" : "text-slate-700 hover:bg-slate-100"}`}
           >
             {m === "november" ? "Paycheck checkup" : "Tax season"}
           </button>
