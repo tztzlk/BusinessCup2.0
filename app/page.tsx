@@ -356,8 +356,8 @@ export default function Home() {
       <section className="mt-12 scroll-mt-20" id="compare">
         <h2 className="text-2xl font-semibold text-slate-900">How PayTrail compares</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Good free withholding calculators exist. PayTrail is the one that reads your pay stubs, checks each paycheck and closes the
-          year with your W-2s.
+          Good free withholding calculators exist. PayTrail reads your pay stubs, checks each paycheck and closes the year with your
+          W-2s.
         </p>
         <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
           <table className="w-full min-w-[820px] text-left text-sm">

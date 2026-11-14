@@ -1,0 +1,52 @@
+[
+  {
+    "id": "official_w2_jordan",
+    "file": "official_w2_jordan.pdf",
+    "mime": "application/pdf",
+    "docType": "w2",
+    "layout": "IRS W-2 2026 Copy B (filled, flattened)",
+    "fields": {
+      "taxYear": 2026,
+      "employerName": "Bluebonnet Health (SAMPLE)",
+      "box1Wages": 78000,
+      "box2FederalWithheld": 5000.06,
+      "box3SsWages": 78000,
+      "box4SsWithheld": 4836,
+      "box5MedicareWages": 78000,
+      "box6MedicareWithheld": 1131,
+      "box12": [
+        {
+          "code": "D",
+          "amount": 1560
+        }
+      ],
+      "box13RetirementPlan": true,
+      "state": []
+    }
+  },
+  {
+    "id": "official_w2_jordan_photo",
+    "file": "official_w2_jordan_photo.png",
+    "mime": "image/png",
+    "docType": "w2",
+    "layout": "IRS W-2 2026 Copy B (photo-like PNG)",
+    "fields": {
+      "taxYear": 2026,
+      "employerName": "Bluebonnet Health (SAMPLE)",
+      "box1Wages": 78000,
+      "box2FederalWithheld": 5000.06,
+      "box3SsWages": 78000,
+      "box4SsWithheld": 4836,
+      "box5MedicareWages": 78000,
+      "box6MedicareWithheld": 1131,
+      "box12": [
+        {
+          "code": "D",
+          "amount": 1560
+        }
+      ],
+      "box13RetirementPlan": true,
+      "state": []
+    }
+  }
+]

@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Scores saved /api/extract responses against fixtures/truth.json.
 // Usage: node scripts/eval-extract/score.mjs   -> results/score.json + results/score.md (also printed)
+//   EVAL_SET=real scores fixtures/truth-real.json against results-real/ instead.
 //
 // Rules (applied mechanically):
 // - documentType must equal the truth; if it does not (or the call failed), every field of the doc is wrong.
@@ -12,14 +13,19 @@
 // - Line items are matched by type (box12 by code, state by state); duplicates pair in order. Each numeric or
 //   boolean sub-field of a matched line is one field. A missing line makes all its sub-fields wrong; an extra
 //   line adds its sub-fields to the total, all wrong.
+// - Real-world layouts (15 Nov): a truth line's type may be an array of acceptable enum values when the label is
+//   genuinely ambiguous (e.g. a 457 plan: 401k_pretax or other); such matches are listed. Among candidate lines of an
+//   acceptable type, the one whose current/amount equals the truth is paired first (labels are not in the schema).
+//   A scalar left out of the truth, or a section set to "skip", is not scored and is listed as ambiguous.
 // - A mismatch is "flagged" if the model listed its path (or a parent path) in confidence (uncertainFields).
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const truth = JSON.parse(readFileSync(join(here, "fixtures", "truth.json"), "utf8"));
-const results = join(here, "results");
+const SET = process.env.EVAL_SET ? `-${process.env.EVAL_SET}` : "";
+const truth = JSON.parse(readFileSync(join(here, "fixtures", `truth${SET}.json`), "utf8"));
+const results = join(here, `results${SET}`);
 
 const SUFFIX = /\s*\(sample\)\s*$/i;
 const norm = (s) =>
@@ -80,11 +86,14 @@ function scoreDoc(t, saved) {
   const got = docTypeOk ? res.fields : null;
   const conf = docTypeOk ? (res.confidence ?? {}) : {};
   const rows = [];
+  const altTypes = [];
   const push = (label, category, expected, gotVal, ok, gotPath, note = "") =>
     rows.push({ field: label, category, expected, got: gotVal, ok, gotPath: got ? gotPath : null, flagged: ok ? null : flaggedBy(conf, gotPath), note: got ? note : note || "no result" });
 
+  const skipped = [];
   // employerName
-  {
+  if (!("employerName" in t.fields)) skipped.push("employerName");
+  else {
     const e = t.fields.employerName;
     const g = got?.employerName;
     let ok = got != null && norm(e) === norm(g);
@@ -96,18 +105,34 @@ function scoreDoc(t, saved) {
     push("employerName", "names", e, g, ok, "employerName", note);
   }
   for (const [f, [cat, eq]] of Object.entries(SCALARS[t.docType])) {
+    if (!(f in t.fields)) {
+      skipped.push(f);
+      continue;
+    }
     const g = got ? got[f] : undefined;
     push(f, cat, t.fields[f], g, got != null && eq(t.fields[f], g), f);
   }
   for (const [section, spec] of Object.entries(LINES[t.docType])) {
+    if (t.fields[section] === "skip") {
+      skipped.push(`${section} (all lines)`);
+      continue;
+    }
     const exp = t.fields[section] ?? [];
     const gl = got ? (Array.isArray(got[section]) ? got[section] : []) : [];
     const used = new Set();
     for (const line of exp) {
-      const gi = got ? gl.findIndex((x, i) => !used.has(i) && x?.[spec.key] === line[spec.key]) : -1;
-      if (gi >= 0) used.add(gi);
+      // Real-layout extension: truth type may list several acceptable enum values; among lines of an
+      // acceptable type, prefer the one whose current/amount equals the truth (labels are not in the schema).
+      const want = Array.isArray(line[spec.key]) ? line[spec.key] : [line[spec.key]];
+      const cands = got ? gl.map((x, i) => i).filter((i) => !used.has(i) && want.includes(gl[i]?.[spec.key])) : [];
+      const money = spec.key === "type" ? "current" : "amount";
+      const gi = cands.find((i) => numEq(line[money], gl[i]?.[money])) ?? cands[0] ?? -1;
+      if (gi >= 0) {
+        used.add(gi);
+        if (gl[gi][spec.key] !== want[0]) altTypes.push(`${section}: ${want.join("|")} -> ${gl[gi][spec.key]}`);
+      }
       for (const [f, [cat, eq]] of Object.entries(spec.fields)) {
-        const label = `${section}[${line[spec.key]}].${f}`;
+        const label = `${section}[${want.join("|")}].${f}`;
         if (gi < 0) push(label, cat, line[f], undefined, false, null, got ? "line missing" : "no result");
         else push(label, cat, line[f], gl[gi][f], eq(line[f], gl[gi][f]), `${section}[${gi}].${f}`);
       }
@@ -135,6 +160,8 @@ function scoreDoc(t, saved) {
     total: rows.length,
     exact: rows.filter((r) => r.ok).length,
     suffixDropped: rows.filter((r) => r.note.startsWith("suffix")).length,
+    skipped,
+    altTypes,
     rows,
   };
 }
@@ -197,6 +224,8 @@ md += `\nMismatches that were flagged uncertain: ${mismatches.filter((r) => r.fl
 const warned = docs.filter((d) => d.warnings.length);
 if (warned.length) md += `\n### Server warnings\n\n${warned.map((d) => `- ${d.id}: ${d.warnings.join("; ")}`).join("\n")}\n`;
 
+md += `\n### Not scored (ambiguous ground truth)\n\n${docs.filter((d) => d.skipped.length).map((d) => `- ${d.id}: ${d.skipped.join(", ")}`).join("\n") || "None."}\n`;
+md += `\n### Lines matched through an alternative accepted type\n\n${docs.filter((d) => d.altTypes.length).map((d) => `- ${d.id}: ${d.altTypes.join("; ")}`).join("\n") || "None."}\n`;
 writeFileSync(join(results, "score.json"), JSON.stringify({ summary: all, docs }, null, 2));
 writeFileSync(join(results, "score.md"), md);
 console.log(md);

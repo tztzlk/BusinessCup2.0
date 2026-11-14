@@ -8,6 +8,7 @@ Usage (inside a venv with `pip install policyengine-us taxcalc`):
 Both models get identical inputs: each person's wages after pre-tax 401(k)/Section 125 (W-2 box 1),
 401(k) and Section 125 separately so payroll-tax wages are right, filing status, children under 17
 (age 10), adults age 40, the half-time overtime premium, standard deduction, no other income.
+Totals compared: income tax after CTC/ODC, minus refundable ACTC and EITC, plus Additional Medicare Tax.
 """
 import json
 import sys
@@ -133,7 +134,8 @@ def ours(case):
         "ctcNonRefundable": i["childCreditsNonRefundable"],
         "ctcRefundable": i["childCreditsRefundable"],
         "additionalMedicare": i["additionalMedicareLiability"],
-        "projectedTax": case["projection"]["projectedTax"],  # includes Additional Medicare, no EITC
+        "eitc": i.get("earnedIncomeCredit", 0),
+        "projectedTax": case["projection"]["projectedTax"],  # includes Additional Medicare and EITC
     }
 
 
@@ -146,13 +148,14 @@ for c in cases:
     pe = policyengine(c)
     tcr = taxcalc_run(c)
     row = {"name": c["name"], "ours": o, "policyengine": pe, "taxcalc": tcr}
-    # Like-for-like totals: our projectedTax = income tax after CTC/ODC + Additional Medicare, without EITC.
+    # Like-for-like totals: our projectedTax = income tax after CTC/ODC - ACTC - EITC + Additional Medicare.
     row["compare"] = {
         "ours": o["projectedTax"],
-        # PE: Form 1040 line 24 without Additional Medicare (PE books it as payroll tax) - ACTC + Form 8959.
-        "policyengine": round(pe["incomeTaxBeforeRefundableCredits"] - pe["ctcRefundable"] + pe["additionalMedicare"], 2),
-        # TC: Form 1040 line 24 (includes Form 8959) - ACTC.
-        "taxcalc": round(tcr["totalTaxBeforeRefundable"] - tcr["ctcRefundable"], 2),
+        # PE: Form 1040 line 24 without Additional Medicare (PE books it as payroll tax) - ACTC - EITC + Form 8959.
+        "policyengine": round(pe["incomeTaxBeforeRefundableCredits"] - pe["ctcRefundable"] - pe["eitc"] + pe["additionalMedicare"], 2),
+        # TC: Form 1040 line 24 (includes Form 8959) - ACTC - EITC.
+        "taxcalc": round(tcr["totalTaxBeforeRefundable"] - tcr["ctcRefundable"] - tcr["eitc"], 2),
+        "eitc_ours": o["eitc"],
         "eitc_pe": pe["eitc"],
         "eitc_tc": tcr["eitc"],
     }
@@ -160,13 +163,13 @@ for c in cases:
         pe0, tc0 = policyengine(c, with_overtime=False), taxcalc_run(c, with_overtime=False)
         row["withoutOvertimeDeduction"] = {
             "ours": c.get("projectionNoOvertime", {}).get("projectedTax"),
-            "policyengine": round(pe0["incomeTaxBeforeRefundableCredits"] - pe0["ctcRefundable"] + pe0["additionalMedicare"], 2),
-            "taxcalc": round(tc0["totalTaxBeforeRefundable"] - tc0["ctcRefundable"], 2),
+            "policyengine": round(pe0["incomeTaxBeforeRefundableCredits"] - pe0["ctcRefundable"] - pe0["eitc"] + pe0["additionalMedicare"], 2),
+            "taxcalc": round(tc0["totalTaxBeforeRefundable"] - tc0["ctcRefundable"] - tc0["eitc"], 2),
         }
     results["cases"].append(row)
     cmp = row["compare"]
     print(f'{c["name"]:28s} ours {cmp["ours"]:>10.2f}  PE {cmp["policyengine"]:>10.2f} ({cmp["policyengine"]-cmp["ours"]:+.2f})  '
-          f'TC {cmp["taxcalc"]:>10.2f} ({cmp["taxcalc"]-cmp["ours"]:+.2f})  EITC pe {pe["eitc"]:.0f} tc {tcr["eitc"]:.0f}'
+          f'TC {cmp["taxcalc"]:>10.2f} ({cmp["taxcalc"]-cmp["ours"]:+.2f})  EITC ours {o["eitc"]:.2f} pe {pe["eitc"]:.2f} tc {tcr["eitc"]:.2f}'
           + (f'  noOT: {row["withoutOvertimeDeduction"]}' if "withoutOvertimeDeduction" in row else ""))
 json.dump(results, open(out_path, "w"), indent=1)
 print(json.dumps(results["versions"]))

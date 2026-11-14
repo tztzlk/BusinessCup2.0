@@ -64,8 +64,13 @@ export function CheckupView({
   }, [mode, result, locked]);
   const outlook = aprilOutlook(result.findings);
   const owes = outlook === "owe" && result.projection !== null;
-  // On track: keep the raw balance away from Claude, so its summary doesn't talk about owing $4.
-  const explained = useExplanations(findings, outlook === "on_track" ? null : result.projection);
+  // On track: send a zero balance instead of the raw one, so the summary neither talks about owing $4
+  // nor (with no projection at all) claims that no projection is available.
+  const explainProjection = useMemo(
+    () => (outlook === "on_track" && result.projection ? { ...result.projection, balance: 0 } : result.projection),
+    [outlook, result.projection],
+  );
+  const explained = useExplanations(findings, explainProjection);
 
   return (
     <div>

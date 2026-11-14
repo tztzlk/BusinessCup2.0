@@ -114,4 +114,17 @@ export const SYNTHETIC: SyntheticCase[] = [
     { member: "self", regular: 250000, k401: 24500 },
     { member: "spouse", regular: 220000, k401: 24500 },
   ]),
+  // EITC cases (Rev. Proc. 2025-32 section 4.06; IRC 32(b)(1) rates): each part of the credit's shape.
+  build("single_15k_eitc", "Single, no children, $15k (EITC phase-out, no-child)", "single", 0, [{ member: "self", regular: 15000 }]),
+  build("hoh_10k_1kid_eitc", "Head of household, 1 child, $10k (EITC phase-in)", "head_of_household", 1, [{ member: "self", regular: 10000 }]),
+  build("hoh_25k_1kid_eitc", "Head of household, 1 child, $25k (EITC just past the plateau)", "head_of_household", 1, [{ member: "self", regular: 25000 }]),
+  build("mfj_40k_3kids_eitc", "MFJ one earner $40k, 3 children (EITC, joint threshold)", "married_joint", 3, [{ member: "self", regular: 40000 }]),
+  build("mfj_65k_2kids_eitc", "MFJ $40k + $25k, 2 children (EITC near the end of the phase-out)", "married_joint", 2, [
+    { member: "self", regular: 40000 },
+    { member: "spouse", regular: 25000 },
+  ]),
+  build("hoh_59k_2kids_eitc_end", "Head of household, 2 children, $59k (just above the $58,629 completed phaseout: EITC 0)", "head_of_household", 2, [
+    { member: "self", regular: 59000 },
+  ]),
+  build("mfs_20k_1kid_eitc", "Married filing separately, 1 child, $20k (no EITC: IRC 32(d)(1))", "married_separate", 1, [{ member: "self", regular: 20000 }]),
 ];

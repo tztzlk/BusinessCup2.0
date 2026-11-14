@@ -11,18 +11,22 @@ Date: 2026-11-15. Scope: `lib/engine` (withholding.ts, tax.ts, projection.ts) wi
   Method amounts** (weekly, biweekly, semimonthly, monthly; MFJ, HOH, Single/MFS; Step 2 checked and
   unchecked). It also matches **20 Worksheet 1A vectors to the cent**, covering Step 2, Step 3, Step 4(a),
   4(b) and 4(c), and every withholding amount printed on the 6 demo pay stubs.
-- **Annual federal tax.** On 11 households (3 demo + 8 synthetic), the tax after CTC/ODC plus Additional
-  Medicare Tax **matches PolicyEngine-US 2.124.5 and PSL Tax-Calculator 6.9.1 within $0.01**. The same
-  holds for each component: taxable income, regular tax, OBBBA overtime deduction, nonrefundable and
-  refundable CTC, and Additional Medicare. Both models include the 2026 OBBBA law (CTC $2,200 / $1,700
-  refundable, overtime deduction $12,500 / $25,000, phase-out $100 per full $1,000 over $150k / $300k).
-- **No engine bug found** in the paths covered. There is one **scope gap that matters to the target users:
-  EITC is not modeled.** For a head of household with 2 children earning $55,000, both references add an
-  EITC of $764.23 that PayTrail leaves out, so PayTrail shows a refund that is too small by that amount.
-  See "Differences and scope gaps".
+- **Annual federal tax.** On 18 households (3 demo + 15 synthetic, 7 of them EITC cases), the tax after
+  CTC/ODC, refundable ACTC and EITC, plus Additional Medicare Tax, **matches PolicyEngine-US 2.124.5 on 18
+  of 18 and PSL Tax-Calculator 6.9.1 on 17 of 18 within $0.01**. The one Tax-Calculator difference is by
+  design: for married filing separately it assumes the separated-spouse EITC exception applies (see
+  "Differences"). The same holds for each component: taxable income, regular tax, OBBBA overtime deduction,
+  nonrefundable and refundable CTC, EITC, and Additional Medicare (for 4 low earners the nonrefundable CTC
+  is compared with Tax-Calculator only, because PolicyEngine reports it before the tax limit; see below). Both models include the 2026 OBBBA law
+  (CTC $2,200 / $1,700 refundable, overtime deduction $12,500 / $25,000, phase-out $100 per full $1,000
+  over $150k / $300k).
+- **EITC is now modeled** (`earnedIncomeCredit()` in `lib/engine/tax.ts`, parameters from Rev. Proc. 2025-32
+  section 4.06 and IRC 32(b)(1)). The earlier gap, head of household with 2 children at $55,000, now
+  matches both models: EITC $764.23, total −$1,816.23 (was −$1,052.00 without EITC).
+- **No engine bug found** in the paths covered.
 
 **Claim the deck may use:**
-> "PayTrail's withholding engine reproduces all 4,350 amounts in the IRS's 2026 Pub. 15-T wage-bracket tables. Its annual federal tax matches two open-source tax models (PolicyEngine-US, Tax-Calculator) within $0.01 on 11 test households, including the 2026 overtime deduction and the $2,200 Child Tax Credit (EITC not modeled)."
+> "PayTrail's withholding engine reproduces all 4,350 amounts in the IRS's 2026 Pub. 15-T wage-bracket tables. Its annual federal tax matches the open-source tax model PolicyEngine-US within $0.01 on 18 of 18 test households, and Tax-Calculator on 17 of 18 (the other differs by design), including the 2026 overtime deduction, the $2,200 Child Tax Credit and the Earned Income Tax Credit."
 
 ## References
 
@@ -30,6 +34,8 @@ Date: 2026-11-15. Scope: `lib/engine` (withholding.ts, tax.ts, projection.ts) wi
 |---|---|---|---|
 | 1 | IRS Publication 15-T (2026), *Federal Income Tax Withholding Methods* | https://www.irs.gov/pub/irs-pdf/p15t.pdf (downloaded 2026-11-15; "For use in 2026", updated for P.L. 119-21) | Worksheet 1A (p. 10), annual percentage tables (p. 12), wage bracket tables (pp. 13-27), manual percentage tables (pp. 57-60) |
 | 1b | IRS Publication 15 (2026), *Employer's Tax Guide* | https://www.irs.gov/pub/irs-pdf/p15.pdf | Social Security 6.2% up to $184,500; Medicare 1.45%; Additional Medicare withholding 0.9% over $200,000 |
+| 1c | IRS Rev. Proc. 2025-32 | https://www.irs.gov/pub/irs-drop/rp-25-32.pdf, section 4.06(1) table and 4.06(2), pp. 14-15 | 2026 EITC amounts: earned income amount, maximum credit, threshold and completed phaseout (MFJ and other), investment income limit $12,200 |
+| 1d | 26 U.S.C. § 32 | https://www.law.cornell.edu/uscode/text/26/32 | EITC credit and phaseout percentages (subsection (b)(1)); joint-return rule (d)(1) and separated-spouse exception (d)(2)(B) |
 | 2 | PolicyEngine-US | `policyengine-us` 2.124.5 (`policyengine-core` 3.36.0), https://github.com/PolicyEngine/policyengine-us | Annual 2026 income tax, CTC, EITC, overtime deduction, Additional Medicare |
 | 2b | PSL Tax-Calculator | `taxcalc` 6.9.1, https://github.com/PSLmodels/Tax-Calculator | Same, as a second independent model |
 | 3 | IRS Tax Withholding Estimator | https://www.irs.gov/individuals/tax-withholding-estimator | Not automated: a multi-page interactive app. See "Manual checks" below for inputs to type in |
@@ -70,9 +76,9 @@ in Tax-Calculator).
    engine's projected full-year box-1 wages per person: YTD plus the current paycheck × remaining
    paychecks. This checks the tax on those wages. The extrapolation itself is checked separately (below).
    Like-for-like total = Form 1040 line 24 (tax after nonrefundable credits, plus Form 8959 Additional
-   Medicare) minus the refundable ACTC, **without EITC**.
-   - PolicyEngine: `income_tax_before_refundable_credits − refundable_ctc + additional_medicare_tax`. PolicyEngine books Form 8959 under payroll tax.
-   - Tax-Calculator: `c09200 − c11070`.
+   Medicare) minus the refundable ACTC and the EITC.
+   - PolicyEngine: `income_tax_before_refundable_credits − refundable_ctc − eitc + additional_medicare_tax`. PolicyEngine books Form 8959 under payroll tax.
+   - Tax-Calculator: `c09200 − c11070 − eitc`.
    - Tax-Calculator draws EITC/ACTC take-up at random by default. It was set to always claim (`eitc_claim_prob_scale` and `actc_claim_prob_scale` = 9e99), as on a filed return.
 
 ## Results: per-paycheck withholding (Pub. 15-T 2026)
@@ -116,16 +122,17 @@ bracket, manual percentage, whole-dollar rounding) is not falsely flagged.
 
 ## Results: annual 2026 federal tax
 
-"Ours" = `projection.projectedTax`: income tax after CTC/ODC, minus refundable ACTC, plus Additional
-Medicare. A negative value means refundable credit exceeds tax.
+"Ours" = `projection.projectedTax`: income tax after CTC/ODC, minus refundable ACTC and EITC, plus
+Additional Medicare. A negative value means refundable credits exceed tax. EITC column: ours = PolicyEngine
+= Tax-Calculator unless noted.
 
-| Household | Status, children | Box-1 wages | Ours | PolicyEngine-US | Δ | Tax-Calculator | Δ | EITC (refs) |
+| Household | Status, children | Box-1 wages | Ours | PolicyEngine-US | Δ | Tax-Calculator | Δ | EITC |
 |---|---|---:|---:|---:|---:|---:|---:|---:|
 | couple: Alex & Jordan (demo, as of 11-14) | MFJ, 1 | 165,130.16 | 16,468.64 | 16,468.63 | −0.01 (0.00%) | 16,468.64 | 0.00 | 0 |
 | hourly: Rosa & Tom (demo) | MFJ, 2 | 102,943.38 | 3,593.21 | 3,593.21 | 0.00 | 3,593.21 | 0.00 | 0 |
 | salaried: Nina & Marcus (demo) | MFJ, 0 | 127,119.98 | 10,894.40 | 10,894.40 | 0.00 | 10,894.40 | 0.00 | 0 |
 | single_60k | Single, 0 | 60,000 | 5,020.00 | 5,020.00 | 0.00 | 5,020.00 | 0.00 | 0 |
-| hoh_55k_2kids | HOH, 2 | 55,000 | −1,052.00 | −1,052.00 | 0.00 | −1,052.00 | 0.00 | **764.23** |
+| hoh_55k_2kids | HOH, 2 | 55,000 | −1,816.23 | −1,816.23 | 0.00 | −1,816.23 | 0.00 | 764.23 |
 | mfj_150k_one_earner (401(k) $10k, health $3k) | MFJ, 2 | 137,000 | 8,080.00 | 8,080.00 | 0.00 | 8,080.00 | 0.00 | 0 |
 | mfj_overtime ($15,600 OT → $5,200 premium) | MFJ, 1 | 118,000 | 6,976.00 | 6,976.00 | 0.00 | 6,976.00 | 0.00 | 0 |
 | ↳ same pay, no overtime deduction | | | 7,600.00 | 7,600.00 | 0.00 | 7,600.00 | 0.00 | |
@@ -134,10 +141,32 @@ Medicare. A negative value means refundable credit exceeds tax.
 | single_overtime_phaseout ($30k OT, MAGI $160k → deduction $9,000) | Single, 0 | 160,000 | 24,974.00 | 24,974.00 | 0.00 | 24,974.00 | 0.00 | 0 |
 | ↳ same pay, no overtime deduction | | | 27,134.00 | 27,134.00 | 0.00 | 27,134.00 | 0.00 | |
 | mfj_470k_two_earners (CTC phase-out → $3,350; Additional Medicare $1,980) | MFJ, 2 | 421,000 | 77,138.00 | 77,138.00 | 0.00 | 77,138.00 | 0.00 | 0 |
+| single_15k_eitc (no-child EITC, phase-out) | Single, 0 | 15,000 | −347.29 | −347.29 | 0.00 | −347.29 | 0.00 | 347.29 |
+| hoh_10k_1kid_eitc (phase-in: 34% × 10,000) | HOH, 1 | 10,000 | −4,525.00 | −4,525.00 | 0.00 | −4,525.00 | 0.00 | 3,400.00 |
+| hoh_25k_1kid_eitc (just past the plateau) | HOH, 1 | 25,000 | −5,949.62 | −5,949.62 | 0.00 | −5,949.62 | 0.00 | 4,249.62 |
+| mfj_40k_3kids_eitc (one earner, joint threshold) | MFJ, 3 | 40,000 | −11,469.30 | −11,469.30 | 0.00 | −11,469.30 | 0.00 | 6,369.30 |
+| mfj_65k_2kids_eitc ($40k + $25k, near the end of the phase-out) | MFJ, 2 | 65,000 | −1,149.30 | −1,149.30 | 0.00 | −1,149.30 | 0.00 | 189.30 |
+| hoh_59k_2kids_eitc_end (above the $58,629 completed phaseout) | HOH, 2 | 59,000 | −572.00 | −572.00 | 0.00 | −572.00 | 0.00 | 0 |
+| mfs_20k_1kid_eitc (MFS: no EITC, IRC 32(d)(1)) | MFS, 1 | 20,000 | −1,700.00 | −1,700.00 | 0.00 | −6,127.00 | −4,427.00 | 0 (TC: 4,427) |
 
-The components agree too. Across all 11 households and all 7 components (taxable income, regular tax,
-overtime deduction, nonrefundable CTC, refundable CTC, Additional Medicare, total), the largest difference
-from either model is $0.01.
+EITC hand checks (Rev. Proc. 2025-32 sec. 4.06(1) amounts, IRC 32(b)(1) rates; credit =
+min(phase-in, max − phaseout rate × (max(AGI, earned income) − threshold)), 0 at or above the completed
+phaseout):
+
+- hoh_55k_2kids: 7,316 − 21.06% × (55,000 − 23,890) = 764.23.
+- single_15k: min(7.65% × 15,000, 664) = 664; 664 − 7.65% × (15,000 − 10,860) = 347.29.
+- hoh_10k_1kid: 34% × 10,000 = 3,400 (below the 13,020 earned income amount and the 23,890 threshold).
+- hoh_25k_1kid: 4,427 − 15.98% × (25,000 − 23,890) = 4,249.62.
+- mfj_40k_3kids: 8,231 − 21.06% × (40,000 − 31,160) = 6,369.30.
+- mfj_65k_2kids: 7,316 − 21.06% × (65,000 − 31,160) = 189.30.
+- hoh_59k_2kids: 59,000 ≥ 58,629 → 0.
+
+The components agree too. Across all 18 households and all 8 components (taxable income, regular tax,
+overtime deduction, nonrefundable CTC, refundable CTC, EITC, Additional Medicare, total), the largest
+difference is $0.01, apart from the MFS EITC difference below. For low earners whose tax is below the
+credit (hoh_10k, hoh_25k, mfj_40k, mfs_20k), the nonrefundable CTC is compared with Tax-Calculator's `c07220`
+(the amount used against tax, Form 1040 line 19): PolicyEngine's `non_refundable_ctc` is the nonrefundable
+portion before the tax limit. Both models' totals agree with ours.
 
 **Demo story numbers.** The couple's projection splits into pieces checked above:
 
@@ -151,16 +180,24 @@ up) adds 4 × $1,894 = $7,576 ≥ $7,573. Worksheet 1A line 4a adds Step 4(c) do
 
 ## Differences and scope gaps
 
-No difference above $1 was found inside the engine's scope. The only differences at all:
+No difference above $1 was found inside the engine's scope, except one by-design EITC difference with
+Tax-Calculator. All differences:
 
 | Difference | Size | Cause | Is it a bug? |
 |---|---|---|---|
 | couple total, PolicyEngine | −$0.01 | PolicyEngine computes in float32 (18,668.63 vs 18,668.64 regular tax) | No; rounding in the reference |
 | 11 wage-bracket cells (weekly Single, Step 2 checked) | engine cents 62.50 vs IRS $62 | Double rounding in the comparison: the exact amount is 62.4961; the engine's cent result is right | No |
-| **EITC** (hoh_55k_2kids) | **$764.23** smaller refund in PayTrail | Earned Income Tax Credit is not modeled. Both references compute it (2026: max $7,316 for 2 children, phase-out 21.06% from $23,890) | **Scope gap, not a bug.** For W-2 families with children below about $59k (single/HOH, 2 children), PayTrail overstates tax / understates refund. Fix later: add EITC params (Rev. Proc. 2025-32) or show "EITC not included" when AGI is under the limit |
+| mfs_20k_1kid_eitc, Tax-Calculator | −$4,427.00 (TC adds EITC $4,427) | Tax-Calculator sets `EITC_sep_filers_elig = true` from 2021 and assumes every MFS filer with a child meets the IRC 32(d)(2)(B) separated-spouse exception (lived apart for the last 6 months of the year, or a separation agreement). PolicyEngine and PayTrail apply the general rule, IRC 32(d)(1): no EITC unless filing jointly | No. PayTrail doesn't collect whether the spouses lived apart, so it follows the general rule. Listed as a limitation |
+| ~~EITC not modeled~~ (hoh_55k_2kids) | was $764.23 | Fixed: EITC added from Rev. Proc. 2025-32 sec. 4.06 | Resolved; now matches both models |
 
 Other scope limits, not exercised by these households:
 
+- **EITC simplifications.** Qualifying children = children under 17 from the profile; the EITC also counts
+  children aged 17-18 and full-time students under 24 (IRC 152(c)(3)), so for them PayTrail understates the
+  credit. Investment income is not modeled (assumed ≤ $12,200, IRC 32(i)). The no-child credit needs age
+  25-64, which is assumed (age is not collected). Married filing separately gets no EITC (the separated-spouse
+  exception is not modeled). The engine uses the exact formula; a filed return reads the IRS EIC table with
+  $50 income bands, so the return can differ by a few dollars.
 - **ACTC alternative formula for 3+ children.** PolicyEngine models it (`min_children_for_ss_taxes_minus_eitc = 3`); the engine does not. It matters only for low earners with 3+ children.
 - **Overtime premium.** The engine takes it as overtime pay ÷ 3, which assumes time-and-a-half. Double-time or state-law daily overtime would overstate the deduction: only the FLSA half-time premium qualifies.
 - **Age-based items are not modeled because age is not collected.** That covers the 2025-2028 senior deduction ($6,000), the extra standard deduction for 65+/blind, and the 401(k) catch-up.
@@ -170,8 +207,9 @@ Other scope limits, not exercised by these households:
 
 ## Bugs found
 
-None in the covered paths (withholding, brackets, standard deduction, CTC/ACTC with phase-out, OBBBA
-overtime deduction with cap and phase-out, Additional Medicare liability and withholding, MFS). No test is
+None in the covered paths (withholding, brackets, standard deduction, CTC/ACTC with phase-out, EITC with
+phase-in, plateau, phase-out and the joint threshold, OBBBA overtime deduction with cap and phase-out,
+Additional Medicare liability and withholding, MFS). No test is
 marked `it.fails` or `it.skip`. The only skipped block is the optional dump, which runs when
 `XCHECK_DUMP` is set.
 
@@ -205,7 +243,7 @@ python3 -I scripts/engine-crosscheck/parse_p15t.py /tmp/p15t.txt /tmp/p15t-2026.
 python3 -I scripts/engine-crosscheck/ws1a.py /tmp/p15t-2026.json lib/engine/params/2026/federal.json
 
 # Regression tests (vectors, wage-bracket cells, annual references)
-npx vitest run tests/engine-crosscheck.test.ts
+npx vitest run tests/engine-crosscheck.test.ts tests/eitc.test.ts
 
 # Re-run the reference models
 python3 -m venv /tmp/xcheck && /tmp/xcheck/bin/pip install policyengine-us taxcalc

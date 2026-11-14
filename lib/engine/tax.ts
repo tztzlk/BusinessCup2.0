@@ -59,6 +59,38 @@ export function childCredits(
   return { nonRefundable: round2(nonRefundable), refundable: round2(pos(refundable)) };
 }
 
+/**
+ * Earned Income Tax Credit (IRC 32), refundable. Amounts: Rev. Proc. 2025-32 section 4.06; rates: IRC 32(b)(1).
+ * The credit phases in with earned income up to the maximum, then phases out with AGI or, if greater,
+ * earned income above the threshold, reaching zero at the completed phaseout amount.
+ * Exact formula: a filed return reads the IRS EIC table, which uses $50 income bands, so it can differ by a few dollars.
+ * Simplifications (inputs the engine doesn't collect):
+ * - married filing separately gets no credit (IRC 32(d)(1)); the 32(d)(2)(B) exception for a spouse who lived apart
+ *   for the last 6 months of the year (or under a separation agreement) with a qualifying child is not modeled;
+ * - the caller decides who counts as a qualifying child (the projection uses children under 17);
+ * - the no-child credit needs age 25-64 (IRC 32(c)(1)(A)(ii)); age is not collected, so it is assumed;
+ * - investment income is 0 unless given; over the limit (IRC 32(i)) there is no credit.
+ */
+export function earnedIncomeCredit(
+  earnedIncome: number,
+  agi: number,
+  qualifyingChildren: number,
+  status: FilingStatus,
+  p: FederalParams,
+  investmentIncome = 0,
+): number {
+  const e = p.earnedIncomeCredit;
+  if (status === "married_separate" || earnedIncome <= 0 || investmentIncome > e.investmentIncomeLimit) return 0;
+  const rows = e.byQualifyingChildren;
+  const row = rows[Math.min(Math.max(0, Math.floor(qualifyingChildren)), rows.length - 1)];
+  const key = isJoint(status) ? "married_joint" : "other";
+  const income = Math.max(agi, earnedIncome);
+  if (income >= row.completedPhaseOut[key]) return 0;
+  const phaseIn = earnedIncome >= row.earnedIncomeAmount ? row.maxCredit : Math.min(row.creditRate * earnedIncome, row.maxCredit);
+  const phaseOut = row.phaseOutRate * pos(income - row.phaseOutStart[key]);
+  return round2(pos(Math.min(phaseIn, row.maxCredit - phaseOut)));
+}
+
 /** Additional Medicare Tax owed on the return beyond what employers withheld. */
 export function additionalMedicareDue(
   medicareWagesByJob: number[],

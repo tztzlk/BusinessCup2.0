@@ -83,6 +83,11 @@ describe("directionMatches", () => {
   it("accepts text that names neither", () => {
     expect(directionMatches("Update your W-4 with $999 per paycheck.", 7573)).toBe(true);
   });
+  it("rejects owe or refund wording when the household is on track (balance 0)", () => {
+    expect(directionMatches("You're on track for April; one overtime issue needs a look.", 0)).toBe(true);
+    expect(directionMatches("You may owe a little in April.", 0)).toBe(false);
+    expect(directionMatches("Expect a small refund.", 0)).toBe(false);
+  });
 });
 
 describe("aprilYearMatches", () => {

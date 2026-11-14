@@ -1,0 +1,251 @@
+{
+  "summary": {
+    "docs": 2,
+    "total": 20,
+    "exact": 20
+  },
+  "docs": [
+    {
+      "id": "official_w2_jordan",
+      "layout": "IRS W-2 2026 Copy B (filled, flattened)",
+      "mime": "application/pdf",
+      "docType": "w2",
+      "status": 200,
+      "ms": 10746,
+      "error": null,
+      "gotDocType": "w2",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 10,
+      "exact": 10,
+      "suffixDropped": 0,
+      "skipped": [],
+      "altTypes": [],
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Bluebonnet Health (SAMPLE)",
+          "got": "Bluebonnet Health (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxYear",
+          "category": "dates",
+          "expected": 2026,
+          "got": 2026,
+          "ok": true,
+          "gotPath": "taxYear",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box1Wages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box1Wages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box2FederalWithheld",
+          "category": "w2_boxes",
+          "expected": 5000.06,
+          "got": 5000.06,
+          "ok": true,
+          "gotPath": "box2FederalWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box3SsWages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box3SsWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box4SsWithheld",
+          "category": "w2_boxes",
+          "expected": 4836,
+          "got": 4836,
+          "ok": true,
+          "gotPath": "box4SsWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box5MedicareWages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box5MedicareWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box6MedicareWithheld",
+          "category": "w2_boxes",
+          "expected": 1131,
+          "got": 1131,
+          "ok": true,
+          "gotPath": "box6MedicareWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box13RetirementPlan",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "box13RetirementPlan",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box12[D].amount",
+          "category": "w2_boxes",
+          "expected": 1560,
+          "got": 1560,
+          "ok": true,
+          "gotPath": "box12[0].amount",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    },
+    {
+      "id": "official_w2_jordan_photo",
+      "layout": "IRS W-2 2026 Copy B (photo-like PNG)",
+      "mime": "image/png",
+      "docType": "w2",
+      "status": 200,
+      "ms": 5709,
+      "error": null,
+      "gotDocType": "w2",
+      "docTypeOk": true,
+      "warnings": [],
+      "uncertain": 0,
+      "uncertainPaths": {},
+      "total": 10,
+      "exact": 10,
+      "suffixDropped": 0,
+      "skipped": [],
+      "altTypes": [],
+      "rows": [
+        {
+          "field": "employerName",
+          "category": "names",
+          "expected": "Bluebonnet Health (SAMPLE)",
+          "got": "Bluebonnet Health (SAMPLE)",
+          "ok": true,
+          "gotPath": "employerName",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "taxYear",
+          "category": "dates",
+          "expected": 2026,
+          "got": 2026,
+          "ok": true,
+          "gotPath": "taxYear",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box1Wages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box1Wages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box2FederalWithheld",
+          "category": "w2_boxes",
+          "expected": 5000.06,
+          "got": 5000.06,
+          "ok": true,
+          "gotPath": "box2FederalWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box3SsWages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box3SsWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box4SsWithheld",
+          "category": "w2_boxes",
+          "expected": 4836,
+          "got": 4836,
+          "ok": true,
+          "gotPath": "box4SsWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box5MedicareWages",
+          "category": "w2_boxes",
+          "expected": 78000,
+          "got": 78000,
+          "ok": true,
+          "gotPath": "box5MedicareWages",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box6MedicareWithheld",
+          "category": "w2_boxes",
+          "expected": 1131,
+          "got": 1131,
+          "ok": true,
+          "gotPath": "box6MedicareWithheld",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box13RetirementPlan",
+          "category": "flags",
+          "expected": true,
+          "got": true,
+          "ok": true,
+          "gotPath": "box13RetirementPlan",
+          "flagged": null,
+          "note": ""
+        },
+        {
+          "field": "box12[D].amount",
+          "category": "w2_boxes",
+          "expected": 1560,
+          "got": 1560,
+          "ok": true,
+          "gotPath": "box12[0].amount",
+          "flagged": null,
+          "note": ""
+        }
+      ]
+    }
+  ]
+}

@@ -2,22 +2,25 @@
 // Uploads generated fixtures to POST /api/extract and saves the raw responses.
 // Usage: node scripts/eval-extract/run.mjs <fixture-id> [...ids] | --all
 //   EXTRACT_URL overrides the endpoint (default: production).
+//   EVAL_SET=real uses fixtures/truth-real.json and results-real/ (official IRS W-2 set) instead of the synthetic set.
 // Every call is appended to results/calls.jsonl; the runner refuses to exceed MAX_CALLS in total
 // and stops at the first 429/503. Fixtures that already have a saved 200 response are skipped.
-import { appendFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const fixtures = join(here, "fixtures");
-const results = join(here, "results");
+const SET = process.env.EVAL_SET ? `-${process.env.EVAL_SET}` : "";
+const results = join(here, `results${SET}`);
+mkdirSync(results, { recursive: true });
 const ledger = join(results, "calls.jsonl");
 
 const URL_ = process.env.EXTRACT_URL ?? "https://paytrail-enushniki.fly.dev/api/extract";
 const MAX_CALLS = Number(process.env.MAX_CALLS ?? 12);
 const GAP_MS = 6000;
 
-const truth = JSON.parse(readFileSync(join(fixtures, "truth.json"), "utf8"));
+const truth = JSON.parse(readFileSync(join(fixtures, `truth${SET}.json`), "utf8"));
 const args = process.argv.slice(2);
 const ids = args.includes("--all") ? truth.map((t) => t.id) : args;
 if (!ids.length) {

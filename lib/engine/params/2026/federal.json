@@ -9,6 +9,7 @@
     "childTaxCredit": "https://www.irs.gov/credits-deductions/individuals/child-tax-credit",
     "overtimeDeduction": "https://www.irs.gov/newsroom/what-to-know-about-the-no-tax-on-overtime-deduction",
     "additionalMedicare": "https://www.irs.gov/taxtopics/tc560",
+    "irc32": "https://www.law.cornell.edu/uscode/text/26/32",
     "flsaWorkweek": "https://www.dol.gov/agencies/whd/overtime"
   },
   "standardDeduction": {
@@ -64,6 +65,17 @@
     "otherDependentCredit": 500,
     "phaseOutThreshold": { "married_joint": 400000, "other": 200000 },
     "phaseOutPer1000": 50
+  },
+  "earnedIncomeCredit": {
+    "_source": "revProc section 4.06(1) table, pp. 14-15 (earnedIncomeAmount, maxCredit, phaseOutStart and completedPhaseOut for MFJ and all other filing statuses) and 4.06(2), p. 15 (investmentIncomeLimit, IRC 32(i)); irc32 subsection (b)(1) table (creditRate, phaseOutRate: statutory, not inflation-adjusted, so not in the Rev. Proc.); irc32 subsection (d)(1): a married individual gets the credit only on a joint return (the (d)(2)(B) separated-spouse exception is not modeled, so married_separate gets 0)",
+    "_format": "one row per number of qualifying children; the last row (3) means three or more. Credit = min(phase-in, maxCredit - phaseOutRate x (max(AGI, earned income) - phaseOutStart)), floored at 0, where phase-in = maxCredit if earned income >= earnedIncomeAmount, else min(creditRate x earned income, maxCredit); no credit at or above completedPhaseOut",
+    "byQualifyingChildren": [
+      { "children": 0, "creditRate": 0.0765, "phaseOutRate": 0.0765, "earnedIncomeAmount": 8680, "maxCredit": 664, "phaseOutStart": { "married_joint": 18140, "other": 10860 }, "completedPhaseOut": { "married_joint": 26820, "other": 19540 } },
+      { "children": 1, "creditRate": 0.34, "phaseOutRate": 0.1598, "earnedIncomeAmount": 13020, "maxCredit": 4427, "phaseOutStart": { "married_joint": 31160, "other": 23890 }, "completedPhaseOut": { "married_joint": 58863, "other": 51593 } },
+      { "children": 2, "creditRate": 0.40, "phaseOutRate": 0.2106, "earnedIncomeAmount": 18290, "maxCredit": 7316, "phaseOutStart": { "married_joint": 31160, "other": 23890 }, "completedPhaseOut": { "married_joint": 65899, "other": 58629 } },
+      { "children": 3, "creditRate": 0.45, "phaseOutRate": 0.2106, "earnedIncomeAmount": 18290, "maxCredit": 8231, "phaseOutStart": { "married_joint": 31160, "other": 23890 }, "completedPhaseOut": { "married_joint": 70244, "other": 62974 } }
+    ],
+    "investmentIncomeLimit": 12200
   },
   "overtimeDeduction": {
     "_source": "overtimeDeduction (2025-2028; only the half-time premium counts; married must file jointly)",

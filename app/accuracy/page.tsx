@@ -13,9 +13,9 @@ const UPDATED = "15 November 2026";
 const params = federalParams(2026);
 
 // Measured numbers only (rule 7). Update them when the measurement is re-run.
-// Tests: `npm test` on main, 15 Nov 2026 (186 passed; the 1 skipped is the optional XCHECK_DUMP step).
+// Tests: `npx vitest run`, 15 Nov 2026 (226 passed; the 1 skipped is the optional XCHECK_DUMP step).
 // Reader: docs/EVAL-EXTRACT.md. Cross-checks: docs/ENGINE-CROSSCHECK.md.
-const TESTS_PASSING = 186;
+const TESTS_PASSING = 226;
 const READER = { fields: 209, exact: 209, files: 11, documents: 9 };
 const REPO = "https://github.com/tztzlk/BusinessCup2.0/blob/main";
 const EVAL_DOC = `${REPO}/docs/EVAL-EXTRACT.md`;
@@ -56,16 +56,16 @@ const CROSS_CHECKS: CrossCheck[] = [
   {
     against: "PolicyEngine-US 2.124.5",
     url: "https://github.com/PolicyEngine/policyengine-us",
-    what: "Full-year 2026 federal tax for 11 households (the 3 samples + 8 synthetic), incl. Child Tax Credit, overtime deduction, Additional Medicare",
-    result: "11 of 11",
-    match: "Within $0.01, total and each component",
+    what: "Full-year 2026 federal tax for 18 households (the 3 samples + 15 synthetic), incl. Child Tax Credit, Earned Income Tax Credit, overtime deduction, Additional Medicare",
+    result: "18 of 18",
+    match: "Within $0.01, total and each component. For 4 low-income households PolicyEngine-US reports the non-refundable Child Tax Credit before the tax limit, so that line is compared with Tax-Calculator; totals match",
   },
   {
     against: "PSL Tax-Calculator 6.9.1",
     url: "https://github.com/PSLmodels/Tax-Calculator",
-    what: "The same 11 households",
-    result: "11 of 11",
-    match: "Within $0.01, total and each component",
+    what: "The same 18 households",
+    result: "17 of 18",
+    match: "Within $0.01, total and each component. The one difference is by design: for married filing separately, Tax-Calculator assumes the separated-spouse EITC exception applies; PayTrail and PolicyEngine-US do not",
   },
 ];
 
@@ -76,6 +76,7 @@ const SOURCE_LABELS: Record<string, string> = {
   ssWageBase: "Social Security Administration: 2026 wage base",
   limit401k: "IRS: 2026 401(k) contribution limit",
   childTaxCredit: "IRS: Child Tax Credit",
+  irc32: "26 U.S.C. § 32: Earned Income Tax Credit rates and rules",
   overtimeDeduction: "IRS: No Tax on Overtime deduction",
   additionalMedicare: "IRS Topic 560: Additional Medicare Tax",
   flsaWorkweek: "U.S. Department of Labor: overtime pay",
@@ -98,8 +99,8 @@ const LIMITS = [
   "Federal income tax only. State and local income taxes are not calculated.",
   "Standard deduction only. Itemized deductions (mortgage interest, state and local taxes, charity) are not modeled.",
   "Wages from W-2 jobs only. Interest, dividends, capital gains, 1099 contract work and self-employment income are not in the April projection. Your January checklist still lists the 1099 forms to expect.",
-  "The Earned Income Tax Credit (EITC) is not included. For lower-income families with children, PayTrail can show a refund that is too small: in our cross-check, $764.23 too small for a head of household with 2 children earning $55,000.",
-  "Other credits: only the Child Tax Credit and the credit for other dependents are included. Education, child care and other credits are not, nor the alternative refundable Child Tax Credit formula for families with 3 or more children.",
+  `Earned Income Tax Credit (EITC): children under 17 count as qualifying children. Children aged 17 or 18, and full-time students up to 23, may also qualify but are not counted, so the EITC can come out too small. Investment income is assumed to be at most $${params.earnedIncomeCredit.investmentIncomeLimit.toLocaleString("en-US")} (above it there is no EITC). Married filing separately gets no EITC: the exception for spouses who lived apart is not modeled. The credit for workers without children assumes age 25 to 64. The amount uses the exact formula; the IRS table on your return rounds income to $50 bands, so it can differ by a few dollars.`,
+  "Other credits: only the Child Tax Credit, the credit for other dependents and the EITC are included. Education, child care and other credits are not, nor the alternative refundable Child Tax Credit formula for families with 3 or more children.",
   "Age-based items are not modeled because we don't ask your age: the extra standard deduction and the new deduction for people 65 and older, and 401(k) catch-up contributions for ages 50+.",
   "The tips and car-loan interest deductions are not modeled.",
   "The overtime check uses the federal 40-hour workweek and assumes time-and-a-half. State daily-overtime rules, such as California's, and double time are not checked.",
@@ -145,7 +146,7 @@ export default function AccuracyPage() {
         <Card className="p-4">
           <p className="text-3xl font-semibold tabular-nums text-slate-900">±$0.01</p>
           <p className="mt-1 text-sm text-slate-600">
-            annual federal tax vs. PolicyEngine-US and Tax-Calculator on 11 households. EITC not modeled.
+            annual federal tax vs. PolicyEngine-US and Tax-Calculator on 18 households, including the EITC.
           </p>
         </Card>
         <Card className="p-4">
@@ -220,7 +221,7 @@ export default function AccuracyPage() {
         </table>
       </div>
       <p className="mt-3 text-sm">
-        The one gap it found is scope, not a bug: the Earned Income Tax Credit is not modeled (see the limits below). The IRS Tax
+        No engine bug was found. The one gap it found, the Earned Income Tax Credit, is now modeled and matches both models, apart from the by-design married-filing-separately case above. The IRS Tax
         Withholding Estimator is an interactive form, so it was not compared automatically. Method, versions and every household:{" "}
         <Ext href={CROSSCHECK_DOC}>ENGINE-CROSSCHECK.md</Ext>.
       </p>

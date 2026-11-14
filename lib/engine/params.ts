@@ -37,6 +37,19 @@ export interface FederalParams {
     phaseOutThreshold: { married_joint: number; other: number };
     phaseOutPer1000: number;
   };
+  earnedIncomeCredit: {
+    /** Index = number of qualifying children; the last row is "three or more". */
+    byQualifyingChildren: Array<{
+      children: number;
+      creditRate: number;
+      phaseOutRate: number;
+      earnedIncomeAmount: number;
+      maxCredit: number;
+      phaseOutStart: { married_joint: number; other: number };
+      completedPhaseOut: { married_joint: number; other: number };
+    }>;
+    investmentIncomeLimit: number;
+  };
   overtimeDeduction: {
     cap: { married_joint: number; other: number };
     phaseOutThreshold: { married_joint: number; other: number };

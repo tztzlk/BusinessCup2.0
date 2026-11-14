@@ -151,22 +151,42 @@ const DEMOS: Array<{ name: string; data: () => HouseholdData; asOf: string }> = 
 ];
 
 // Reference values: PolicyEngine-US 2.124.5 and Tax-Calculator 6.9.1, run 2026-11-15 with identical inputs.
-// total = income tax after CTC/ODC (incl. refundable ACTC) + Additional Medicare Tax (Form 8959), without EITC
-// (PayTrail does not model EITC; eitc = what both references add on top). Components are PolicyEngine's;
-// Tax-Calculator's agree with them to the cent. For the demo households both models get the engine's
-// projected full-year W-2 box 1 wages per person (YTD + remaining paychecks).
-const ANNUAL_REFERENCE: Record<string, { total: { policyengine: number; taxcalc: number }; taxableIncome: number; regularTax: number; overtimeDeduction: number; ctcNonRefundable: number; ctcRefundable: number; additionalMedicare: number; eitc: number; totalWithoutOvertimeDeduction?: number }> = {
+// total = income tax after CTC/ODC, minus refundable ACTC, minus EITC, plus Additional Medicare Tax (Form 8959).
+// eitc = the Earned Income Tax Credit; both models agree on it to the cent (eitcTaxcalc where Tax-Calculator
+// is listed separately). Other components are PolicyEngine's; Tax-Calculator's agree with them to the cent.
+// For the demo households both models get the engine's projected full-year W-2 box 1 wages per person
+// (YTD + remaining paychecks).
+const ANNUAL_REFERENCE: Record<string, { total: { policyengine: number; taxcalc: number }; taxableIncome: number; regularTax: number; overtimeDeduction: number; ctcNonRefundable: number; ctcRefundable: number; additionalMedicare: number; eitc: number; eitcTaxcalc?: number; totalWithoutOvertimeDeduction?: number }> = {
   couple: { total: { policyengine: 16468.63, taxcalc: 16468.64 }, taxableIncome: 132930.16, regularTax: 18668.63, overtimeDeduction: 0, ctcNonRefundable: 2200, ctcRefundable: 0, additionalMedicare: 0, eitc: 0 },
   hourly: { total: { policyengine: 3593.21, taxcalc: 3593.21 }, taxableIncome: 70743.38, regularTax: 7993.21, overtimeDeduction: 0, ctcNonRefundable: 4400, ctcRefundable: 0, additionalMedicare: 0, eitc: 0 },
   salaried: { total: { policyengine: 10894.4, taxcalc: 10894.4 }, taxableIncome: 94919.98, regularTax: 10894.4, overtimeDeduction: 0, ctcNonRefundable: 0, ctcRefundable: 0, additionalMedicare: 0, eitc: 0 },
   single_60k: { total: { policyengine: 5020, taxcalc: 5020 }, taxableIncome: 43900, regularTax: 5020, overtimeDeduction: 0, ctcNonRefundable: 0, ctcRefundable: 0, additionalMedicare: 0, eitc: 0 },
-  hoh_55k_2kids: { total: { policyengine: -1052, taxcalc: -1052 }, taxableIncome: 30850, regularTax: 3348, overtimeDeduction: 0, ctcNonRefundable: 3348, ctcRefundable: 1052, additionalMedicare: 0, eitc: 764.23 },
+  hoh_55k_2kids: { total: { policyengine: -1816.23, taxcalc: -1816.23 }, taxableIncome: 30850, regularTax: 3348, overtimeDeduction: 0, ctcNonRefundable: 3348, ctcRefundable: 1052, additionalMedicare: 0, eitc: 764.23 },
   mfj_150k_one_earner: { total: { policyengine: 8080, taxcalc: 8080 }, taxableIncome: 104800, regularTax: 12480, overtimeDeduction: 0, ctcNonRefundable: 4400, ctcRefundable: 0, additionalMedicare: 0, eitc: 0 },
   mfj_overtime: { total: { policyengine: 6976, taxcalc: 6976 }, taxableIncome: 80600, regularTax: 9176, overtimeDeduction: 5200, ctcNonRefundable: 2200, ctcRefundable: 0, additionalMedicare: 0, eitc: 0, totalWithoutOvertimeDeduction: 7600 },
   single_260k: { total: { policyengine: 47204, taxcalc: 47204 }, taxableIncome: 219400, regularTax: 46664, overtimeDeduction: 0, ctcNonRefundable: 0, ctcRefundable: 0, additionalMedicare: 540, eitc: 0 },
   mfs_70k: { total: { policyengine: 4370, taxcalc: 4370 }, taxableIncome: 53900, regularTax: 6570, overtimeDeduction: 0, ctcNonRefundable: 2200, ctcRefundable: 0, additionalMedicare: 0, eitc: 0 },
   single_overtime_phaseout: { total: { policyengine: 24974, taxcalc: 24974 }, taxableIncome: 134900, regularTax: 24974, overtimeDeduction: 9000, ctcNonRefundable: 0, ctcRefundable: 0, additionalMedicare: 0, eitc: 0, totalWithoutOvertimeDeduction: 27134 },
   mfj_470k_two_earners: { total: { policyengine: 77138, taxcalc: 77138 }, taxableIncome: 388800, regularTax: 78508, overtimeDeduction: 0, ctcNonRefundable: 3350, ctcRefundable: 0, additionalMedicare: 1980, eitc: 0 },
+  // EITC cases. Hand check from Rev. Proc. 2025-32 sec. 4.06(1) and IRC 32(b)(1) in each comment.
+  // ctcNonRefundable for low earners is Tax-Calculator's c07220 (the CTC actually used against tax, Form 1040
+  // line 19): PolicyEngine's non_refundable_ctc is the nonrefundable portion before the tax limit; totals agree.
+  // no children, single: min(7.65% x 15,000, 664) = 664; 664 - 7.65% x (15,000 - 10,860) = 347.29
+  single_15k_eitc: { total: { policyengine: -347.29, taxcalc: -347.29 }, taxableIncome: 0, regularTax: 0, overtimeDeduction: 0, ctcNonRefundable: 0, ctcRefundable: 0, additionalMedicare: 0, eitc: 347.29 },
+  // 1 child, phase-in: 34% x 10,000 = 3,400 (< 4,427; income below the 23,890 threshold)
+  hoh_10k_1kid_eitc: { total: { policyengine: -4525, taxcalc: -4525 }, taxableIncome: 0, regularTax: 0, overtimeDeduction: 0, ctcNonRefundable: 0, ctcRefundable: 1125, additionalMedicare: 0, eitc: 3400 },
+  // 1 child: 4,427 - 15.98% x (25,000 - 23,890) = 4,249.62
+  hoh_25k_1kid_eitc: { total: { policyengine: -5949.62, taxcalc: -5949.62 }, taxableIncome: 850, regularTax: 85, overtimeDeduction: 0, ctcNonRefundable: 85, ctcRefundable: 1700, additionalMedicare: 0, eitc: 4249.62 },
+  // 3 children, MFJ: 8,231 - 21.06% x (40,000 - 31,160) = 6,369.30
+  mfj_40k_3kids_eitc: { total: { policyengine: -11469.3, taxcalc: -11469.3 }, taxableIncome: 7800, regularTax: 780, overtimeDeduction: 0, ctcNonRefundable: 780, ctcRefundable: 5100, additionalMedicare: 0, eitc: 6369.3 },
+  // 2 children, MFJ: 7,316 - 21.06% x (65,000 - 31,160) = 189.30 (completed phaseout 65,899)
+  mfj_65k_2kids_eitc: { total: { policyengine: -1149.3, taxcalc: -1149.3 }, taxableIncome: 32800, regularTax: 3440, overtimeDeduction: 0, ctcNonRefundable: 3440, ctcRefundable: 960, additionalMedicare: 0, eitc: 189.3 },
+  // 2 children, HOH: 59,000 >= completed phaseout 58,629 -> 0
+  hoh_59k_2kids_eitc_end: { total: { policyengine: -572, taxcalc: -572 }, taxableIncome: 34850, regularTax: 3828, overtimeDeduction: 0, ctcNonRefundable: 3828, ctcRefundable: 572, additionalMedicare: 0, eitc: 0 },
+  // MFS: no EITC (IRC 32(d)(1)), as in PolicyEngine. Tax-Calculator (EITC_sep_filers_elig = true since 2021)
+  // assumes every MFS filer with a child meets the IRC 32(d)(2)(B) separated-spouse rule and adds 4,427.
+  // PayTrail doesn't know whether the spouses lived apart, so it follows the general rule.
+  mfs_20k_1kid_eitc: { total: { policyengine: -1700, taxcalc: -6127 }, taxableIncome: 3900, regularTax: 390, overtimeDeduction: 0, ctcNonRefundable: 390, ctcRefundable: 1700, additionalMedicare: 0, eitc: 0, eitcTaxcalc: 4427 },
 };
 
 // PolicyEngine-US computes in float32, so its numbers can be a cent off: compare within $0.011.
@@ -183,7 +203,8 @@ function annualCases(): Array<{ name: string; data: HouseholdData; asOf: string 
 describe("annual 2026 tax = PolicyEngine-US and Tax-Calculator (within a cent)", () => {
   for (const { name, data, asOf } of annualCases()) {
     const ref = ANNUAL_REFERENCE[name];
-    it(`${name}: projected tax ${ref.total.taxcalc} (EITC not modeled: references add ${ref.eitc})`, () => {
+    it(`${name}: projected tax ${ref?.total.taxcalc} (EITC ${ref?.eitc})`, () => {
+      expect(ref, `no ANNUAL_REFERENCE for ${name}`).toBeDefined();
       const proj = runCheckup(data, asOf).projection!;
       const i = proj.inputs;
       const ours = {
@@ -194,9 +215,12 @@ describe("annual 2026 tax = PolicyEngine-US and Tax-Calculator (within a cent)",
         ctcNonRefundable: i.childCreditsNonRefundable,
         ctcRefundable: i.childCreditsRefundable,
         additionalMedicare: i.additionalMedicareLiability,
+        eitc: i.earnedIncomeCredit ?? 0,
       };
+      // Where Tax-Calculator's EITC differs by design (eitcTaxcalc), its total is compared net of that difference.
+      const taxcalcTotal = ref.total.taxcalc + (ref.eitcTaxcalc ?? ref.eitc) - ref.eitc;
       const misses = Object.entries(ours).filter(([k, v]) =>
-        k === "total" ? !near(v, ref.total.policyengine) || !near(v, ref.total.taxcalc) : !near(v, ref[k as keyof typeof ref] as number),
+        k === "total" ? !near(v, ref.total.policyengine) || !near(v, taxcalcTotal) : !near(v, ref[k as keyof typeof ref] as number),
       );
       expect(misses).toEqual([]);
     });

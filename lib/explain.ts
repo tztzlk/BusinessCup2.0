@@ -57,9 +57,11 @@ export function numbersAreGrounded(text: string, allowed: number[]): boolean {
  * pass for a household that owes $7,573.
  */
 export function directionMatches(text: string, balance: number | null | undefined): boolean {
-  if (balance === null || balance === undefined || balance === 0) return true;
+  if (balance === null || balance === undefined) return true;
   const saysRefund = /\brefund/i.test(text);
   const saysOwe = /\b(owe|owes|owing|owed)\b|\bbalance due\b/i.test(text);
+  // 0 = on track for April: neither direction should be claimed.
+  if (balance === 0) return !saysRefund && !saysOwe;
   return balance > 0 ? !(saysRefund && !saysOwe) : !(saysOwe && !saysRefund);
 }
 

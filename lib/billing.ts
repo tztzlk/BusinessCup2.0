@@ -74,6 +74,8 @@ export async function createCheckout(householdId: string, origin: string): Promi
     "adaptive_pricing[enabled]": "false",
     // Card only (test card 4242 on screen); hides wallets and buy-now-pay-later methods.
     "payment_method_types[0]": "card",
+    // Link adds its own "Bank" option and button on top of card; hide it so the page is card-only.
+    "wallet_options[link][display]": "never",
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "usd",
     "line_items[0][price_data][unit_amount]": String(ANNUAL_PRICE_CENTS),

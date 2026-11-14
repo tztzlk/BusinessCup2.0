@@ -18,7 +18,7 @@ import {
   withEstimatedYtd,
   withKnownFrequency,
 } from "./paystub";
-import { additionalMedicareDue, bracketTax, childCredits, overtimeDeduction } from "./tax";
+import { additionalMedicareDue, bracketTax, childCredits, earnedIncomeCredit, overtimeDeduction } from "./tax";
 import { expectedWithholding } from "./withholding";
 
 export interface JobInput {
@@ -155,8 +155,18 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
   const taxable = pos(agi - p.standardDeduction[status] - otDeduction);
   const regularTax = bracketTax(taxable, status, p);
   const credits = childCredits(regularTax, profile.dependentsUnder17, profile.otherDependents, agi, agi, status, p);
+  // EITC (refundable): earned income = W-2 box 1 wages, the same base as AGI here (no other income is modeled).
+  // Qualifying children = children under 17 from the profile; the EITC also counts children up to 18, or 23 if
+  // full-time students (IRC 152(c)(3)), which the profile doesn't collect. Investment income is not modeled (assumed 0).
+  const eitc = earnedIncomeCredit(agi, agi, profile.dependentsUnder17, status, p);
+  if (eitc > 0) {
+    const who = profile.dependentsUnder17 > 0
+      ? "counting your children under 17 as qualifying children"
+      : "for a worker without qualifying children (this credit requires age 25 to 64)";
+    notes.push(`Includes an estimated Earned Income Tax Credit of ${usd(eitc)}, ${who}. It assumes investment income (interest, dividends, capital gains) of ${usd(p.earnedIncomeCredit.investmentIncomeLimit)} or less; above that there is no EITC.`);
+  }
   const addl = additionalMedicareDue(rows.map((r) => r.ficaWages), status, p);
-  const projectedTax = round2(pos(regularTax - credits.nonRefundable) + addl.liability - credits.refundable);
+  const projectedTax = round2(pos(regularTax - credits.nonRefundable) + addl.liability - credits.refundable - eitc);
   const projectedWithholding = round2(sum(rows.map((r) => r.withheld)) + addl.withheld + excessSs);
   const balance = round2(projectedTax - projectedWithholding);
 
@@ -184,6 +194,7 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
       regularTax,
       childCreditsNonRefundable: credits.nonRefundable,
       childCreditsRefundable: credits.refundable,
+      ...(eitc > 0 ? { earnedIncomeCredit: eitc } : {}),
       additionalMedicareLiability: addl.liability,
       ...(excessSs > 0 ? { excessSocialSecurityCredit: excessSs } : {}),
     },
@@ -247,6 +258,10 @@ export function projectionFindings(proj: ProjectionDetail, jobs: JobInput[]): Fi
     });
   } else if (proj.balance < -500) {
     const periods = sum(proj.perEmployer.map((e) => e.remainingPayPeriods));
+    // Refundable credits (EITC, refundable child credit) are paid even with no withholding: only the part of the
+    // refund that was withheld could be kept in the paychecks instead.
+    const keepable = Math.min(-proj.balance, proj.projectedWithholding);
+    const fromCredits = -proj.balance > proj.projectedWithholding;
     findings.push({
       code: "OVERWITHHOLDING",
       severity: "info",
@@ -255,9 +270,11 @@ export function projectionFindings(proj: ProjectionDetail, jobs: JobInput[]): Fi
       inputs: { ...proj.inputs, projectedTax: proj.projectedTax, projectedWithholding: proj.projectedWithholding },
       action: {
         kind: "w4_change",
-        details: periods > 0
-          ? `You're on track for a refund of about ${usd(-proj.balance)}. That's money you could keep in your paychecks instead: review your W-4 for next year.`
-          : `You're on track for a refund of about ${usd(-proj.balance)}.`,
+        details: fromCredits
+          ? `You're on track for a refund of about ${usd(-proj.balance)}. ${usd(-proj.balance - keepable)} of it comes from refundable credits (such as the Earned Income Tax Credit), which are paid even without withholding; only ${usd(keepable)} is tax withheld from your paychecks.`
+          : periods > 0
+            ? `You're on track for a refund of about ${usd(-proj.balance)}. That's money you could keep in your paychecks instead: review your W-4 for next year.`
+            : `You're on track for a refund of about ${usd(-proj.balance)}.`,
       },
     });
   }

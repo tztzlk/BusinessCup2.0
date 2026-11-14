@@ -17,6 +17,12 @@ const TITLES: Record<string, string> = {
 };
 
 export function findingTitle(f: Pick<Finding, "code" | "inputs">): string {
+  // Refundable credits (EITC, refundable child credit) are paid even without withholding. When they are most
+  // of the refund (the credits beyond the tax exceed everything withheld), it isn't overpaid tax.
+  const { projectedTax: tax, projectedWithholding: withheld } = f.inputs;
+  if (f.code === "OVERWITHHOLDING" && typeof tax === "number" && typeof withheld === "number" && -tax > withheld) {
+    return "You're on track for a refund";
+  }
   if (TITLES[f.code]) return TITLES[f.code];
   const w2 = /^W2_BOX(\w+)_MISMATCH$/.exec(f.code);
   if (w2) {
@@ -37,6 +43,8 @@ const INPUTS: Record<string, [string, Kind]> = {
   regularTax: ["Tax before credits", "usd"],
   childCreditsNonRefundable: ["Child tax credit", "usd"],
   childCreditsRefundable: ["Refundable child credit", "usd"],
+  earnedIncomeCredit: ["Earned income credit", "usd"],
+  excessSocialSecurityCredit: ["Excess Social Security credit", "usd"],
   additionalMedicareLiability: ["Additional Medicare tax", "usd"],
   projectedTax: ["Projected federal tax", "usd"],
   projectedWithholding: ["Projected withholding", "usd"],

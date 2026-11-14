@@ -106,10 +106,15 @@ export function quickEstimate(input: QuickEstimateInput, taxYear: number = SUPPO
   if (earners > 1 && !input.step2Checked && balance > 0) {
     cause = "two_jobs_no_step2";
     balanceIfStep2Checked = project(input, true, p)?.proj.balance ?? null;
-  } else if (earners === 1 && input.step2Checked && balance < 0 && !aboutEven) {
-    cause = "step2_one_job";
-  } else if (children > 0 && !input.childrenOnW4 && balance < 0 && !aboutEven) {
-    cause = "children_not_on_w4";
+  } else if (
+    balance < 0 &&
+    !aboutEven &&
+    // A W-4 change can only move over-withholding into paychecks: at most what was withheld. Show the
+    // hint only when that is most of the refund, not when refundable credits (EITC, refundable CTC) are.
+    Math.min(-balance, proj.projectedWithholding) >= Math.max(payPeriods, -balance / 2)
+  ) {
+    if (earners === 1 && input.step2Checked) cause = "step2_one_job";
+    else if (children > 0 && !input.childrenOnW4) cause = "children_not_on_w4";
   }
 
   return {

@@ -103,3 +103,12 @@ describe("paycheckHistoryRows", () => {
     expect(paycheckHistoryRows(data, runCheckup(data, DEMO_NOVEMBER_AS_OF))).toEqual([]);
   });
 });
+
+describe("quickEstimate: refund causes", () => {
+  it("does not suggest a W-4 change when the refund comes from refundable credits (EITC)", () => {
+    const r = quickEstimate({ filingStatus: "head_of_household", salary: 25000, spouseSalary: 0, childrenUnder17: 2, step2Checked: false, childrenOnW4: false });
+    expect(r!.balance).toBeLessThan(0);
+    expect(r!.annualTax).toBeLessThan(0);
+    expect(r!.cause).toBeNull();
+  });
+});
