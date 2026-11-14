@@ -3,9 +3,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import { z } from "zod";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { allowClaudeCall, claude, ClaudeNotConfiguredError, FALLBACK_BETA, MODEL, readStructuredOutput } from "@/lib/claude";
-import { clientIpHash } from "@/lib/household";
+import { clientIpHash, currentSession } from "@/lib/household";
 import { readJson } from "@/lib/http";
-import { allow } from "@/lib/ratelimit";
+import { allowRequest } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -53,7 +53,8 @@ Rules:
 
 export async function POST(req: Request) {
   const ip = (await clientIpHash()) ?? "unknown";
-  if (!allow(`explain:${ip}`, 30, 10 * 60 * 1000)) {
+  const visitor = (await currentSession().catch(() => null))?.householdId ?? null;
+  if (!allowRequest("explain", ip, visitor)) {
     return NextResponse.json({ error: "rate_limited" }, { status: 429 });
   }
   const body = await readJson(req, BODY_MAX_BYTES);
