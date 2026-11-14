@@ -245,7 +245,7 @@ export default function PrivacyPage() {
         <h3 className="font-semibold text-slate-900">Delete everything, any time</h3>
         <p className="mt-1 text-sm">
           Use <Link href="/report" className="font-medium text-brand-700 underline underline-offset-2">My report</Link> or{" "}
-          <Link href="/account" className="font-medium text-brand-700 underline underline-offset-2">Account</Link>. One click removes, right away:
+          <Link href="/settings" className="font-medium text-brand-700 underline underline-offset-2">Account</Link>. One click removes, right away:
         </p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
           <li>your household profile and jobs</li>

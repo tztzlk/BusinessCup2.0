@@ -40,7 +40,7 @@ export default function DemoPage() {
             <p className="mt-4 text-sm font-medium text-brand-700 group-hover:underline">Open the checkup →</p>
           </Card>
         </Link>
-        <Link href="/check" className="group">
+        <Link href="/upload" className="group">
           <Card className="h-full transition-shadow group-hover:shadow-md">
             <Badge>Your data</Badge>
             <h2 className="mt-3 font-semibold text-slate-900">Check your own pay stub</h2>

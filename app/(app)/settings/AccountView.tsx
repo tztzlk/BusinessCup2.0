@@ -87,7 +87,7 @@ export function AccountView() {
           sign in.
         </p>
         <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/check">Check my pay stub</ButtonLink>
+          <ButtonLink href="/upload">Check my pay stub</ButtonLink>
           <ButtonLink href="/demo" variant="secondary">
             See a sample household
           </ButtonLink>
@@ -199,7 +199,7 @@ export function AccountView() {
       <Section
         title="Jobs"
         action={
-          <ButtonLink href="/check" variant="secondary">
+          <ButtonLink href="/upload" variant="secondary">
             Add a job
           </ButtonLink>
         }

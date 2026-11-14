@@ -94,7 +94,7 @@ export function ReportView() {
           Start a checkup, or open your private recovery link if you saved one.
         </p>
         <div className="mt-5 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/check">Check my pay stub</ButtonLink>
+          <ButtonLink href="/upload">Check my pay stub</ButtonLink>
           <ButtonLink href="/demo" variant="secondary">
             See the demo
           </ButtonLink>
@@ -118,7 +118,7 @@ export function ReportView() {
           </h1>
           <p className="text-slate-600">Everything below is stored encrypted and tied to this browser.</p>
         </div>
-        <ButtonLink href="/check">Add a document</ButtonLink>
+        <ButtonLink href="/upload">Add a document</ButtonLink>
       </div>
       {error && (
         <div className="mt-4">

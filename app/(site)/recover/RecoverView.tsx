@@ -68,7 +68,7 @@ export function RecoverView() {
           <h1 className="text-xl font-semibold text-slate-900">Couldn&apos;t open your data</h1>
           <p className="mt-2 text-sm text-slate-600">{error}</p>
           <div className="mt-5 flex justify-center">
-            <ButtonLink href="/check">Start a new checkup</ButtonLink>
+            <ButtonLink href="/upload">Start a new checkup</ButtonLink>
           </div>
         </>
       ) : (

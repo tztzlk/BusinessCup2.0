@@ -53,7 +53,7 @@ const HOW_TO_TEST = [
       "Only confirmed fields are kept, encrypted; delete them anytime from My report",
     ],
     cta: "Check a pay stub",
-    href: "/check",
+    href: "/upload",
   },
 ];
 
@@ -243,7 +243,7 @@ export default function Home() {
               get back, and what to change on your W-4 today.
             </p>
             <div className="rise-in mt-8 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "0.95s" }}>
-              <ButtonLink href="/check" className="bg-white !text-ink hover:bg-slate-100">
+              <ButtonLink href="/upload" className="bg-white !text-ink hover:bg-slate-100">
                 Check my pay stub
               </ButtonLink>
               <ButtonLink href="/demo" className="border border-white/20 bg-white/5 hover:bg-white/10">
@@ -459,7 +459,7 @@ export default function Home() {
                 <tr className="hidden sm:table-row">
                   <td className="px-5 py-4" />
                   <td className="px-2 py-4 sm:px-3">
-                    <ButtonLink href="/check" variant="secondary" className="w-full">
+                    <ButtonLink href="/upload" variant="secondary" className="w-full">
                       Start free
                     </ButtonLink>
                   </td>
@@ -474,7 +474,7 @@ export default function Home() {
             </table>
             {/* Phone: the table columns are too narrow for buttons. */}
             <div className="grid grid-cols-2 gap-2 border-t border-slate-100 p-3 sm:hidden">
-              <ButtonLink href="/check" variant="secondary">
+              <ButtonLink href="/upload" variant="secondary">
                 Start free
               </ButtonLink>
               <ButtonLink href="/demo/couple">See Annual</ButtonLink>

@@ -36,7 +36,7 @@ export function PersonaDemo({
       </Section>
 
       <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-        <ButtonLink href="/check">Check my own pay stub</ButtonLink>
+        <ButtonLink href="/upload">Check my own pay stub</ButtonLink>
         <ButtonLink href="/demo" variant="secondary">
           Back to demo households
         </ButtonLink>

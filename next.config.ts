@@ -6,6 +6,13 @@ const nextConfig: NextConfig = {
   // Native module, must not be bundled.
   serverExternalPackages: ["better-sqlite3"],
   poweredByHeader: false,
+  // Old URLs from before the redesign keep working (temporary, so they can change again).
+  async redirects() {
+    return [
+      { source: "/check", destination: "/upload", permanent: false },
+      { source: "/account", destination: "/settings", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

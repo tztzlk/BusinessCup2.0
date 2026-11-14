@@ -119,7 +119,7 @@ function Result({ r, twoEarnerWording }: { r: QuickEstimateResult; twoEarnerWord
       )}
 
       <div className="mt-auto flex flex-col gap-2 pt-5 sm:flex-row">
-        <ButtonLink href="/check">Check your real pay stub</ButtonLink>
+        <ButtonLink href="/upload">Check your real pay stub</ButtonLink>
         <ButtonLink href="/demo/couple" variant="secondary">
           See a sample report
         </ButtonLink>
