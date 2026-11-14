@@ -72,7 +72,7 @@ export function aprilYearMatches(text: string, taxYear: number | null | undefine
   return [...text.matchAll(/\bApril,?\s+(\d{4})\b/gi)].every((m) => Number(m[1]) === taxYear + 1);
 }
 
-const BALANCE_CODES =new Set(["UNDERWITHHOLDING", "OVERWITHHOLDING"]);
+const BALANCE_CODES = new Set(["UNDERWITHHOLDING", "OVERWITHHOLDING"]);
 
 /**
  * Maps a response to finding index → body, keeping only items whose numbers are grounded
