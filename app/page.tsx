@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ButtonLink, Card } from "@/components/ui";
 import { CatchList, HeroStack } from "@/components/HeroArt";
+import { LogoMark } from "@/components/Logo";
 import { PayStubArt, W2Art } from "@/components/PaperArt";
 
 const VALUE = [
@@ -95,15 +96,20 @@ export default function Home() {
       <section className="relative overflow-hidden rounded-3xl bg-ink px-6 py-10 text-white sm:px-10 sm:py-14">
         <div className="relative grid items-center gap-10 md:grid-cols-[minmax(0,1fr)_330px] lg:grid-cols-[minmax(0,1fr)_380px]">
           <div className="relative z-10">
-            <p className="text-sm text-brand-200">For two-income W-2 households</p>
-            <h1 className="mt-3 max-w-2xl text-3xl font-semibold leading-[1.1] sm:text-4xl lg:text-[44px] lg:tracking-[-0.02em]">
+            <div className="flex items-center gap-3">
+              <LogoMark animate breathe size={64} className="h-auto w-12 text-white sm:w-14" />
+              <p className="rise-in text-sm text-brand-200" style={{ animationDelay: "0.5s" }}>
+                For two-income W-2 households
+              </p>
+            </div>
+            <h1 style={{ animationDelay: "0.65s" }} className="rise-in mt-4 max-w-2xl text-3xl font-semibold leading-[1.1] sm:text-4xl lg:text-[44px] lg:tracking-[-0.02em]">
               Catch paycheck mistakes now, not a surprise tax bill in April
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-slate-300">
+            <p className="rise-in mt-5 max-w-xl text-lg leading-relaxed text-slate-300" style={{ animationDelay: "0.8s" }}>
               When both of you work, withholding quietly falls short. PayTrail checks every pay stub, tells you what you&apos;ll owe or
               get back, and what to change on your W-4 today.
             </p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="rise-in mt-8 flex flex-col gap-3 sm:flex-row" style={{ animationDelay: "0.95s" }}>
               <ButtonLink href="/check" className="bg-white !text-ink hover:bg-slate-100">
                 Check my pay stub
               </ButtonLink>
@@ -111,14 +117,14 @@ export default function Home() {
                 See a sample household
               </ButtonLink>
             </div>
-            <p className="mt-4 text-sm text-slate-400">
+            <p className="rise-in mt-4 text-sm text-slate-400" style={{ animationDelay: "1.1s" }}>
               No sign-up. The samples are fictional households.{" "}
               <a href="#how-to-test" className="text-slate-200 underline underline-offset-2 hover:text-white">
                 Judges: how to test in 3 minutes
               </a>
             </p>
           </div>
-          <div className="md:pr-6">
+          <div className="rise-in md:pr-6" style={{ animationDelay: "0.3s" }}>
             <HeroStack />
           </div>
         </div>

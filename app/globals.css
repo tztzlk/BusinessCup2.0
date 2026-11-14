@@ -51,23 +51,20 @@ body {
   }
 }
 
-/*
- * Hero: the sample stub is checked once. A scan line passes down the sheet, the overtime row is
- * flagged as the line reaches it, then both tags stay. Runs once per visit, no loop.
- */
+/* Hero: a scan passes down the sample stub, the overtime row is flagged, the tags appear. 7 s loop. */
 .stub-scan {
-  opacity: 0;
-  animation: stub-scan 2.4s var(--ease-out) 0.6s 1 both;
+  animation: stub-scan 7s var(--ease-out) infinite;
 }
 @keyframes stub-scan {
   0% {
     transform: translateY(0);
     opacity: 1;
   }
-  85% {
+  45% {
     transform: translateY(470px);
     opacity: 1;
   }
+  46%,
   100% {
     transform: translateY(470px);
     opacity: 0;
@@ -76,16 +73,56 @@ body {
 .stub-flag,
 .stub-tag {
   opacity: 0;
-  animation: stub-in 0.4s var(--ease-out) 1.2s 1 both;
+  animation: stub-tag 7s var(--ease-out) infinite;
 }
 .stub-ok {
   opacity: 0;
-  animation: stub-in 0.4s var(--ease-out) 2.6s 1 both;
+  animation: stub-ok 7s var(--ease-out) infinite;
 }
-@keyframes stub-in {
-  from {
+@keyframes stub-tag {
+  0%,
+  16% {
     opacity: 0;
     transform: translateY(6px);
+  }
+  22%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+@keyframes stub-ok {
+  0%,
+  44% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  50%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  95%,
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+
+/* Hero content rises in after the logo mark draws. */
+.rise-in {
+  opacity: 0;
+  animation: rise 0.6s var(--ease-out) forwards;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -101,6 +138,7 @@ body {
     display: none;
   }
   .logo-letter,
+  .rise-in,
   .stub-flag,
   .stub-tag,
   .stub-ok {
