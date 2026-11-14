@@ -20,6 +20,26 @@ export default function DemoPage() {
             <p className="mt-4 text-sm font-medium text-brand-700 group-hover:underline">Open the checkup →</p>
           </Card>
         </Link>
+        <Link href="/demo/hourly" className="group">
+          <Card className="h-full transition-shadow group-hover:shadow-md">
+            <Badge tone="warning">Overtime</Badge>
+            <h2 className="mt-3 font-semibold text-slate-900">Rosa &amp; Tom — hourly + salaried, Texas</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Rosa worked 92 hours in two weeks, but her pay stub has no overtime line. How much is she owed?
+            </p>
+            <p className="mt-4 text-sm font-medium text-brand-700 group-hover:underline">Open the checkup →</p>
+          </Card>
+        </Link>
+        <Link href="/demo/salaried" className="group">
+          <Card className="h-full transition-shadow group-hover:shadow-md">
+            <Badge tone="warning">401(k) match</Badge>
+            <h2 className="mt-3 font-semibold text-slate-900">Nina &amp; Marcus — two salaries, Texas</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Their taxes are on track, but Nina saves 3% while her employer matches up to 5%. What is she leaving behind?
+            </p>
+            <p className="mt-4 text-sm font-medium text-brand-700 group-hover:underline">Open the checkup →</p>
+          </Card>
+        </Link>
         <Link href="/check" className="group">
           <Card className="h-full transition-shadow group-hover:shadow-md">
             <Badge>Your data</Badge>
