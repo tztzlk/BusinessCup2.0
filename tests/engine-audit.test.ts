@@ -201,8 +201,7 @@ describe("F6 couple with one spouse's stub missing gets a refund message", () =>
 });
 
 describe("F7 excess Social Security from two jobs of the same person is not credited", () => {
-  // deferred: excess Social Security credit (Schedule 3 line 11) needs per-person job grouping; team decision, post-hackathon.
-  it.skip("single, two jobs x $120,000: excess SS 2*7,440 - 11,439 = 3,441 counts as a payment", () => {
+  it("single, two jobs x $120,000: excess SS 2*7,440 - 11,439 = 3,441 counts as a payment", () => {
     // IRS Topic 608: if more than one employer withheld SS and total wages > wage base, the excess is a credit
     // (Schedule 3 line 11). Max employee SS 2026 = 6.2% * 184,500 = 11,439.
     const yearEnd = (name: string): Paystub =>
@@ -215,23 +214,53 @@ describe("F7 excess Social Security from two jobs of the same person is not cred
     );
     const fedWithheld = a.taxes[0].ytd! + b.taxes[0].ytd!;
     expect(proj.projectedWithholding).toBeCloseTo(fedWithheld + 3441, 0);
+    expect(proj.inputs.excessSocialSecurityCredit).toBeCloseTo(3441, 2);
+    expect(proj.notes.some((n) => n.includes("Schedule 3"))).toBe(true);
+  });
+  it("per person, not per household: one job each for two spouses gets no credit", () => {
+    const yearEnd = (name: string): Paystub =>
+      stub(120000 / 26, 26, { employerName: name, payDate: "2026-12-26", payPeriodEnd: "2026-12-26" });
+    const a = yearEnd("A"), b = yearEnd("B");
+    const mfj: HouseholdProfile = { ...single, filingStatus: "married_joint" };
+    const proj = projectYear([{ settings: job("a"), latestStub: a }, { settings: job("b", { member: "spouse" }), latestStub: b }], mfj, p);
+    expect(proj.projectedWithholding).toBeCloseTo(a.taxes[0].ytd! + b.taxes[0].ytd!, 0);
+  });
+  it("remaining paychecks: each employer stops SS at the wage base on its own", () => {
+    // Oct 31, two jobs x $100,000 a year (22 of 26 paid). Each employer withholds 6.2% * 100,000 = 6,200 for the year.
+    const a = stub(100000 / 26, 22, { employerName: "A" }), b = stub(100000 / 26, 22, { employerName: "B" });
+    const proj = projectYear([{ settings: job("a"), latestStub: a }, { settings: job("b"), latestStub: b }], single, p);
+    expect(proj.inputs.excessSocialSecurityCredit).toBeCloseTo(2 * 6200 - 11439, 0);
   });
 });
 
 describe("F8 401(k) elective deferral limit ($24,500) is never applied", () => {
-  // deferred: 402(g) cap on extrapolated deferrals; team decision, post-hackathon.
-  it.skip("projection caps 401(k) at the limit when extrapolating", () => {
+  it("projection caps 401(k) at the limit when extrapolating", () => {
     const s = stub(5000, 22, { deductions: [{ type: "401k_pretax", preTax: true, current: 1000, ytd: 22000 }] });
     const proj = projectYear([{ settings: job("a"), latestStub: s }], single, p);
     // Payroll stops deferrals at $24,500 (IRC 402(g)); box 1 = 130,000 - 24,500. Today: 130,000 - 26,000.
     expect(proj.inputs.agi).toBeCloseTo(105500, 0);
   });
-  // deferred: match advice must check YTD deferrals against the 402(g) limit; team decision, post-hackathon.
-  it.skip("no 'raise your contribution' advice after the employee has hit the limit", () => {
+  it("no 'raise your contribution' advice after the employee has hit the limit", () => {
     const s = stub(10000, 22, { deductions: [{ type: "401k_pretax", preTax: true, current: 0, ytd: 24500 }] });
     const settings = job("a", { annualSalary: 260000, match401k: { matchPercent: 50, upToPercentOfPay: 6 } });
     const codes = checkPaystub(s, null, settings, "single", p).map((f) => f.code);
     expect(codes).not.toContain("MATCH_LEFT_ON_TABLE");
+  });
+  it("the limit is shared with the person's other job: Roth + pre-tax there use it up too", () => {
+    const s = stub(10000, 22, { deductions: [{ type: "401k_pretax", preTax: true, current: 0, ytd: 0 }] });
+    const settings = job("a", { annualSalary: 260000, match401k: { matchPercent: 50, upToPercentOfPay: 6 } });
+    const codes = checkPaystub(s, null, settings, "single", p, 24500).map((f) => f.code);
+    expect(codes).not.toContain("MATCH_LEFT_ON_TABLE");
+  });
+  it("room left smaller than the match rate needs: missed match is capped to the room", () => {
+    // 260,000 salary, contributing 2% (200 per 10,000 paycheck), 4 paychecks left: reaching 6% needs 4 * 400 = 1,600 more,
+    // but only 1,000 of room is left -> 50% match on 1,000 = 500 this year.
+    const s = stub(10000, 22, { deductions: [{ type: "401k_pretax", preTax: true, current: 200, ytd: 23500 }] });
+    s.netCurrent -= 200;
+    const settings = job("a", { annualSalary: 260000, match401k: { matchPercent: 50, upToPercentOfPay: 6 } });
+    const f = checkPaystub(s, null, settings, "single", p).find((x) => x.code === "MATCH_LEFT_ON_TABLE")!;
+    expect(f.inputs.missedThisYear).toBe(500);
+    expect(f.inputs.deferralRoomLeft).toBe(1000);
   });
 });
 

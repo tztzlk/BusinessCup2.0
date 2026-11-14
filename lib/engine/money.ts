@@ -8,3 +8,8 @@ export const pos = (n: number) => (n > 0 ? n : 0);
 export function differs(a: number, b: number, tolerance = 1): boolean {
   return Math.abs(a - b) > tolerance;
 }
+
+/** Whole dollars with thousands separators, for action texts. */
+export function usd(n: number): string {
+  return `$${Math.round(n).toLocaleString("en-US")}`;
+}

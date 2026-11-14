@@ -1,6 +1,6 @@
 import type { EmploymentSettings, Finding, FilingStatus, Paystub } from "../types";
 import type { FederalParams } from "./params";
-import { differs, pos, round2, sum } from "./money";
+import { differs, pos, round2, sum, usd } from "./money";
 import {
   deduction,
   federalWages,
@@ -19,6 +19,8 @@ export function checkPaystub(
   settings: EmploymentSettings,
   status: FilingStatus,
   p: FederalParams,
+  /** 401(k) deferrals year to date at the same person's other jobs (the limit is per person). */
+  otherJobsDeferralsYtd = 0,
 ): Finding[] {
   const findings: Finding[] = [];
   const employerId = settings.id;
@@ -148,9 +150,20 @@ export function checkPaystub(
     const employee = deduction(stub, "401k_pretax", "current") + deduction(stub, "401k_roth", "current");
     const contributionPct = round2((employee / stub.grossCurrent) * 100);
     const annualPay = settings.annualSalary ?? stub.grossCurrent * n;
-    if (contributionPct + 0.05 < m.upToPercentOfPay) {
-      const missed = round2(annualPay * ((m.upToPercentOfPay - contributionPct) / 100) * (m.matchPercent / 100));
+    // Elective deferral limit (IRC 402(g)), per person across jobs; pre-tax and Roth share it.
+    // Age 50+ catch-up contributions are not modeled: age isn't collected.
+    const limit = p.retirement.electiveDeferralLimit;
+    const deferredYtd = deduction(stub, "401k_pretax", "ytd") + deduction(stub, "401k_roth", "ytd") + otherJobsDeferralsYtd;
+    const roomThisYear = pos(limit - deferredYtd);
+    if (contributionPct + 0.05 < m.upToPercentOfPay && roomThisYear > 0) {
+      const gap = (m.upToPercentOfPay - contributionPct) / 100;
+      const matchRate = m.matchPercent / 100;
+      // A full year at the current rate leaves this much room for more; the match only follows what fits.
+      const roomPerYear = pos(limit - annualPay * (contributionPct / 100) - otherJobsDeferralsYtd);
+      const missed = round2(Math.min(annualPay * gap, roomPerYear) * matchRate);
       const left = remainingPayPeriods(stub.payDate, stub.payFrequency, p);
+      const extraThisYear = (annualPay * gap * left) / n;
+      const capped = extraThisYear > roomThisYear || annualPay * gap > roomPerYear;
       findings.push({
         code: "MATCH_LEFT_ON_TABLE",
         severity: "warning",
@@ -161,9 +174,15 @@ export function checkPaystub(
           matchPercent: m.matchPercent,
           upToPercentOfPay: m.upToPercentOfPay,
           annualPay: round2(annualPay),
-          missedThisYear: round2((missed * left) / n),
+          missedThisYear: round2(Math.min(extraThisYear, roomThisYear) * matchRate),
+          ...(capped ? { deferralLimit: limit, deferralRoomLeft: round2(roomThisYear) } : {}),
         },
-        action: { kind: "contribution_change", details: `Raise your 401(k) contribution to at least ${m.upToPercentOfPay}% to get the full employer match.` },
+        action: {
+          kind: "contribution_change",
+          details: capped
+            ? `Raise your 401(k) contribution toward ${m.upToPercentOfPay}% to get more of the employer match, without going over the ${usd(limit)} yearly limit (${usd(roomThisYear)} of room left this year).`
+            : `Raise your 401(k) contribution to at least ${m.upToPercentOfPay}% to get the full employer match.`,
+        },
       });
     }
     const matchLine = stub.employerContributions.filter((c) => c.type === "401k_match");

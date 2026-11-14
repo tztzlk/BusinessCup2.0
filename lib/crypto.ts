@@ -1,5 +1,5 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, createHash, hkdfSync, randomBytes } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, hkdfSync, randomBytes } from "node:crypto";
 
 // Field-level encryption for household data.
 // DEK = HKDF-SHA256(household_secret ‖ MASTER_KEY, salt = household_id, info = "paytrail-dek-v1")
@@ -18,6 +18,13 @@ function masterKey(): Buffer {
   return key;
 }
 
+/** Throws if MASTER_KEY is missing or malformed. Called at startup so a bad key fails loudly. */
+export function checkMasterKey(): void {
+  masterKey();
+}
+
+export const INVALID_SECRET = "invalid household secret";
+
 export function newHouseholdSecret(): string {
   return randomBytes(32).toString("base64url");
 }
@@ -28,7 +35,7 @@ export function hashToken(secret: string): string {
 
 export function deriveKey(secret: string, householdId: string): Buffer {
   const secretBytes = Buffer.from(secret, "base64url");
-  if (secretBytes.length !== 32) throw new Error("invalid household secret");
+  if (secretBytes.length !== 32) throw new Error(INVALID_SECRET);
   const ikm = Buffer.concat([secretBytes, masterKey()]);
   return Buffer.from(hkdfSync("sha256", ikm, householdId, "paytrail-dek-v1", 32));
 }
@@ -59,7 +66,11 @@ export function decryptJson<T>(key: Buffer, blob: Buffer, aad: string): T {
   return JSON.parse(plain.toString("utf8")) as T;
 }
 
+// Random per process and never stored: IP hashes key the rate limiter and the audit log, but
+// cannot be reversed from a copy of the database, even together with MASTER_KEY.
+const IP_SALT = randomBytes(32);
+
 export function hashIp(ip: string | null): string | null {
   if (!ip) return null;
-  return createHash("sha256").update(`${ip}:${process.env.MASTER_KEY ?? ""}`).digest("hex").slice(0, 32);
+  return createHmac("sha256", IP_SALT).update(ip).digest("hex").slice(0, 32);
 }

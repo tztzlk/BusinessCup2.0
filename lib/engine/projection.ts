@@ -1,8 +1,9 @@
-import type { EmploymentSettings, Finding, HouseholdProfile, Paystub, Projection } from "../types";
+import type { EmploymentSettings, Finding, HouseholdProfile, Member, Paystub, Projection } from "../types";
 import type { FederalParams } from "./params";
-import { pos, round2, sum } from "./money";
+import { pos, round2, sum, usd } from "./money";
 import {
   DEFAULT_PAY_FREQUENCY,
+  deduction,
   elapsedPayPeriods,
   federalWages,
   ficaWages,
@@ -37,11 +38,18 @@ export interface ProjectionDetail extends Projection {
 
 interface JobRow {
   employerId: string;
+  member: Member;
   remaining: number;
   fedWages: number;
   ficaWages: number;
   withheld: number;
   overtime: number;
+  /** Social Security withheld for the year, capped at one employer's maximum. */
+  ssWithheld: number;
+  /** 401(k) elective deferrals (pre-tax + Roth): year to date, and projected for the remaining paychecks. */
+  deferralsYtd: number;
+  deferralsAhead: number;
+  pretaxAhead: number;
 }
 
 /**
@@ -58,6 +66,7 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
   const stubDates = jobs.flatMap((j) => (j.latestStub ? [j.latestStub.payDate] : [])).sort();
   const asOfPayDate = stubDates[stubDates.length - 1] ?? null;
 
+  const maxSs = round2(p.fica.socialSecurityRate * p.fica.socialSecurityWageBase);
   const rows: JobRow[] = [];
   for (const { settings, latestStub } of jobs) {
     const name = settings.employerName;
@@ -99,14 +108,45 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
       estimated = true;
       notes.push(`The bonus or other one-time pay on the ${name} stub is counted once, not repeated for the remaining paychecks.`);
     }
+    // Each employer withholds Social Security until its own wages reach the wage base.
+    const ssAhead = p.fica.socialSecurityRate * Math.min(ficaPerPeriod * n, pos(p.fica.socialSecurityWageBase - ficaWages(s, "ytd")));
+    const pretaxCurrent = deduction(s, "401k_pretax", "current");
     rows.push({
       employerId: settings.id,
+      member: settings.member,
       remaining: n,
       fedWages: federalWages(s, "ytd") + fedPerPeriod * n,
       ficaWages: ficaWages(s, "ytd") + ficaPerPeriod * n,
       withheld: tax(s, "federal_income", "ytd") + withheldPerPeriod * n,
       overtime: overtimePay(s, "ytd") + overtimePay(s, "current") * n,
+      ssWithheld: round2(Math.min(maxSs, tax(s, "social_security", "ytd") + ssAhead)),
+      deferralsYtd: deduction(s, "401k_pretax", "ytd") + deduction(s, "401k_roth", "ytd"),
+      deferralsAhead: (pretaxCurrent + deduction(s, "401k_roth", "current")) * n,
+      pretaxAhead: pretaxCurrent * n,
     });
+  }
+
+  // Per person, across all their jobs (IRC 402(g)): payroll stops 401(k) deferrals at the elective deferral
+  // limit, so the projected deferrals are cut to the room left and the pre-tax part that isn't deferred is taxable.
+  // Age 50+ catch-up contributions are not modeled: age isn't collected.
+  // Excess Social Security (IRS Topic 608, Schedule 3 line 11): when two or more employers of one person
+  // withheld Social Security, the total above one employer's maximum is credited on the return.
+  let excessSs = 0;
+  for (const member of new Set(rows.map((r) => r.member))) {
+    const own = rows.filter((r) => r.member === member);
+    const room = pos(p.retirement.electiveDeferralLimit - sum(own.map((r) => r.deferralsYtd)));
+    const ahead = sum(own.map((r) => r.deferralsAhead));
+    if (ahead > room) {
+      const kept = room / ahead;
+      for (const r of own) r.fedWages += r.pretaxAhead * (1 - kept);
+      notes.push(`${capitalize(possessive(member))} 401(k) contributions reach the ${usd(p.retirement.electiveDeferralLimit)} yearly limit before the end of the year; the projection stops them there.`);
+    }
+    const withSs = own.filter((r) => r.ssWithheld > 0);
+    const excess = withSs.length > 1 ? round2(pos(sum(withSs.map((r) => r.ssWithheld)) - maxSs)) : 0;
+    if (excess > 0) {
+      excessSs += excess;
+      notes.push(`${capitalize(possessive(member))} ${withSs.length} employers together withhold more Social Security than the yearly maximum of ${usd(maxSs)}; the extra ${usd(excess)} counts as a payment on the return (Schedule 3).`);
+    }
   }
 
   const agi = sum(rows.map((r) => r.fedWages));
@@ -117,7 +157,7 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
   const credits = childCredits(regularTax, profile.dependentsUnder17, profile.otherDependents, agi, agi, status, p);
   const addl = additionalMedicareDue(rows.map((r) => r.ficaWages), status, p);
   const projectedTax = round2(pos(regularTax - credits.nonRefundable) + addl.liability - credits.refundable);
-  const projectedWithholding = round2(sum(rows.map((r) => r.withheld)) + addl.withheld);
+  const projectedWithholding = round2(sum(rows.map((r) => r.withheld)) + addl.withheld + excessSs);
   const balance = round2(projectedTax - projectedWithholding);
 
   const totalWages = sum(rows.map((r) => r.fedWages)) || 1;
@@ -145,6 +185,7 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
       childCreditsNonRefundable: credits.nonRefundable,
       childCreditsRefundable: credits.refundable,
       additionalMedicareLiability: addl.liability,
+      ...(excessSs > 0 ? { excessSocialSecurityCredit: excessSs } : {}),
     },
   };
 }
@@ -165,11 +206,16 @@ function estimateJobWithoutStub(settings: EmploymentSettings, asOfPayDate: strin
   const withheld = expectedWithholding(annual / periods, periods, status, settings.w4, p) * periods;
   return {
     employerId: settings.id,
+    member: settings.member,
     remaining: asOfPayDate ? remainingPayPeriods(asOfPayDate, DEFAULT_PAY_FREQUENCY, p) : 0,
     fedWages: round2(annual),
     ficaWages: round2(annual),
     withheld: round2(withheld),
     overtime: 0,
+    ssWithheld: round2(p.fica.socialSecurityRate * Math.min(annual, p.fica.socialSecurityWageBase)),
+    deferralsYtd: 0,
+    deferralsAhead: 0,
+    pretaxAhead: 0,
   };
 }
 
@@ -218,7 +264,5 @@ export function projectionFindings(proj: ProjectionDetail, jobs: JobInput[]): Fi
   return findings;
 }
 
-/** Whole dollars with thousands separators, for action texts. */
-function usd(n: number): string {
-  return `$${Math.round(n).toLocaleString("en-US")}`;
-}
+const possessive = (m: Member) => (m === "self" ? "your" : "your spouse's");
+const capitalize = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);

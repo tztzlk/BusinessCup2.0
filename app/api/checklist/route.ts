@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { currentSession, upsertChecklistItem } from "@/lib/household";
 import { readJson } from "@/lib/http";
+import { planFor } from "@/lib/billing";
 import { isoDate } from "@/lib/validation";
 
 export const runtime = "nodejs";
@@ -17,6 +18,13 @@ const Item = z.object({
 export async function POST(req: Request) {
   const s = await currentSession();
   if (!s) return NextResponse.json({ error: "no_household" }, { status: 401 });
+  // The tax-season checklist is part of Annual.
+  if (planFor(s.householdId).tier === "free") {
+    return NextResponse.json(
+      { error: "payment_required", message: "The tax-season checklist is part of Annual." },
+      { status: 402 },
+    );
+  }
   const read = await readJson(req);
   if (!read.ok) return read.response;
   const parsed = z.array(Item).max(50).safeParse(read.value);

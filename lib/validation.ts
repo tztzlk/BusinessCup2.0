@@ -2,9 +2,16 @@ import { z } from "zod";
 
 // Runtime validation for request bodies. Shapes mirror lib/types.ts.
 
+// 50 states and DC.
+const US_STATES = [
+  "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD",
+  "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD",
+  "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY",
+] as const;
+
 export const HouseholdProfileSchema = z.object({
   filingStatus: z.enum(["single", "married_joint", "married_separate", "head_of_household"]),
-  state: z.string().regex(/^[A-Z]{2}$/),
+  state: z.enum(US_STATES),
   dependentsUnder17: z.number().int().min(0).max(20),
   otherDependents: z.number().int().min(0).max(20),
   flags: z.object({
@@ -16,23 +23,25 @@ export const HouseholdProfileSchema = z.object({
 });
 
 const money = z.number().finite().min(-1_000_000).max(10_000_000);
+// Settings the user types: pay and W-4 amounts are never negative.
+const nonNegative = z.number().finite().min(0).max(10_000_000);
 
 export const EmploymentSettingsSchema = z.object({
   member: z.enum(["self", "spouse"]),
-  employerName: z.string().min(1).max(200),
+  employerName: z.string().trim().min(1).max(200),
   payType: z.enum(["salary", "hourly"]),
-  annualSalary: money.optional(),
-  hourlyRate: money.optional(),
+  annualSalary: nonNegative.optional(),
+  hourlyRate: nonNegative.optional(),
   overtimeEligible: z.boolean(),
   match401k: z
     .object({ matchPercent: z.number().min(0).max(200), upToPercentOfPay: z.number().min(0).max(100) })
     .optional(),
   w4: z.object({
     step2Checked: z.boolean(),
-    step3Credits: money,
-    step4aOtherIncome: money,
-    step4bDeductions: money,
-    step4cExtraWithholding: money,
+    step3Credits: nonNegative,
+    step4aOtherIncome: nonNegative,
+    step4bDeductions: nonNegative,
+    step4cExtraWithholding: nonNegative,
   }),
 });
 

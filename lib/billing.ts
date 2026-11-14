@@ -8,9 +8,17 @@ import type { Plan } from "./types";
 export const ANNUAL_PRICE_CENTS = 7900;
 const STRIPE = "https://api.stripe.com/v1";
 
+type BillingErrorCode =
+  | "billing_unavailable"
+  | "live_payments_disabled"
+  | "stripe_error"
+  | "not_paid"
+  | "wrong_household"
+  | "invalid_session";
+
 export class BillingError extends Error {
   constructor(
-    public readonly code: "billing_unavailable" | "live_payments_disabled" | "stripe_error" | "not_paid" | "wrong_household",
+    public readonly code: BillingErrorCode,
     message: string,
     public readonly status = 400,
   ) {
@@ -40,6 +48,9 @@ async function stripe<T>(method: "GET" | "POST", path: string, form?: Record<str
     cache: "no-store",
   });
   const body = (await res.json().catch(() => null)) as (T & { error?: { message?: string } }) | null;
+  if (res.status === 404 && method === "GET") {
+    throw new BillingError("invalid_session", "This payment link is not valid. Start checkout again.", 400);
+  }
   if (!res.ok || !body) {
     console.error("stripe error", res.status, body?.error?.message);
     throw new BillingError("stripe_error", "Payment provider error. Try again in a minute.", 502);
@@ -82,6 +93,11 @@ export async function confirmCheckout(householdId: string, sessionId: string): P
   if (session.status !== "complete" || session.payment_status === "unpaid") {
     throw new BillingError("not_paid", "Payment is not complete yet.", 402);
   }
+  // A session unlocks one year once. Replaying it (e.g. after cancelling) must not extend the plan.
+  const prior = getDb().prepare("SELECT stripe_session_id FROM households WHERE id = ?").get(householdId) as
+    | { stripe_session_id: string | null }
+    | undefined;
+  if (prior?.stripe_session_id === session.id) return planFor(householdId);
   const until = new Date();
   until.setUTCFullYear(until.getUTCFullYear() + 1);
   getDb()

@@ -4,5 +4,12 @@ services:
     ports:
       - "3000:3000"
     env_file: .env
+    # Overrides DB_PATH from .env (./data/... is for `npm run dev`); environment wins over env_file.
+    environment:
+      DB_PATH: /data/paytrail.db
+    # Named volume: Docker creates it writable for the image's non-root user (uid 1001).
     volumes:
-      - ./data:/data
+      - paytrail_data:/data
+
+volumes:
+  paytrail_data:

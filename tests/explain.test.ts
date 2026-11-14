@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildExplainRequest, groundedBodies, numbersAreGrounded, quotedDollars } from "../lib/explain";
+import { buildExplainRequest, directionMatches, groundedBodies, numbersAreGrounded, quotedDollars } from "../lib/explain";
 import type { Finding } from "../lib/types";
 
 const match = (employerId: string, amountUsd: number): Finding => ({
@@ -68,5 +68,19 @@ describe("number grounding", () => {
     expect(bodies.get(2)).toBe("Your W-2 shows $1,560 more than your stubs.");
     expect(bodies.has(0)).toBe(false); // ambiguous code without id → engine text
     expect(bodies.has(1)).toBe(false);
+  });
+});
+
+describe("directionMatches", () => {
+  it("rejects a refund wording when the household owes", () => {
+    expect(directionMatches("You're on track for a refund of about $1,235.", 1235)).toBe(false);
+    expect(directionMatches("You're projected to owe about $1,235.", 1235)).toBe(true);
+  });
+  it("rejects an owe wording when a refund is projected", () => {
+    expect(directionMatches("You'll owe about $900 in April.", -900)).toBe(false);
+    expect(directionMatches("Expect a refund of about $900.", -900)).toBe(true);
+  });
+  it("accepts text that names neither", () => {
+    expect(directionMatches("Update your W-4 with $999 per paycheck.", 7573)).toBe(true);
   });
 });

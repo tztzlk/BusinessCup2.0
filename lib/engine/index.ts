@@ -1,6 +1,7 @@
 import type { Finding, HouseholdData, Paystub, W2 } from "../types";
 import { federalParams, SUPPORTED_YEARS } from "./params";
-import { sortByPayDate, withKnownFrequency } from "./paystub";
+import { deduction, sortByPayDate, withKnownFrequency } from "./paystub";
+import { sum } from "./money";
 import { checkPaystub } from "./checks";
 import { type JobInput, type ProjectionDetail, projectionFindings, projectYear } from "./projection";
 import { type ReconcileRow, reconcileW2 } from "./reconcileW2";
@@ -35,6 +36,7 @@ export function runCheckup(data: HouseholdData, asOf: string = new Date().toISOS
   const findings: Finding[] = [];
   const jobs: JobInput[] = [];
   const lastStubByEmployer = new Map<string, Paystub>();
+  const previousStub = new Map<string, Paystub | null>();
 
   for (const settings of data.employers) {
     const own = sortByPayDate(
@@ -48,10 +50,19 @@ export function runCheckup(data: HouseholdData, asOf: string = new Date().toISOS
     }
     const latest = withKnownFrequency(own[0]);
     if (latest.note) notes.push(latest.note);
-    const previous = own[1] ? withKnownFrequency(own[1]).stub : null;
-    findings.push(...checkPaystub(latest.stub, previous, settings, status, p));
+    previousStub.set(settings.id, own[1] ? withKnownFrequency(own[1]).stub : null);
     jobs.push({ settings, latestStub: latest.stub });
     lastStubByEmployer.set(settings.id, latest.stub);
+  }
+
+  // The 401(k) limit is per person, so each stub's check needs the deferrals at that person's other jobs.
+  const deferralsYtd = (s: Paystub) => deduction(s, "401k_pretax", "ytd") + deduction(s, "401k_roth", "ytd");
+  for (const { settings, latestStub } of jobs) {
+    if (!latestStub) continue;
+    const otherJobs = sum(
+      jobs.filter((j) => j.latestStub && j.settings.id !== settings.id && j.settings.member === settings.member).map((j) => deferralsYtd(j.latestStub!)),
+    );
+    findings.push(...checkPaystub(latestStub, previousStub.get(settings.id) ?? null, settings, status, p, otherJobs));
   }
 
   let projection: ProjectionDetail | null = null;

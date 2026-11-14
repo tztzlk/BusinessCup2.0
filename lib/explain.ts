@@ -52,6 +52,20 @@ export function numbersAreGrounded(text: string, allowed: number[]): boolean {
 }
 
 /**
+ * False when a text names the wrong direction of the April balance (balance > 0 = owe,
+ * < 0 = refund): amounts are checked without sign, so "a refund of $7,573" would otherwise
+ * pass for a household that owes $7,573.
+ */
+export function directionMatches(text: string, balance: number | null | undefined): boolean {
+  if (balance === null || balance === undefined || balance === 0) return true;
+  const saysRefund = /\brefund/i.test(text);
+  const saysOwe = /\b(owe|owes|owing|owed)\b|\bbalance due\b/i.test(text);
+  return balance > 0 ? !(saysRefund && !saysOwe) : !(saysOwe && !saysRefund);
+}
+
+const BALANCE_CODES = new Set(["UNDERWITHHOLDING", "OVERWITHHOLDING"]);
+
+/**
  * Maps a response to finding index → body, keeping only items whose numbers are grounded
  * in that finding (or the projection balance).
  */
@@ -64,7 +78,9 @@ export function groundedBodies(req: ExplainRequest, res: ExplainResponse): Map<n
     const body = item?.body.trim();
     if (!body) return;
     const allowed = [f.amountUsd, ...Object.values(f.inputs), ...(req.projection ? [req.projection.balance] : [])];
-    if (numbersAreGrounded(body, allowed)) out.set(i, body);
+    if (!numbersAreGrounded(body, allowed)) return;
+    if (BALANCE_CODES.has(f.code) && !directionMatches(body, req.projection?.balance)) return;
+    out.set(i, body);
   });
   return out;
 }

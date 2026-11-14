@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# The token only needs to read the repo.
+permissions:
+  contents: read
+
 # Only one deploy at a time; a newer push waits for the running one to finish.
 concurrency:
   group: fly-deploy
@@ -21,6 +25,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run typecheck
+      - run: npx eslint .
       - run: npm test
 
   # Runs only if typecheck and tests pass, so a broken push never reaches prod.
@@ -29,7 +34,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: superfly/flyctl-actions/setup-flyctl@master
+      # Pinned to a commit: this step runs next to FLY_API_TOKEN.
+      - uses: superfly/flyctl-actions/setup-flyctl@98172f70657cb3e15db199af139be99bd3e61200 # master, 2026-11-14
       - run: flyctl deploy --remote-only
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api-client";
-import { buildExplainRequest, groundedBodies, numbersAreGrounded, type ExplainRequest } from "@/lib/explain";
+import { buildExplainRequest, directionMatches, groundedBodies, numbersAreGrounded, type ExplainRequest } from "@/lib/explain";
 import type { Finding, Projection } from "@/lib/types";
 
 export interface Explanations {
@@ -27,7 +27,9 @@ function fetchExplanations(req: ExplainRequest): Promise<Result> {
       .then((res) => {
         const allNumbers = req.findings.flatMap((f) => [f.amountUsd, ...Object.values(f.inputs)]);
         if (req.projection) allNumbers.push(req.projection.balance);
-        const summary = res.summary?.trim() && numbersAreGrounded(res.summary, allNumbers) ? res.summary.trim() : null;
+        const text = res.summary?.trim();
+        const summary =
+          text && numbersAreGrounded(text, allNumbers) && directionMatches(text, req.projection?.balance) ? text : null;
         return { bodies: groundedBodies(req, res), summary };
       })
       .catch(() => {

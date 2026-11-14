@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { cookies, headers } from "next/headers";
-import { aadFor, decryptJson, deriveKey, encryptJson, hashIp, hashToken, newHouseholdSecret } from "./crypto";
+import { aadFor, decryptJson, deriveKey, encryptJson, hashIp, hashToken, INVALID_SECRET, newHouseholdSecret } from "./crypto";
 import { audit, getDb } from "./db";
 import { planFor } from "./billing";
 import type {
@@ -76,8 +76,11 @@ export async function currentSession(): Promise<Session | null> {
   if (!secret) return null;
   try {
     return sessionFromSecret(secret);
-  } catch {
-    return null;
+  } catch (err) {
+    // A malformed cookie is just "no household". Anything else (database, MASTER_KEY) is a
+    // server fault and must surface as 500, or the UI would start a new household over it.
+    if (err instanceof Error && err.message === INVALID_SECRET) return null;
+    throw err;
   }
 }
 
@@ -241,9 +244,15 @@ export async function loadHouseholdData(s: Session): Promise<HouseholdData> {
   return { profile, employers, documents, checklist, plan: planFor(s.householdId) };
 }
 
+// "Delete my data" removes the household's audit trail too; the deletion itself is logged
+// without a household id.
 export async function deleteHousehold(s: Session): Promise<void> {
-  getDb().prepare("DELETE FROM households WHERE id = ?").run(s.householdId);
-  audit(s.householdId, "delete_household", await clientIpHash());
+  const db = getDb();
+  db.transaction(() => {
+    db.prepare("DELETE FROM households WHERE id = ?").run(s.householdId);
+    db.prepare("DELETE FROM audit_log WHERE household_id = ?").run(s.householdId);
+  })();
+  audit(null, "delete_household", null);
 }
 
 // Inactive households are removed after 30 days. Households with a paid plan that is
@@ -256,6 +265,10 @@ export function purgeInactive(): number {
       "DELETE FROM households WHERE last_seen_at < ? AND NOT (plan = 'annual' AND plan_until IS NOT NULL AND plan_until > ?)",
     )
     .run(cutoff, nowIso);
+  // Audit rows of households that no longer exist, and anything older than 30 days.
+  getDb()
+    .prepare("DELETE FROM audit_log WHERE at < ? OR (household_id IS NOT NULL AND household_id NOT IN (SELECT id FROM households))")
+    .run(cutoff);
   if (res.changes > 0) audit(null, `purge_inactive:${res.changes}`, null);
   return res.changes;
 }
