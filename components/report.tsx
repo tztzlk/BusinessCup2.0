@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Badge, Card } from "./ui";
 import { label, money, shortDate } from "@/lib/format";
+import { findingTitle, inputRow } from "@/lib/findingCopy";
 import type {
   ChecklistItem,
   ChecklistStatus,
@@ -49,7 +50,7 @@ export function FindingCard({ finding, employerName }: { finding: Finding; emplo
             <Badge tone={severityTone[finding.severity]}>{severityLabel[finding.severity]}</Badge>
             {employerName && <span className="text-xs text-slate-500">{employerName}</span>}
           </div>
-          <h3 className="mt-2 font-semibold text-slate-900">{label(finding.code.toLowerCase())}</h3>
+          <h3 className="mt-2 font-semibold text-slate-900">{findingTitle(finding)}</h3>
         </div>
         <p className="text-xl font-bold text-slate-900">
           {money(finding.amountUsd, true)}
@@ -67,12 +68,15 @@ export function FindingCard({ finding, employerName }: { finding: Finding; emplo
       </button>
       {open && (
         <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-1 rounded-lg bg-slate-50 p-3 text-sm sm:grid-cols-2">
-          {Object.entries(finding.inputs).map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-3">
-              <dt className="text-slate-500">{k}</dt>
-              <dd className="font-mono text-slate-800">{typeof v === "number" ? v.toLocaleString("en-US") : v}</dd>
-            </div>
-          ))}
+          {Object.entries(finding.inputs).map(([k, v]) => {
+            const row = inputRow(k, v);
+            return (
+              <div key={k} className="flex justify-between gap-3">
+                <dt className="text-slate-500">{row.label}</dt>
+                <dd className="text-right font-mono text-slate-800">{row.value}</dd>
+              </div>
+            );
+          })}
         </dl>
       )}
     </Card>
@@ -119,7 +123,7 @@ export function HouseholdSummary({
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <Card>
-        <h3 className="font-semibold text-slate-900">Household</h3>
+        <h3 className="font-semibold text-slate-900">Profile</h3>
         <dl className="mt-3 space-y-1 text-sm">
           <Row k="Filing status" v={label(profile.filingStatus)} />
           <Row k="State" v={profile.state} />
@@ -201,7 +205,7 @@ export function ChecklistView({
             </div>
             <div className="flex items-center gap-2">
               <Badge tone={statusTone[item.status]}>{label(item.status)}</Badge>
-              {onStatusChange && item.status !== "received" && (
+              {onStatusChange && item.formType !== "W-2" && (item.status === "expected" || item.status === "overdue") && (
                 <button
                   type="button"
                   onClick={() => onStatusChange(item.id, "received")}

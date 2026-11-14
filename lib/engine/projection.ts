@@ -80,7 +80,7 @@ export function projectionFindings(proj: ProjectionDetail, jobs: JobInput[]): Fi
       .filter((e) => e.recommendedStep4c > 0)
       .map((e) => {
         const name = jobs.find((j) => j.settings.id === e.employerId)?.settings.employerName ?? "this job";
-        return `add $${e.recommendedStep4c} per paycheck in Step 4(c) at ${name}`;
+        return `add ${usd(e.recommendedStep4c)} per paycheck in Step 4(c) at ${name}`;
       });
     const step2 = twoJobs && noStep2 ? " Both jobs have the W-4 Step 2 box unchecked, which is the most common cause for two-earner households." : "";
     findings.push({
@@ -92,7 +92,7 @@ export function projectionFindings(proj: ProjectionDetail, jobs: JobInput[]): Fi
       action: {
         kind: "w4_change",
         details: lines.length > 0
-          ? `To avoid owing about $${Math.round(proj.balance)} in April: ${lines.join("; ")}.${step2}`
+          ? `To avoid owing about ${usd(proj.balance)} in April: ${lines.join("; ")}.${step2}`
           : `No paychecks left this year to fix it. For next year, update your W-4.${step2}`,
       },
     });
@@ -107,10 +107,15 @@ export function projectionFindings(proj: ProjectionDetail, jobs: JobInput[]): Fi
       action: {
         kind: "w4_change",
         details: periods > 0
-          ? `You're on track for a refund of about $${Math.round(-proj.balance)}. That's money you could keep in your paychecks instead: review your W-4 for next year.`
-          : `You're on track for a refund of about $${Math.round(-proj.balance)}.`,
+          ? `You're on track for a refund of about ${usd(-proj.balance)}. That's money you could keep in your paychecks instead: review your W-4 for next year.`
+          : `You're on track for a refund of about ${usd(-proj.balance)}.`,
       },
     });
   }
   return findings;
+}
+
+/** Whole dollars with thousands separators, for action texts. */
+function usd(n: number): string {
+  return `$${Math.round(n).toLocaleString("en-US")}`;
 }

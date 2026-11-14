@@ -38,7 +38,7 @@ export function reconcileW2(w2: W2, lastStub: Paystub, employerId: string | null
       inputs: { box: r.box, onW2: r.w2, fromPayStubs: r.expected },
       action: {
         kind: "ask_w2c" as const,
-        details: `W-2 box ${r.box} (${r.label}) differs from your year-end pay stub by $${Math.abs(round2(r.w2 - r.expected))}. Ask your employer to confirm it or issue a corrected W-2 (W-2c) before you file.`,
+        details: `W-2 box ${r.box} (${r.label}) differs from your year-end pay stub by $${Math.abs(round2(r.w2 - r.expected)).toLocaleString("en-US", { minimumFractionDigits: 2 })}. Ask your employer to confirm it or issue a corrected W-2 (W-2c) before you file.`,
       },
     }));
 
