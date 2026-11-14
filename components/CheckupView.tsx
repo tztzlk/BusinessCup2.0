@@ -156,7 +156,7 @@ export function CheckupView({
                   <button
                     type="button"
                     onClick={() => setShowAllBoxes((v) => !v)}
-                    className="no-print mt-3 text-sm font-medium text-indigo-700 hover:underline"
+                    className="no-print mt-3 text-sm font-medium text-brand-700 hover:underline"
                     aria-expanded={showAllBoxes}
                   >
                     {showAllBoxes ? "Hide matching boxes" : `Show all ${recRows.length} boxes`}

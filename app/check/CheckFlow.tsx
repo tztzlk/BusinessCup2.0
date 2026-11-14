@@ -6,6 +6,7 @@ import { api, ApiError } from "@/lib/api-client";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
 import { Paywall } from "@/components/Paywall";
+import { SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
 import type { EmploymentSettings, ExtractResult, HouseholdData, HouseholdProfile, Paystub, W2 } from "@/lib/types";
 
 type Step = "loading" | "profile" | "recovery" | "employer" | "upload" | "confirm" | "done";
@@ -53,6 +54,36 @@ export function CheckFlow() {
       });
   }, [refresh]);
 
+  const [sampleBusy, setSampleBusy] = useState(false);
+
+  // One click for judges: sample household + matching job, then the fictional PDF through the real reader.
+  const trySample = async () => {
+    setError(null);
+    setSampleBusy(true);
+    try {
+      let data = household;
+      if (!data) {
+        await api.createHousehold(SAMPLE_PROFILE);
+        data = await refresh();
+      }
+      if (!data?.employers.some((e) => e.employerName === SAMPLE_EMPLOYER.employerName)) {
+        await api.addEmployer(SAMPLE_EMPLOYER);
+        data = await refresh();
+      }
+      const res = await fetch(SAMPLE_PAYSTUB_URL);
+      if (!res.ok) throw new Error("Could not load the sample pay stub. Try again.");
+      const file = new File([await res.blob()], "sample-paystub.pdf", { type: "application/pdf" });
+      const extractedSample = await api.extract(file);
+      if (extractedSample.documentType === "other") throw new Error("The sample could not be read. Try again in a minute.");
+      setExtracted(extractedSample);
+      setStep("confirm");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Could not run the sample. Try again.");
+    } finally {
+      setSampleBusy(false);
+    }
+  };
+
   const stepIndex = STEPS.findIndex(([s]) => s === (step === "recovery" ? "profile" : step === "done" ? "confirm" : step));
 
   return (
@@ -66,7 +97,7 @@ export function CheckFlow() {
             <li
               key={s}
               className={`flex-1 rounded-md px-2 py-1.5 text-center font-medium ${
-                i < stepIndex ? "bg-indigo-100 text-indigo-800" : i === stepIndex ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-500"
+                i < stepIndex ? "bg-brand-100 text-brand-800" : i === stepIndex ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-500"
               }`}
             >
               {i + 1}. {name}
@@ -79,6 +110,10 @@ export function CheckFlow() {
         <div className="mt-4">
           <Notice tone="danger">{error}</Notice>
         </div>
+      )}
+
+      {(step === "profile" || step === "employer" || step === "upload") && (
+        <SampleBanner busy={sampleBusy} onTry={trySample} />
       )}
 
       <div className="mt-6">
@@ -160,6 +195,49 @@ export function CheckFlow() {
       </div>
     </div>
   );
+}
+
+function SampleBanner({ busy, onTry }: { busy: boolean; onTry: () => void }) {
+  const elapsed = useElapsed(busy);
+  return (
+    <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+      <div className="min-w-0">
+        {busy ? (
+          <div role="status" aria-live="polite" className="flex items-center gap-3">
+            <div className="h-5 w-5 shrink-0 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+            <p className="text-sm font-medium text-slate-800">
+              Reading the sample pay stub… <span className="tabular-nums">{elapsed}s</span>
+              <span className="block font-normal text-slate-600">Same reader and checks as your own document. Usually 10–40 seconds.</span>
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="font-medium text-slate-900">No pay stub at hand?</p>
+            <p className="text-sm text-slate-600">
+              Try a fictional sample: an hourly job in Texas. It goes through the real reader, and one mistake is hidden in it.
+            </p>
+          </>
+        )}
+      </div>
+      {!busy && (
+        <Button type="button" variant="secondary" className="mt-3 w-full shrink-0 sm:mt-0 sm:w-auto" onClick={onTry}>
+          Try with a sample pay stub
+        </Button>
+      )}
+    </div>
+  );
+}
+
+function useElapsed(running: boolean): number {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    if (!running) return;
+    setElapsed(0);
+    const started = Date.now();
+    const t = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, [running]);
+  return elapsed;
 }
 
 function useSubmit() {
@@ -489,15 +567,7 @@ function UploadStep({
   const [dragging, setDragging] = useState(false);
   const [notDoc, setNotDoc] = useState<string | null>(null);
   const { busy, err, run } = useSubmit();
-  const [elapsed, setElapsed] = useState(0);
-
-  useEffect(() => {
-    if (!busy) return;
-    setElapsed(0);
-    const started = Date.now();
-    const t = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
-    return () => clearInterval(t);
-  }, [busy]);
+  const elapsed = useElapsed(busy);
 
   const handle = (file: File | undefined) => {
     if (!file) return;
@@ -515,7 +585,7 @@ function UploadStep({
       <p className="text-sm text-slate-500">
         {employers.length} job{employers.length === 1 ? "" : "s"} on file:{" "}
         {employers.map((e) => e.employerName).join(", ") || "none"} ·{" "}
-        <button type="button" className="font-medium text-indigo-700 hover:underline" onClick={onAddEmployer}>
+        <button type="button" className="font-medium text-brand-700 hover:underline" onClick={onAddEmployer}>
           add a job
         </button>
       </p>
@@ -532,12 +602,12 @@ function UploadStep({
           handle(e.dataTransfer.files[0]);
         }}
         className={`mt-4 flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-4 py-10 text-center ${
-          dragging ? "border-indigo-500 bg-indigo-50" : "border-slate-300 bg-slate-50"
+          dragging ? "border-brand-500 bg-brand-50" : "border-slate-300 bg-slate-50"
         }`}
       >
         {busy ? (
           <div role="status" aria-live="polite" className="flex flex-col items-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
             <p className="mt-3 font-medium text-slate-800">Reading your document… {elapsed > 0 && <span className="tabular-nums">{elapsed}s</span>}</p>
             <p className="text-sm text-slate-500">
               {elapsed < 45 ? "Usually 20–40 seconds. Keep this tab open." : "Taking longer than usual — still working."}

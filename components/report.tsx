@@ -77,7 +77,7 @@ export function FindingCard({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="no-print mt-3 text-sm font-medium text-indigo-700 hover:underline"
+        className="no-print mt-3 text-sm font-medium text-brand-700 hover:underline"
         aria-expanded={open}
       >
         {open ? "Hide calculation" : "Show calculation"}
@@ -120,7 +120,7 @@ export function W4Card({
       </p>
       <h3 className="mt-1 font-semibold text-slate-900">{employer.employerName}</h3>
       <p className="mt-3 text-sm text-slate-600">Step 4(c) extra withholding per paycheck</p>
-      <p className="text-2xl font-bold text-indigo-700">{money(recommendedStep4c, true)}</p>
+      <p className="text-2xl font-bold text-brand-700">{money(recommendedStep4c, true)}</p>
       <p className="mt-2 text-xs text-slate-500">
         {remainingPayPeriods} paychecks left this year · currently {money(employer.w4.step4cExtraWithholding, true)}
       </p>
@@ -230,7 +230,7 @@ export function ChecklistView({
                 <button
                   type="button"
                   onClick={() => onStatusChange(item.id, "received")}
-                  className="no-print text-sm font-medium text-indigo-700 hover:underline"
+                  className="no-print text-sm font-medium text-brand-700 hover:underline"
                 >
                   Mark received
                 </button>
