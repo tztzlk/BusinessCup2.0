@@ -11,6 +11,7 @@ import { Paywall } from "@/components/Paywall";
 import { ProfileWizard } from "@/components/check/ProfileWizard";
 import { EmployerWizard } from "@/components/check/EmployerWizard";
 import { CheckIntro } from "@/components/check/CheckIntro";
+import { DocumentPreview } from "@/components/check/DocumentPreview";
 import { IconBriefcase, IconCheckCircle, IconHousehold, IconUpload } from "@/components/Icons";
 import { isSampleEmployer, SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
 import { FREE_LIMITS } from "@/lib/plan";
@@ -34,6 +35,8 @@ export function CheckFlow() {
   const [sampleRecoveryUrl, setSampleRecoveryUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [extracted, setExtracted] = useState<Extracted | null>(null);
+  // The file that was read, kept only in this tab's memory for the preview on the confirm step.
+  const [file, setFile] = useState<File | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -81,6 +84,7 @@ export function CheckFlow() {
       const extractedSample = await api.extract(file);
       if (extractedSample.documentType === "other") throw new Error("The sample could not be read. Try again in a minute.");
       setExtracted(extractedSample);
+      setFile(file);
       setStep("confirm");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not run the sample. Try again.");
@@ -92,7 +96,7 @@ export function CheckFlow() {
   const stepIndex = step === "done" ? STEPS.length : STEPS.findIndex(([s]) => s === (step === "recovery" ? "profile" : step));
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className={`mx-auto ${step === "confirm" && file ? "max-w-6xl" : "max-w-3xl"}`}>
       <h1 className="text-2xl font-semibold text-slate-900 sm:text-3xl">Check my pay stub</h1>
       <p className="mt-1 text-slate-600">About 3 minutes. No account needed — your data is tied to this browser.</p>
 
@@ -180,9 +184,10 @@ export function CheckFlow() {
             freeStubUsed={freeStubUsed(household)}
             employers={household?.employers ?? []}
             onAddEmployer={() => setStep("employer")}
-            onExtracted={(res) => {
+            onExtracted={(res, read) => {
               setError(null);
               setExtracted(res);
+              setFile(read);
               setStep("confirm");
             }}
           />
@@ -191,11 +196,16 @@ export function CheckFlow() {
         {step === "confirm" && extracted && household && (
           <ConfirmStep
             extracted={extracted}
+            file={file}
             employers={household.employers}
-            onBack={() => setStep("upload")}
+            onBack={() => {
+              setFile(null);
+              setStep("upload");
+            }}
             onSaved={async () => {
               await refresh();
               setExtracted(null);
+              setFile(null);
               setStep("done");
             }}
           />
@@ -355,7 +365,7 @@ function UploadStep({
   freeStubUsed: boolean;
   employers: EmploymentSettings[];
   onAddEmployer: () => void;
-  onExtracted: (res: Extracted) => void;
+  onExtracted: (res: Extracted, file: File) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
@@ -377,7 +387,7 @@ function UploadStep({
     run(async () => {
       const res = await api.extract(file);
       if (res.documentType === "other") setNotDoc(res.warnings[0] ?? "This does not look like a pay stub or a W-2.");
-      else onExtracted(res);
+      else onExtracted(res, file);
     });
   };
 
@@ -478,11 +488,14 @@ function UploadStep({
 
 function ConfirmStep({
   extracted,
+  file,
   employers,
   onBack,
   onSaved,
 }: {
   extracted: Extracted;
+  /** The file that was read, for the side-by-side preview. Only in memory; never sent again. */
+  file: File | null;
   employers: EmploymentSettings[];
   onBack: () => void;
   onSaved: () => Promise<void>;
@@ -495,18 +508,20 @@ function ConfirmStep({
   const { busy, err, errCode, run } = useSubmit();
   const flagged = Object.keys(extracted.confidence).length;
 
-  return (
+  const form = (
     <Card>
       <h2 className="font-semibold text-slate-900">
         Confirm your {extracted.documentType === "paystub" ? "pay stub" : "W-2"}
       </h2>
-      <p className="text-sm text-slate-500">Check the numbers against your document. Fix anything that looks off.</p>
+      <p className="text-sm text-slate-500">
+        {file ? "Compare the numbers with your document" : "Check the numbers against your document"}. Fix anything that looks off.
+      </p>
       {flagged > 0 && (
         <div className="mt-3">
           <Notice tone="warning">
             {flagged} field{flagged === 1 ? " was" : "s were"} hard to read — highlighted in{" "}
             <span className="font-semibold text-amber-700">amber</span> (please check) or{" "}
-            <span className="font-semibold text-rose-700">red</span> (likely wrong).
+            <span className="font-semibold text-rose-700">red</span> (likely wrong). Check each one against your document.
           </Notice>
         </div>
       )}
@@ -592,5 +607,16 @@ function ConfirmStep({
         )}
       </div>
     </Card>
+  );
+
+  if (!file) return form;
+  // Phone: the document above the fields. Desktop: side by side, the document stays in view while scrolling.
+  return (
+    <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:items-start">
+      <div className="h-[55vh] min-h-[320px] lg:sticky lg:top-20 lg:h-[calc(100vh-7rem)]">
+        <DocumentPreview file={file} />
+      </div>
+      {form}
+    </div>
   );
 }

@@ -12,6 +12,17 @@ import {
 } from "./paystub";
 import { expectedWithholding } from "./withholding";
 
+/** Every check a pay stub can get. Which ones run depends on the stub and the job settings. */
+export type PaystubCheckId =
+  | "net_pay"
+  | "ytd"
+  | "social_security"
+  | "medicare"
+  | "federal_withholding"
+  | "overtime"
+  | "match_contribution"
+  | "match_paid";
+
 /** Checks on a single pay stub against its own numbers, the law and the employer settings. */
 export function checkPaystub(
   stub: Paystub,
@@ -22,7 +33,23 @@ export function checkPaystub(
   /** 401(k) deferrals year to date at the same person's other jobs (the limit is per person). */
   otherJobsDeferralsYtd = 0,
 ): Finding[] {
+  return runPaystubChecks(stub, previous, settings, status, p, otherJobsDeferralsYtd).findings;
+}
+
+/**
+ * Same checks, plus the list of checks that actually ran on this stub (a check that was skipped,
+ * e.g. overtime on a salaried job, is not in `ran`). The report's "What we checked" list comes from it.
+ */
+export function runPaystubChecks(
+  stub: Paystub,
+  previous: Paystub | null,
+  settings: EmploymentSettings,
+  status: FilingStatus,
+  p: FederalParams,
+  otherJobsDeferralsYtd = 0,
+): { findings: Finding[]; ran: PaystubCheckId[] } {
   const findings: Finding[] = [];
+  const ran: PaystubCheckId[] = ["net_pay"];
   const employerId = settings.id;
   const n = periodsPerYear(stub.payFrequency, p);
 
@@ -43,6 +70,7 @@ export function checkPaystub(
 
   // 2. Year-to-date totals must not go down within a year.
   if (previous && previous.payDate.slice(0, 4) === stub.payDate.slice(0, 4)) {
+    ran.push("ytd");
     const now = gross(stub, "ytd");
     const before = gross(previous, "ytd");
     if (now + 1 < before) {
@@ -58,6 +86,7 @@ export function checkPaystub(
   }
 
   // 3. Social Security: 6.2% of FICA wages up to the annual wage base.
+  ran.push("social_security");
   const fica = ficaWages(stub, "current");
   const ficaYtdBefore = pos(ficaWages(stub, "ytd") - fica);
   const ssBase = pos(Math.min(fica, p.fica.socialSecurityWageBase - ficaYtdBefore));
@@ -75,6 +104,7 @@ export function checkPaystub(
   }
 
   // 4. Medicare: 1.45%, plus 0.9% on wages over the employer withholding threshold.
+  ran.push("medicare");
   const overThreshold = pos(ficaYtdBefore + fica - p.fica.additionalMedicareEmployerWithholdingThreshold) - pos(ficaYtdBefore - p.fica.additionalMedicareEmployerWithholdingThreshold);
   const expectedMedicare = round2(fica * p.fica.medicareRate + overThreshold * p.fica.additionalMedicareRate);
   const printedMedicare = tax(stub, "medicare", "current");
@@ -93,6 +123,7 @@ export function checkPaystub(
   // Skipped when the stub has a bonus: supplemental wages may be withheld at a flat rate.
   const hasBonus = stub.earnings.some((e) => e.type === "bonus" && e.current > 0);
   if (!hasBonus) {
+    ran.push("federal_withholding");
     const fedWages = federalWages(stub, "current");
     const expectedFed = expectedWithholding(fedWages, n, status, settings.w4, p);
     const printedFed = tax(stub, "federal_income", "current");
@@ -114,6 +145,9 @@ export function checkPaystub(
   // 6. Overtime paid at less than 1.5x the regular rate (FLSA non-exempt workers).
   if (settings.payType === "hourly" && settings.overtimeEligible) {
     const regularRate = settings.hourlyRate ?? stub.earnings.find((e) => e.type === "regular" && e.rate)?.rate ?? null;
+    const weeks = stub.payFrequency === "weekly" ? 1 : stub.payFrequency === "biweekly" ? 2 : null;
+    // Ran only if there was something to check: an overtime line with hours, or a weekly/biweekly period.
+    if (regularRate && (weeks || stub.earnings.some((x) => x.type === "overtime" && x.hours))) ran.push("overtime");
     if (regularRate) {
       for (const e of stub.earnings.filter((x) => x.type === "overtime" && x.hours)) {
         const expected = round2((e.hours ?? 0) * regularRate * p.flsa.overtimeMultiplier);
@@ -130,7 +164,6 @@ export function checkPaystub(
       }
       const regularHours = sum(stub.earnings.filter((e) => e.type === "regular").map((e) => e.hours ?? 0));
       const hasOvertimeLine = stub.earnings.some((e) => e.type === "overtime" && e.current > 0);
-      const weeks = stub.payFrequency === "weekly" ? 1 : stub.payFrequency === "biweekly" ? 2 : null;
       if (weeks && !hasOvertimeLine && regularHours > 40 * weeks) {
         findings.push({
           code: "POSSIBLE_UNPAID_OVERTIME",
@@ -147,6 +180,7 @@ export function checkPaystub(
   // 7. 401(k) employer match: are you contributing enough to get all of it, and is it paid?
   const m = settings.match401k;
   if (m && m.matchPercent > 0 && stub.grossCurrent > 0) {
+    ran.push("match_contribution");
     const employee = deduction(stub, "401k_pretax", "current") + deduction(stub, "401k_roth", "current");
     const contributionPct = round2((employee / stub.grossCurrent) * 100);
     const annualPay = settings.annualSalary ?? stub.grossCurrent * n;
@@ -187,6 +221,7 @@ export function checkPaystub(
     }
     const matchLine = stub.employerContributions.filter((c) => c.type === "401k_match");
     if (matchLine.length > 0) {
+      ran.push("match_paid");
       const expectedMatch = round2(stub.grossCurrent * (Math.min(contributionPct, m.upToPercentOfPay) / 100) * (m.matchPercent / 100));
       const paid = sum(matchLine.map((c) => c.current));
       if (paid + 1 < expectedMatch) {
@@ -202,5 +237,5 @@ export function checkPaystub(
     }
   }
 
-  return findings;
+  return { findings, ran };
 }

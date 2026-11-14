@@ -288,7 +288,7 @@ export function ReportView() {
         )}
         <Card>
           <p className="text-sm text-slate-600">
-            Deleting removes your household, jobs, documents and checklist from our servers immediately. This can&apos;t be undone.
+            Deleting removes your household, jobs, documents, checklist and activity log from our database immediately. This can&apos;t be undone.
           </p>
           {confirmingDelete ? (
             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">

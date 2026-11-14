@@ -1,8 +1,9 @@
 "use client";
 
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { ButtonLink, inputClass } from "./ui";
 import { DISCLAIMER } from "./Footer";
+import { Term } from "./Term";
 import { money } from "@/lib/format";
 import { type QuickEstimateResult, type QuickFilingStatus, quickEstimate } from "@/lib/engine/quickEstimate";
 
@@ -20,7 +21,7 @@ const parseDollars = (s: string) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-function YesNo({ label, value, onChange }: { label: string; value: boolean; onChange: (v: boolean) => void }) {
+function YesNo({ label, value, onChange }: { label: ReactNode; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <fieldset className="text-sm">
       <legend className="mb-1 font-medium text-slate-700">{label}</legend>
@@ -74,7 +75,7 @@ function Result({ r, twoEarnerWording }: { r: QuickEstimateResult; twoEarnerWord
         {!owe && !refund && <>You&apos;re about even for {april}</>}
       </p>
       <p className="mt-2 text-sm tabular-nums opacity-80">
-        Federal tax after credits {money(r.annualTax, true)} vs. withheld from {r.payPeriods} paychecks {money(r.annualWithholding, true)}
+        Federal tax after credits {money(r.annualTax, true)} vs. <Term k="withholding">withheld</Term> from {r.payPeriods} paychecks {money(r.annualWithholding, true)}
         {r.annualTax < 0 ? " (below zero: part of the Child Tax Credit is refundable)" : ""}.
       </p>
 
@@ -82,7 +83,7 @@ function Result({ r, twoEarnerWording }: { r: QuickEstimateResult; twoEarnerWord
         <div className="mt-4 rounded-lg bg-white px-4 py-3 text-sm text-slate-800 ring-1 ring-brand-200">
           <p>
             <span className="font-semibold text-brand-700">Fix:</span> add{" "}
-            <span className="font-mono font-semibold">{money(r.step4cPerPaycheck, true)}</span> per paycheck in W-4 Step 4(c)
+            <span className="font-mono font-semibold">{money(r.step4cPerPaycheck, true)}</span> per paycheck in W-4 <Term k="w4Step4c">Step 4(c)</Term>
             {twoEarnerWording ? " on one of your W-4s" : ""}.
           </p>
           <p className="mt-1 text-xs text-slate-500">
@@ -112,8 +113,8 @@ function Result({ r, twoEarnerWording }: { r: QuickEstimateResult; twoEarnerWord
       )}
       {r.cause === "children_not_on_w4" && (
         <p className="mt-4 text-sm">
-          <span className="font-semibold">Why:</span> your children aren&apos;t claimed in W-4 Step 3, so payroll withholds as if there were no Child
-          Tax Credit. It comes back as a refund, or claim it in Step 3 to get it in each paycheck instead.
+          <span className="font-semibold">Why:</span> your children aren&apos;t claimed in W-4 Step 3, so payroll withholds as if there were no{" "}
+          <Term k="childTaxCredit">Child Tax Credit</Term>. It comes back as a refund, or claim it in Step 3 to get it in each paycheck instead.
         </p>
       )}
 
@@ -199,9 +200,13 @@ export function QuickEstimate() {
           <div className="sm:col-span-2">
             <YesNo
               label={
-                married
-                  ? "Did either of you check the “multiple jobs / spouse works” box (Step 2) on your W-4?"
-                  : "Did you check the “multiple jobs” box (Step 2) on your W-4?"
+                <>
+                  {married ? "Did either of you check the “multiple jobs / spouse works” box" : "Did you check the “multiple jobs” box"}{" "}
+                  <span className="whitespace-nowrap">
+                    (<Term k="w4Step2">Step 2</Term>)
+                  </span>{" "}
+                  on your <Term k="w4">W-4</Term>?
+                </>
               }
               value={step2}
               onChange={setStep2}
@@ -209,7 +214,18 @@ export function QuickEstimate() {
           </div>
           {children > 0 && (
             <div className="sm:col-span-2">
-              <YesNo label="Are your children claimed on a W-4 (Step 3)?" value={childrenOnW4} onChange={setChildrenOnW4} />
+              <YesNo
+                label={
+                  <>
+                    Are your children claimed on a W-4{" "}
+                    <span className="whitespace-nowrap">
+                      (<Term k="w4Step3">Step 3</Term>)?
+                    </span>
+                  </>
+                }
+                value={childrenOnW4}
+                onChange={setChildrenOnW4}
+              />
             </div>
           )}
         </div>
@@ -224,7 +240,7 @@ export function QuickEstimate() {
       </div>
 
       <p className="mt-5 text-xs text-slate-500">
-        Federal income tax only. Assumes biweekly pay, the standard deduction, no other income and a W-4 from 2020 or later. Nothing you type
+        Federal income tax only. Assumes biweekly pay, the <Term k="standardDeduction">standard deduction</Term>, no other income and a W-4 from 2020 or later. Nothing you type
         leaves this page. {DISCLAIMER}
       </p>
     </section>

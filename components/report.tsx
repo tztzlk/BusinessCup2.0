@@ -5,6 +5,9 @@ import Link from "next/link";
 import { Badge, Card } from "./ui";
 import { label, money, shortDate } from "@/lib/format";
 import { findingTitle, inputRow } from "@/lib/findingCopy";
+import { statusForSeverity, type CheckStatus, type StubChecks } from "@/lib/engine/checkSummary";
+import type { GlossaryKey } from "@/lib/glossary";
+import { Term, TermText } from "./Term";
 import type {
   ChecklistItem,
   ChecklistStatus,
@@ -48,7 +51,7 @@ export function ProjectionBanner({ projection, outlook }: { projection: Projecti
       <p className="text-sm font-medium opacity-75">April {projection.taxYear + 1} projection</p>
       <p className="mt-2 text-2xl font-semibold sm:text-3xl">{headline}</p>
       <p className="mt-2 text-sm opacity-80">
-        Projected {projection.taxYear} federal tax {money(projection.projectedTax, true)} vs. projected withholding{" "}
+        Projected {projection.taxYear} federal tax {money(projection.projectedTax, true)} vs. projected <Term k="withholding">withholding</Term>{" "}
         {money(projection.projectedWithholding, true)}
         {outlook === "on_track"
           ? amount < 1
@@ -60,8 +63,13 @@ export function ProjectionBanner({ projection, outlook }: { projection: Projecti
   );
 }
 
-const severityTone = { critical: "danger", warning: "warning", info: "info" } as const;
-const severityLabel = { critical: "Fix now", warning: "Worth fixing", info: "FYI" } as const;
+// Three levels across the report: the finding cards and "What we checked" use the same labels.
+const STATUS_TONE = { fix_now: "danger", worth_checking: "warning", ok: "success" } as const;
+const STATUS_LABEL: Record<CheckStatus, string> = { fix_now: "Fix now", worth_checking: "Worth checking", ok: "Looks right" };
+const STATUS_DOT: Record<CheckStatus, string> = { fix_now: "bg-rose-500", worth_checking: "bg-amber-400", ok: "bg-emerald-500" };
+
+/** Terms explained in finding titles, e.g. "Withholding doesn't match your W-4". */
+const TITLE_TERMS: GlossaryKey[] = ["w2", "w4", "withholding", "match401k", "socialSecurity", "medicare", "ytd"];
 
 export function FindingCard({
   finding,
@@ -81,10 +89,12 @@ export function FindingCard({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge tone={severityTone[finding.severity]}>{severityLabel[finding.severity]}</Badge>
+            <Badge tone={STATUS_TONE[statusForSeverity(finding.severity)]}>{STATUS_LABEL[statusForSeverity(finding.severity)]}</Badge>
             {employerName && <span className="text-xs text-slate-500">{employerName}</span>}
           </div>
-          <h3 className="mt-2 font-semibold text-slate-900">{findingTitle(finding)}</h3>
+          <h3 className="mt-2 font-semibold text-slate-900">
+            <TermText text={findingTitle(finding)} terms={TITLE_TERMS} />
+          </h3>
         </div>
         <p className="text-xl font-semibold text-slate-900">
           {money(finding.amountUsd, true)}
@@ -127,6 +137,49 @@ export function FindingCard({
   );
 }
 
+const CHECK_TERMS: GlossaryKey[] = ["additionalMedicare", "medicare", "socialSecurity", "withholding", "w4", "match401k", "ytd"];
+
+/** "What we checked": every check that ran on each job's latest pay stub, from lib/engine/checkSummary. */
+export function ChecksSummary({ stubs, memberOf }: { stubs: StubChecks[]; memberOf: (employerId: string) => string | undefined }) {
+  if (stubs.length === 0) return null;
+  return (
+    <div className={`grid gap-4 ${stubs.length > 1 ? "lg:grid-cols-2" : ""}`}>
+      {stubs.map((s) => {
+        const issues = s.checks.filter((c) => c.status !== "ok").length;
+        return (
+          <Card key={s.employerId} className="!p-0">
+            <div className="border-b border-slate-100 px-4 py-3">
+              <p className="text-xs text-slate-500">
+                {memberOf(s.employerId) ? `${memberOf(s.employerId)} · ` : ""}pay stub of {shortDate(s.payDate)}
+              </p>
+              <h3 className="font-semibold text-slate-900">{s.employerName}</h3>
+              <p className="mt-0.5 text-sm text-slate-600">
+                {s.checks.length} checks · {issues === 0 ? "all look right" : `${issues} to look at, ${s.checks.length - issues} look right`}
+              </p>
+            </div>
+            <ul className="divide-y divide-slate-100 text-sm">
+              {s.checks.map((c) => (
+                <li key={c.id} className="flex items-start gap-3 px-4 py-2.5">
+                  <span aria-hidden="true" className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${STATUS_DOT[c.status]}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-slate-900">
+                      <TermText text={c.label} terms={CHECK_TERMS} />
+                    </p>
+                    <p className="text-xs text-slate-500">{c.detail}</p>
+                  </div>
+                  <span className="shrink-0">
+                    <Badge tone={STATUS_TONE[c.status]}>{STATUS_LABEL[c.status]}</Badge>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
 export function W4Card({
   employer,
   recommendedStep4c,
@@ -142,7 +195,9 @@ export function W4Card({
         W-4 · {employer.member === "self" ? "You" : "Spouse"}
       </p>
       <h3 className="mt-1 font-semibold text-slate-900">{employer.employerName}</h3>
-      <p className="mt-3 text-sm text-slate-600">Step 4(c) extra withholding per paycheck</p>
+      <p className="mt-3 text-sm text-slate-600">
+        <Term k="w4Step4c">Step 4(c)</Term> extra withholding per paycheck
+      </p>
       <p className="text-2xl font-semibold tabular-nums text-brand-700">{money(recommendedStep4c, true)}</p>
       <p className="mt-2 text-xs text-slate-500">
         {remainingPayPeriods} paychecks left this year · currently {money(employer.w4.step4cExtraWithholding, true)}

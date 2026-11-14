@@ -1,5 +1,8 @@
 import Image from "next/image";
+import Link from "next/link";
 import { ButtonLink, Card } from "@/components/ui";
+import { IconCheckCircle, IconMinus } from "@/components/Icons";
+import { ANNUAL_PRICE_LABEL } from "@/lib/plan";
 import { CatchTicker, HeroStack } from "@/components/HeroArt";
 import { LogoMark } from "@/components/Logo";
 import { PayStubArt, W2Art } from "@/components/PaperArt";
@@ -59,7 +62,7 @@ const PRIVACY = [
   ["Claude reads, code calculates", "AI only reads your document. Every number comes from a tested tax engine with IRS-sourced parameters."],
   [
     "Documents never stored by us",
-    "Your file is read in memory by Claude through Anthropic's commercial API, then discarded. We never extract or save your SSN. Anthropic doesn't train on API data and deletes it within 30 days.",
+    "Your file is read in memory by Claude through Anthropic's commercial API, then discarded. We never extract or save your SSN. Anthropic doesn't train on API data without permission and deletes it within 30 days, except content flagged for policy review.",
   ],
   [
     "Field-level encryption",
@@ -67,6 +70,35 @@ const PRIVACY = [
   ],
   ["Delete anytime", "One click removes everything. Inactive data is erased automatically after 30 days."],
 ];
+
+// Only what the plans actually enforce today: lib/plan.ts, the 402s in app/api/documents and
+// app/api/checklist, and the locked sections of CheckupView. `true` = included, a string = included with a limit.
+const PLAN_ROWS: Array<[feature: string, free: string | boolean, annual: string | boolean]> = [
+  ["Pay stub checkup, every finding in dollars", "1 pay stub", "Every pay stub, both earners"],
+  ["April projection: owe or refund", true, true],
+  ["Exact W-4 Step 4(c) fix for each job", false, true],
+  ["January: tax-form checklist, W-2 reconciliation, accountant packet", false, true],
+  ["Calendar reminders for paydays and tax-form due dates", false, true],
+  ["Paycheck history", "Your 1 stub", "Every stub, all year"],
+];
+
+function PlanCell({ value, plan }: { value: string | boolean; plan: string }) {
+  if (value === true)
+    return (
+      <>
+        <IconCheckCircle aria-hidden="true" className="mx-auto h-5 w-5 text-brand-600" />
+        <span className="sr-only">Included in {plan}</span>
+      </>
+    );
+  if (value === false)
+    return (
+      <>
+        <IconMinus aria-hidden="true" className="mx-auto h-5 w-5 text-slate-300" />
+        <span className="sr-only">Not in {plan}</span>
+      </>
+    );
+  return <span className="text-xs font-medium text-slate-700 sm:text-sm">{value}</span>;
+}
 
 /** Small illustration on top of each value card. */
 function ValueArt({ index }: { index: number }) {
@@ -185,36 +217,76 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="mt-12" id="pricing">
+      <section className="mt-12 scroll-mt-20" id="pricing">
         <h2 className="text-2xl font-semibold text-slate-900">Pricing</h2>
-        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_190px]">
-          <Card>
-            <h3 className="font-semibold text-slate-900">Free</h3>
-            <p className="mt-1 text-3xl font-semibold tabular-nums text-slate-900">$0</p>
-            <ul className="mt-4 space-y-2 text-sm text-slate-600">
-              <li>One pay stub checkup: every mistake in dollars</li>
-              <li>April projection: owe or refund</li>
-            </ul>
-            <ButtonLink href="/check" variant="secondary" className="mt-6 w-full">
-              Start free
-            </ButtonLink>
+        <p className="mt-1 text-sm text-slate-600">
+          TurboTax helps you file in April. PayTrail catches problems all year, before you file.
+        </p>
+        <div className="mt-5 grid gap-4 lg:grid-cols-[minmax(0,1fr)_190px]">
+          <Card className="overflow-hidden !p-0">
+            <table className="w-full table-fixed text-left text-sm">
+              <caption className="sr-only">Free and Annual plans compared</caption>
+              <colgroup>
+                <col />
+                <col className="w-[5.5rem] sm:w-40" />
+                <col className="w-[6.5rem] sm:w-48" />
+              </colgroup>
+              <thead>
+                <tr className="border-b border-slate-200 align-bottom">
+                  <th scope="col" className="px-3 py-4 font-medium text-slate-500 sm:px-5">
+                    <span className="sr-only">Feature</span>
+                  </th>
+                  <th scope="col" className="px-2 py-4 text-center sm:px-3">
+                    <span className="block font-semibold text-slate-900">Free</span>
+                    <span className="block text-2xl font-semibold tabular-nums text-slate-900">$0</span>
+                  </th>
+                  <th scope="col" className="rounded-tr-xl bg-brand-50 px-2 py-4 text-center sm:px-3">
+                    <span className="block font-semibold text-brand-800">Annual</span>
+                    <span className="block text-2xl font-semibold tabular-nums text-slate-900">
+                      $99<span className="text-sm font-medium text-slate-500">/year</span>
+                    </span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {PLAN_ROWS.map(([feature, free, annual]) => (
+                  <tr key={feature}>
+                    <th scope="row" className="px-3 py-3 font-normal text-slate-700 sm:px-5">
+                      {feature}
+                    </th>
+                    <td className="px-2 py-3 text-center sm:px-3">
+                      <PlanCell value={free} plan="Free" />
+                    </td>
+                    <td className="bg-brand-50 px-2 py-3 text-center sm:px-3">
+                      <PlanCell value={annual} plan="Annual" />
+                    </td>
+                  </tr>
+                ))}
+                <tr className="hidden sm:table-row">
+                  <td className="px-5 py-4" />
+                  <td className="px-2 py-4 sm:px-3">
+                    <ButtonLink href="/check" variant="secondary" className="w-full">
+                      Start free
+                    </ButtonLink>
+                  </td>
+                  <td className="rounded-br-xl bg-brand-50 px-2 py-4 sm:px-3">
+                    {/* Checkout starts from a household's report; from here this shows Annual on the sample household. */}
+                    <ButtonLink href="/demo/couple" className="w-full !px-2">
+                      See Annual in a sample
+                    </ButtonLink>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            {/* Phone: the table columns are too narrow for buttons. */}
+            <div className="grid grid-cols-2 gap-2 border-t border-slate-100 p-3 sm:hidden">
+              <ButtonLink href="/check" variant="secondary">
+                Start free
+              </ButtonLink>
+              <ButtonLink href="/demo/couple">See Annual</ButtonLink>
+            </div>
           </Card>
-          <Card className="border-brand-500">
-            <h3 className="font-semibold text-slate-900">Annual</h3>
-            <p className="mt-1 text-3xl font-semibold tabular-nums text-slate-900">
-              $99<span className="text-base font-medium text-slate-500">/year</span>
-            </p>
-            <ul className="mt-4 space-y-2 text-sm text-slate-600">
-              <li>Every pay stub, both earners, all year</li>
-              <li>April projection and W-4 fixes per job</li>
-              <li>January checklist, W-2 reconciliation, accountant packet</li>
-            </ul>
-            {/* Checkout starts from a household's report; from the landing page this shows Annual on the sample household. */}
-            <ButtonLink href="/demo/couple" className="mt-6 w-full">
-              See everything in Annual
-            </ButtonLink>
-          </Card>
-          {/* Mirrored so she points left, at the Annual card. */}
+          {/* Mirrored so she points left, at the plans. */}
           <Image
             src="/illustrations/annual-guide.webp"
             alt="Illustration: a woman holding her pay stubs points to the Annual plan"
@@ -223,6 +295,16 @@ export default function Home() {
             className="hidden h-auto w-[190px] -scale-x-100 self-end lg:block"
           />
         </div>
+        {/* $1,920 is the engine's result for the salaried sample (locked in tests/personas.test.ts); the fee range is
+            NATP 2025, see docs/RESEARCH-LOG.md and docs/research/unit-economics-99.md. */}
+        <p className="mt-4 text-sm text-slate-600">
+          <span className="font-semibold text-slate-900">Why {ANNUAL_PRICE_LABEL}:</span> one finding can pay for the year. In the{" "}
+          <Link href="/demo/salaried" className="font-medium text-brand-700 hover:underline">
+            Nina &amp; Marcus sample
+          </Link>
+          , the checkup finds $1,920 a year of 401(k) match left on the table. A tax professional charges $185–280 to prepare a basic Form
+          1040 (NATP, 2025).
+        </p>
       </section>
     </div>
   );

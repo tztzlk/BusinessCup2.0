@@ -45,7 +45,7 @@ B2C веб-продукт для работающих семей в США (W-2)
 - `lib/claude.ts`, `lib/extraction.ts` (схема и промпт извлечения листка/W-2), `lib/ratelimit.ts`.
 - `app/api/*` — эндпоинты (таблица ниже). `instrumentation*.ts` — почасовая автоочистка.
 - `mocks/couple.json` — главный демо-персонаж (цифры согласованы с Pub 15-T 2026). `lib/demo.ts` строит из него январь: листки на конец года + W-2 с подложенным расхождением в box 12 D у Jordan.
-- `lib/engine/` — ядро: `params/2026/federal.json`, `withholding.ts` (Worksheet 1A), `tax.ts` (ставки, CTC, вычет за сверхурочные, доп. Medicare), `checks.ts` (проверки листка), `projection.ts` (прогноз и W-4), `reconcileW2.ts`, `expectedDocs.ts`, `index.ts` (`runCheckup`).
+- `lib/engine/` — ядро (сверено: `tests/engine-crosscheck.test.ts`): `params/2026/federal.json`, `withholding.ts` (Worksheet 1A), `tax.ts` (ставки, CTC, вычет за сверхурочные, доп. Medicare), `checks.ts` (проверки листка), `projection.ts` (прогноз и W-4), `reconcileW2.ts`, `expectedDocs.ts`, `index.ts` (`runCheckup`).
 - `components/CheckupView.tsx` — отрисовка результата ядра (демо и /report).
 - `tests/` — Vitest.
 
@@ -83,5 +83,6 @@ B2C веб-продукт для работающих семей в США (W-2)
 - [x] Персонаж 1 (пара): ноябрь и январь считаются ядром (`lib/demo.ts`), сюжет закреплён в `tests/demo.test.ts`
 - [x] Персонажи 2 и 3 (Манс): `mocks/hourly.json`, `mocks/salaried.json`, `tests/personas.test.ts`; страницы в /demo — Алдик
 - [x] Аудит бэкенда (14.11): CSRF (`middleware.ts`), лимиты тела (`lib/http.ts`), потолок Claude `CLAUDE_HOURLY_CAP`=100/ч, правки ядра, ручной QA-прогон
+- [x] Ночь 14→15.11: замер чтения (`docs/EVAL-EXTRACT.md`, 209/209 на синтетике), сверка ядра с Pub 15-T и PolicyEngine/Tax-Calculator (`docs/ENGINE-CROSSCHECK.md`), цена $99, экономика и CAC (`docs/research/unit-economics-99.*`, `cac-evidence.md`), Quick estimate на главной, Paycheck history, What we checked, превью документа, подсказки к терминам, страницы /privacy /accuracy /about, /account (Алдик), ссылка восстановления повторно
 - [ ] Бланки W-2 для питча
 - [ ] Январский режим (решение в 23:00)

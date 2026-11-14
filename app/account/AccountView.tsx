@@ -265,7 +265,7 @@ export function AccountView() {
           </div>
           <div className="mt-5 border-t border-slate-100 pt-5">
             <p className="text-sm text-slate-600">
-              Deleting removes your account: household, jobs, documents and checklist. Your private link stops working. This can&apos;t be
+              Deleting removes your account immediately: household, jobs, documents, checklist and activity log. Your private link stops working. This can&apos;t be
               undone.
             </p>
             {confirmingDelete ? (

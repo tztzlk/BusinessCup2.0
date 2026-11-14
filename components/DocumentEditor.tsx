@@ -1,10 +1,11 @@
 "use client";
 
+import { useId } from "react";
 import type { Confidence, Paystub, W2 } from "@/lib/types";
 import { inputClass } from "./ui";
 
 // Editable confirmation forms for extracted documents. Fields the model flagged as
-// uncertain are highlighted: medium = amber, low = red.
+// uncertain are highlighted (medium = amber, low = red) with a short hint to compare with the document.
 
 type ConfidenceMap = Record<string, Confidence>;
 
@@ -23,6 +24,20 @@ function tone(conf: ConfidenceMap, path: string): string {
   return "";
 }
 
+const CHECK_HINT = "Check this against your document";
+
+/** Hint under a field the model was unsure about; the input points to it with aria-describedby. */
+function FlagHint({ id, conf, path }: { id: string; conf: ConfidenceMap; path: string }) {
+  const c = conf[path];
+  if (!c) return null;
+  return (
+    <span id={id} className={`mt-0.5 block text-[11px] leading-tight ${c === "low" ? "text-rose-700" : "text-amber-700"}`}>
+      {c === "low" ? "Likely misread. " : ""}
+      {CHECK_HINT}
+    </span>
+  );
+}
+
 function NumberInput({
   value,
   onChange,
@@ -38,25 +53,30 @@ function NumberInput({
   nullable?: boolean;
   ariaLabel: string;
 }) {
+  const hintId = useId();
   return (
-    <input
-      type="number"
-      inputMode="decimal"
-      step="0.01"
-      aria-label={ariaLabel}
-      title={conf[path] ? `Please check: ${conf[path]} confidence` : undefined}
-      className={`${inputClass} px-2 text-right font-mono [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${tone(conf, path)}`}
-      value={value ?? ""}
-      placeholder={nullable ? "—" : "0.00"}
-      onChange={(e) => {
-        const raw = e.target.value;
-        if (raw === "") onChange(nullable ? null : 0);
-        else {
-          const n = Number(raw);
-          if (!Number.isNaN(n)) onChange(n);
-        }
-      }}
-    />
+    <>
+      <input
+        type="number"
+        inputMode="decimal"
+        step="0.01"
+        aria-label={ariaLabel}
+        aria-describedby={conf[path] ? hintId : undefined}
+        aria-invalid={conf[path] === "low" || undefined}
+        className={`${inputClass} px-2 text-right font-mono [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${tone(conf, path)}`}
+        value={value ?? ""}
+        placeholder={nullable ? "—" : "0.00"}
+        onChange={(e) => {
+          const raw = e.target.value;
+          if (raw === "") onChange(nullable ? null : 0);
+          else {
+            const n = Number(raw);
+            if (!Number.isNaN(n)) onChange(n);
+          }
+        }}
+      />
+      <FlagHint id={hintId} conf={conf} path={path} />
+    </>
   );
 }
 
@@ -75,14 +95,20 @@ function TextInput({
   type?: string;
   ariaLabel: string;
 }) {
+  const hintId = useId();
   return (
-    <input
-      type={type}
-      aria-label={ariaLabel}
-      className={`${inputClass} ${tone(conf, path)}`}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
+    <>
+      <input
+        type={type}
+        aria-label={ariaLabel}
+        aria-describedby={conf[path] ? hintId : undefined}
+        aria-invalid={conf[path] === "low" || undefined}
+        className={`${inputClass} ${tone(conf, path)}`}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <FlagHint id={hintId} conf={conf} path={path} />
+    </>
   );
 }
 
@@ -218,6 +244,7 @@ export function PaystubEditor({
   onChange: (v: Paystub) => void;
   confidence: ConfidenceMap;
 }) {
+  const formId = useId();
   const set = <K extends keyof Paystub>(key: K, v: Paystub[K]) => onChange({ ...value, [key]: v });
   const setRow =
     <K extends "earnings" | "taxes" | "deductions" | "employerContributions">(key: K) =>
@@ -262,6 +289,7 @@ export function PaystubEditor({
             className={`${inputClass} ${tone(confidence, "payFrequency")}`}
             value={value.payFrequency}
             onChange={(e) => set("payFrequency", e.target.value as Paystub["payFrequency"])}
+            aria-describedby={confidence.payFrequency ? `${formId}-freq-hint` : undefined}
           >
             {PAY_FREQUENCIES.map(([f, text]) => (
               <option key={f} value={f}>
@@ -269,6 +297,7 @@ export function PaystubEditor({
               </option>
             ))}
           </select>
+          <FlagHint id={`${formId}-freq-hint`} conf={confidence} path="payFrequency" />
         </Labeled>
         <div className="grid grid-cols-3 gap-2 sm:col-span-2">
           <Labeled label="Gross pay">

@@ -8,7 +8,7 @@ import { PaycheckHistory } from "./PaycheckHistory";
 import { Paywall } from "./Paywall";
 import { runCheckup } from "@/lib/engine";
 import { Button, Card, Notice, Section } from "./ui";
-import { aprilOutlook, ChecklistView, FindingCard, ProjectionBanner, W4Card } from "./report";
+import { aprilOutlook, ChecklistView, ChecksSummary, FindingCard, ProjectionBanner, W4Card } from "./report";
 import { money } from "@/lib/format";
 import type { ChecklistItem, ChecklistStatus, HouseholdData } from "@/lib/types";
 
@@ -196,6 +196,21 @@ export function CheckupView({
           </div>
         )}
       </Section>
+
+      {result.checks.length > 0 && (
+        <Section
+          title="What we checked"
+          subtitle="Every check that ran on each job's latest pay stub. “Looks right” means the check ran and found nothing; checks that don't apply to a job are left out."
+        >
+          <ChecksSummary
+            stubs={result.checks}
+            memberOf={(id) => {
+              const e = data.employers.find((x) => x.id === id);
+              return e ? (e.member === "self" ? "You" : "Spouse") : undefined;
+            }}
+          />
+        </Section>
+      )}
 
       {mode === "november" && locked && owes && result.projection && (
         <Section title="Fix it on your W-4">
