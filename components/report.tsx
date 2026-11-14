@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Badge, Card } from "./ui";
 import { label, money, shortDate } from "@/lib/format";
 import { findingTitle, inputRow } from "@/lib/findingCopy";
@@ -234,6 +235,12 @@ export function ChecklistView({
                 >
                   Mark received
                 </button>
+              )}
+              {/* A W-2 counts as received once it is uploaded and reconciled, not by a click. */}
+              {onStatusChange && item.formType === "W-2" && (item.status === "expected" || item.status === "overdue") && (
+                <Link href="/check" className="no-print text-sm font-medium text-brand-700 hover:underline">
+                  Upload W-2
+                </Link>
               )}
             </div>
           </li>

@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { api, ApiError } from "@/lib/api-client";
+import { api, ApiError, FRIENDLY } from "@/lib/api-client";
+import { uploadProblem } from "@/lib/upload";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
 import { Paywall } from "@/components/Paywall";
@@ -136,6 +137,9 @@ export function CheckFlow() {
         {step === "employer" && (
           <EmployerStep
             hasSelf={!!household?.employers.some((e) => e.member === "self")}
+            notMarried={
+              household?.profile.filingStatus === "single" || household?.profile.filingStatus === "head_of_household"
+            }
             onDone={async (settings) => {
               setError(null);
               await api.addEmployer(settings);
@@ -327,10 +331,12 @@ function RecoveryStep({ url, onDone }: { url: string; onDone?: () => void }) {
 
 function EmployerStep({
   hasSelf,
+  notMarried = false,
   onDone,
   onSkip,
 }: {
   hasSelf: boolean;
+  notMarried?: boolean;
   onDone: (s: Omit<EmploymentSettings, "id">) => Promise<void>;
   onSkip?: () => void;
 }) {
@@ -373,6 +379,18 @@ function EmployerStep({
             <option value="spouse">My spouse&apos;s</option>
           </select>
         </Field>
+        {s.member === "spouse" && notMarried && (
+          <div className="sm:col-span-2">
+            <Notice tone="warning">
+              Your household is set to file as single or head of household, so the forecast won&apos;t count a spouse&apos;s
+              income the way a joint return does. If you&apos;re married, change the filing status on your{" "}
+              <Link href="/report" className="font-medium underline">
+                report
+              </Link>{" "}
+              (Edit profile). If this is your own second job, choose &quot;Mine&quot;.
+            </Notice>
+          </div>
+        )}
         <Field label="Employer name">
           <input required maxLength={200} className={inputClass} value={s.employerName} onChange={(e) => setS({ ...s, employerName: e.target.value })} />
         </Field>
@@ -494,6 +512,9 @@ function EmployerStep({
   );
 }
 
+// Errors that retrying the same file won't fix.
+const FILE_ERRORS = new Set(["bad_type", "bad_size", "image_too_large", "too_many_pages", "unreadable", "refused", "truncated"]);
+
 function UploadStep({
   freeStubUsed,
   employers,
@@ -508,12 +529,20 @@ function UploadStep({
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [notDoc, setNotDoc] = useState<string | null>(null);
-  const { busy, err, run } = useSubmit();
+  const [fileErr, setFileErr] = useState<string | null>(null);
+  const { busy, err, errCode, run } = useSubmit();
   const elapsed = useElapsed(busy);
 
   const handle = (file: File | undefined) => {
     if (!file) return;
     setNotDoc(null);
+    setFileErr(null);
+    // Wrong type or size is caught here, so the file is never sent just to be rejected.
+    const problem = uploadProblem(file);
+    if (problem) {
+      setFileErr(FRIENDLY[problem]);
+      return;
+    }
     run(async () => {
       const res = await api.extract(file);
       if (res.documentType === "other") setNotDoc(res.warnings[0] ?? "This does not look like a pay stub or a W-2.");
@@ -569,7 +598,8 @@ function UploadStep({
         ) : (
           <>
             <p className="font-medium text-slate-800">Drop a PDF or photo here</p>
-            <p className="text-sm text-slate-500">PDF, JPG, PNG or WebP, up to 10 MB</p>
+            <p className="text-sm text-slate-500">PDF up to 10 MB, or a JPG, PNG or WebP photo up to 7 MB</p>
+            <p className="mt-1 text-xs text-slate-500">Tip: you can cover your SSN before uploading. We don&apos;t need it.</p>
             <Button type="button" className="mt-4" onClick={() => inputRef.current?.click()}>
               Choose file or take a photo
             </Button>
@@ -588,14 +618,16 @@ function UploadStep({
         )}
       </div>
 
-      {(err || notDoc) && (
+      {(fileErr || err || notDoc) && (
         <div className="mt-4">
           <Notice tone="danger">
-            <p className="font-medium">{err ?? notDoc}</p>
+            <p className="font-medium">{fileErr ?? err ?? notDoc}</p>
             <p className="mt-1">
               {notDoc
                 ? "Upload a pay stub (earnings statement) or a W-2 form."
-                : "Try again in a minute. If it keeps failing, upload the original PDF or a sharper photo."}{" "}
+                : fileErr || (errCode && FILE_ERRORS.has(errCode))
+                  ? "Choose a different file: the original PDF or a sharper, smaller photo."
+                  : "Try again in a minute. If it keeps failing, upload the original PDF or a sharper photo."}{" "}
               Meanwhile you can{" "}
               <Link href="/demo/couple" className="font-medium underline">
                 see a sample report

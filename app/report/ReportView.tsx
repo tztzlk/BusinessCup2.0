@@ -17,6 +17,7 @@ export function ReportView() {
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [editingProfile, setEditingProfile] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [checkoutNotice, setCheckoutNotice] = useState<"upgraded" | "cancelled" | null>(null);
 
   // Stripe returns here with ?upgraded=1 (after /billing/success) or ?checkout=cancelled.
@@ -162,25 +163,38 @@ export function ReportView() {
           <p className="text-sm text-slate-600">
             Deleting removes your household, jobs, documents and checklist from our servers immediately. This can&apos;t be undone.
           </p>
-          <Button
-            type="button"
-            variant="danger"
-            className="mt-4"
-            disabled={deleting}
-            onClick={async () => {
-              if (!window.confirm("Delete all your PayTrail data? This can't be undone.")) return;
-              setDeleting(true);
-              try {
-                await api.deleteHousehold();
-                router.push("/");
-              } catch (e) {
-                setError(e instanceof Error ? e.message : "Could not delete.");
-                setDeleting(false);
-              }
-            }}
-          >
-            {deleting ? "Deleting…" : "Delete my data"}
-          </Button>
+          {confirmingDelete ? (
+            <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-medium text-red-900">Delete everything now? Your private link will stop working too.</p>
+              <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+                <Button
+                  type="button"
+                  variant="danger"
+                  disabled={deleting}
+                  onClick={async () => {
+                    setDeleting(true);
+                    try {
+                      await api.deleteHousehold();
+                      router.push("/");
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : "Could not delete.");
+                      setDeleting(false);
+                      setConfirmingDelete(false);
+                    }
+                  }}
+                >
+                  {deleting ? "Deleting…" : "Yes, delete my data"}
+                </Button>
+                <Button type="button" variant="secondary" disabled={deleting} onClick={() => setConfirmingDelete(false)}>
+                  Keep my data
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <Button type="button" variant="danger" className="mt-4" onClick={() => setConfirmingDelete(true)}>
+              Delete my data
+            </Button>
+          )}
         </Card>
       </Section>
     </div>

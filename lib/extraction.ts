@@ -77,11 +77,7 @@ Rules:
 export const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 export type AcceptedType = (typeof ACCEPTED_TYPES)[number];
 
-/** Upload caps. Claude takes images up to 10 MB base64-encoded (about 7.5 MB raw); PDFs up to the request limit. */
-export const PDF_MAX_BYTES = 10 * 1024 * 1024;
-export const IMAGE_MAX_BYTES = 7 * 1024 * 1024;
-/** Pay stubs and W-2s are one or two pages; longer PDFs are rejected before calling Claude. */
-export const PDF_MAX_PAGES = 5;
+export { IMAGE_MAX_BYTES, PDF_MAX_BYTES, PDF_MAX_PAGES } from "./upload";
 
 const startsWith = (b: Uint8Array, sig: number[], offset = 0) =>
   b.length >= offset + sig.length && sig.every((v, i) => b[offset + i] === v);

@@ -55,8 +55,14 @@ const HOW_TO_TEST = [
 
 const PRIVACY = [
   ["Claude reads, code calculates", "AI only reads your document. Every number comes from a tested tax engine with IRS-sourced parameters."],
-  ["Documents never stored", "Your file is processed in memory and discarded. Only the fields you confirm are kept."],
-  ["Field-level encryption", "Your data is encrypted with a key that only your browser holds. A copy of our database alone is unreadable."],
+  [
+    "Documents never stored by us",
+    "Your file is read in memory by Claude through Anthropic's commercial API, then discarded. We never extract or save your SSN. Anthropic doesn't train on API data and deletes it within 30 days.",
+  ],
+  [
+    "Field-level encryption",
+    "Each family's data is encrypted with its own key. We never store that key: it is rebuilt for each request from a secret kept in your browser and our server key. A copy of our database alone is unreadable.",
+  ],
   ["Delete anytime", "One click removes everything. Inactive data is erased automatically after 30 days."],
 ];
 

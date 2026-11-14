@@ -22,7 +22,7 @@ export class ApiError extends Error {
   }
 }
 
-const FRIENDLY: Record<string, string> = {
+export const FRIENDLY: Record<string, string> = {
   bad_type: "Upload a PDF, JPG, PNG or WebP. iPhone HEIC photos: export as JPG first.",
   bad_size: "File must be under 10 MB.",
   no_file: "Choose a file to upload.",
@@ -53,6 +53,7 @@ const FRIENDLY: Record<string, string> = {
   forbidden: "This request was blocked. Reload the page and try again.",
   unsupported_media_type: "Something went wrong sending your data. Reload the page and try again.",
   too_large: "That's too much data to send at once.",
+  duplicate_document: "This document is already saved for this job. Open your report to see it.",
   too_many_pages: "Upload a single pay stub or W-2 (up to 5 pages).",
   image_too_large: "Photos must be under 7 MB. Try a smaller photo or the PDF.",
 };

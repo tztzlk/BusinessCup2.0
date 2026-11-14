@@ -133,6 +133,24 @@ export function countDocuments(s: Session, docType: "paystub" | "w2", excludeEmp
   return rows.filter((r) => !r.employer_id || !excludeEmployerIds.has(r.employer_id)).length;
 }
 
+/**
+ * True when this job already has the same pay stub (same pay date) or the same W-2 (same tax year).
+ * Fields are encrypted, so the comparison runs on decrypted rows of that one job.
+ */
+export function hasDuplicateDocument(
+  s: Session,
+  doc: { employerId: string | null; docType: "paystub" | "w2"; taxYear: number; fields: Paystub | W2 },
+): boolean {
+  const rows = getDb()
+    .prepare("SELECT id, tax_year, enc_fields FROM documents WHERE household_id = ? AND doc_type = ? AND employer_id IS ?")
+    .all(s.householdId, doc.docType, doc.employerId) as Array<{ id: string; tax_year: number; enc_fields: Buffer }>;
+  if (doc.docType === "w2") return rows.some((r) => r.tax_year === doc.taxYear);
+  const payDate = (doc.fields as Paystub).payDate;
+  return rows.some(
+    (r) => decryptJson<Paystub>(s.key, r.enc_fields, aadFor("documents", r.id, s.householdId)).payDate === payDate,
+  );
+}
+
 export function addEmployer(s: Session, settings: Omit<EmploymentSettings, "id">): string {
   const id = randomUUID();
   getDb()

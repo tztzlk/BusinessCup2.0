@@ -2,7 +2,14 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api-client";
-import { buildExplainRequest, directionMatches, groundedBodies, numbersAreGrounded, type ExplainRequest } from "@/lib/explain";
+import {
+  buildExplainRequest,
+  directionMatches,
+  groundedBodies,
+  numbersAreGrounded,
+  type ExplainRequest,
+  type ExplainResponse,
+} from "@/lib/explain";
 import type { Finding, Projection } from "@/lib/types";
 
 export interface Explanations {
@@ -18,12 +25,45 @@ type Result = { bodies: Map<number, string>; summary: string | null } | null;
 // forth does not call the API again). A failed request resolves to null and the engine text stays.
 const cache = new Map<string, Promise<Result>>();
 
+// Responses are also kept in this browser, so reloading the report doesn't pay for the same texts
+// again. Requests and responses hold only finding codes and numbers, no personal data.
+const STORE = "pt_explain_v1";
+const STORE_MAX = 20;
+
+function stored(key: string): ExplainResponse | null {
+  try {
+    const all = JSON.parse(localStorage.getItem(STORE) ?? "{}") as Record<string, ExplainResponse>;
+    return all[key] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function store(key: string, res: ExplainResponse): void {
+  try {
+    const all = JSON.parse(localStorage.getItem(STORE) ?? "{}") as Record<string, ExplainResponse>;
+    delete all[key];
+    all[key] = res;
+    const keys = Object.keys(all);
+    for (const k of keys.slice(0, Math.max(0, keys.length - STORE_MAX))) delete all[k];
+    localStorage.setItem(STORE, JSON.stringify(all));
+  } catch {
+    // Storage full or blocked: the in-memory cache still works for this page.
+  }
+}
+
 function fetchExplanations(req: ExplainRequest): Promise<Result> {
   const key = JSON.stringify(req);
   let pending = cache.get(key);
   if (!pending) {
-    pending = api
-      .explain(req)
+    const saved = stored(key);
+    const response = saved
+      ? Promise.resolve(saved)
+      : api.explain(req).then((res) => {
+          store(key, res);
+          return res;
+        });
+    pending = response
       .then((res) => {
         const allNumbers = req.findings.flatMap((f) => [f.amountUsd, ...Object.values(f.inputs)]);
         if (req.projection) allNumbers.push(req.projection.balance);

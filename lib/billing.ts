@@ -70,6 +70,8 @@ export async function createCheckout(householdId: string, origin: string): Promi
   const session = await stripe<CheckoutSession>("POST", "/checkout/sessions", {
     mode: "subscription",
     client_reference_id: householdId,
+    // Charge in USD as priced on the landing page; adaptive pricing would show the visitor's local currency.
+    "adaptive_pricing[enabled]": "false",
     "line_items[0][quantity]": "1",
     "line_items[0][price_data][currency]": "usd",
     "line_items[0][price_data][unit_amount]": String(ANNUAL_PRICE_CENTS),
