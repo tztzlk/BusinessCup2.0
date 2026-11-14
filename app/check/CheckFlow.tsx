@@ -1,26 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ComponentType, type SVGProps } from "react";
 import { api, ApiError, FRIENDLY } from "@/lib/api-client";
 import { uploadProblem } from "@/lib/upload";
 import { Button, ButtonLink, Card, Field, inputClass, Notice } from "@/components/ui";
 import { PaystubEditor, W2Editor } from "@/components/DocumentEditor";
 import { Paywall } from "@/components/Paywall";
-import { ProfileForm } from "@/components/ProfileForm";
-import { EmployerForm, newEmployerSettings, type EmployerSettings } from "@/components/EmployerForm";
+import { ProfileWizard } from "@/components/check/ProfileWizard";
+import { EmployerWizard } from "@/components/check/EmployerWizard";
+import { CheckIntro } from "@/components/check/CheckIntro";
+import { IconBriefcase, IconCheckCircle, IconHousehold, IconUpload } from "@/components/Icons";
 import { isSampleEmployer, SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
 import { FREE_LIMITS } from "@/lib/plan";
-import type { EmploymentSettings, ExtractResult, HouseholdData, HouseholdProfile, Paystub, W2 } from "@/lib/types";
+import type { EmploymentSettings, ExtractResult, HouseholdData, Paystub, W2 } from "@/lib/types";
 
-type Step = "loading" | "profile" | "recovery" | "employer" | "upload" | "confirm" | "done";
+type Step = "loading" | "intro" | "profile" | "recovery" | "employer" | "upload" | "confirm" | "done";
 type Extracted = Exclude<ExtractResult, { documentType: "other" }>;
 
-const STEPS: Array<[Step, string]> = [
-  ["profile", "Household"],
-  ["employer", "Employer"],
-  ["upload", "Upload"],
-  ["confirm", "Confirm"],
+const STEPS: Array<[Step, string, ComponentType<SVGProps<SVGSVGElement>>]> = [
+  ["profile", "Household", IconHousehold],
+  ["employer", "Job", IconBriefcase],
+  ["upload", "Upload", IconUpload],
+  ["confirm", "Check", IconCheckCircle],
 ];
 
 export function CheckFlow() {
@@ -48,7 +50,7 @@ export function CheckFlow() {
 
   useEffect(() => {
     refresh()
-      .then((data) => setStep(!data ? "profile" : data.employers.length === 0 ? "employer" : "upload"))
+      .then((data) => setStep(!data ? "intro" : data.employers.length === 0 ? "employer" : "upload"))
       .catch((e: unknown) => {
         setError(e instanceof Error ? e.message : "Could not load your data.");
         setStep("profile");
@@ -86,25 +88,41 @@ export function CheckFlow() {
     }
   };
 
-  const stepIndex = STEPS.findIndex(([s]) => s === (step === "recovery" ? "profile" : step === "done" ? "confirm" : step));
+  const stepIndex = step === "done" ? STEPS.length : STEPS.findIndex(([s]) => s === (step === "recovery" ? "profile" : step));
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-900">Check my pay stub</h1>
+      <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">Check my pay stub</h1>
       <p className="mt-1 text-slate-600">About 3 minutes. No account needed — your data is tied to this browser.</p>
 
-      {step !== "loading" && (
-        <ol className="mt-6 flex gap-2 text-xs sm:text-sm">
-          {STEPS.map(([s, name], i) => (
-            <li
-              key={s}
-              className={`flex-1 rounded-md px-2 py-1.5 text-center font-medium ${
-                i < stepIndex ? "bg-brand-100 text-brand-800" : i === stepIndex ? "bg-brand-600 text-white" : "bg-slate-100 text-slate-500"
-              }`}
-            >
-              {i + 1}. {name}
-            </li>
-          ))}
+      {step !== "loading" && step !== "intro" && (
+        <ol className="mt-6 grid grid-cols-4 gap-1 sm:gap-2" aria-label="Steps">
+          {STEPS.map(([s, name, Icon], i) => {
+            const state = i < stepIndex ? "done" : i === stepIndex ? "current" : "todo";
+            return (
+              <li key={s} aria-current={state === "current" ? "step" : undefined} className="flex flex-col items-center gap-1.5 text-center">
+                <div className="flex w-full items-center">
+                  <span className={`h-0.5 flex-1 ${i === 0 ? "invisible" : i <= stepIndex ? "bg-brand-500" : "bg-slate-200"}`} />
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ring-2 transition-colors ${
+                      state === "done"
+                        ? "bg-brand-500 text-white ring-brand-500"
+                        : state === "current"
+                          ? "bg-white text-brand-600 ring-brand-500"
+                          : "bg-white text-slate-400 ring-slate-200"
+                    }`}
+                  >
+                    {state === "done" ? <IconCheckCircle className="h-5 w-5" /> : <Icon className="h-5 w-5" />}
+                  </span>
+                  <span className={`h-0.5 flex-1 ${i === STEPS.length - 1 ? "invisible" : i < stepIndex ? "bg-brand-500" : "bg-slate-200"}`} />
+                </div>
+                <span className={`text-xs font-medium sm:text-sm ${state === "todo" ? "text-slate-400" : "text-slate-800"}`}>
+                  <span className="sr-only">Step {i + 1}: </span>
+                  {name}
+                </span>
+              </li>
+            );
+          })}
         </ol>
       )}
 
@@ -114,15 +132,20 @@ export function CheckFlow() {
         </div>
       )}
 
-      {(step === "profile" || step === "employer" || step === "upload") && (
-        <SampleBanner busy={sampleBusy} onTry={trySample} />
-      )}
+      {step === "upload" && <SampleBanner busy={sampleBusy} onTry={trySample} />}
 
       <div className="mt-6">
         {step === "loading" && <p className="text-slate-500">Loading…</p>}
 
+        {step === "intro" && (
+          <>
+            <CheckIntro onStart={() => setStep("profile")} />
+            <SampleBanner busy={sampleBusy} onTry={trySample} />
+          </>
+        )}
+
         {step === "profile" && (
-          <ProfileStep
+          <ProfileWizard
             onDone={async (profile) => {
               setError(null);
               const res = await api.createHousehold(profile);
@@ -136,7 +159,7 @@ export function CheckFlow() {
         {step === "recovery" && recoveryUrl && <RecoveryStep url={recoveryUrl} onDone={() => setStep("employer")} />}
 
         {step === "employer" && (
-          <EmployerStep
+          <EmployerWizard
             hasSelf={!!household?.employers.some((e) => e.member === "self")}
             notMarried={
               household?.profile.filingStatus === "single" || household?.profile.filingStatus === "head_of_household"
@@ -270,17 +293,6 @@ function useSubmit() {
   return { busy, err, errCode, run };
 }
 
-function ProfileStep({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void> }) {
-  return (
-    <Card>
-      <h2 className="font-semibold text-slate-900">Your household</h2>
-      <div className="mt-4">
-        <ProfileForm submitLabel="Continue" onSubmit={onDone} />
-      </div>
-    </Card>
-  );
-}
-
 // Use the origin the visitor actually sees; the server may sit behind a proxy.
 function visibleRecoveryUrl(serverUrl: string): string {
   const link = new URL(serverUrl);
@@ -326,35 +338,6 @@ function RecoveryStep({ url, onDone }: { url: string; onDone?: () => void }) {
           I saved it — continue
         </Button>
       )}
-    </Card>
-  );
-}
-
-function EmployerStep({
-  hasSelf,
-  notMarried = false,
-  onDone,
-  onSkip,
-}: {
-  hasSelf: boolean;
-  notMarried?: boolean;
-  onDone: (s: EmployerSettings) => Promise<void>;
-  onSkip?: () => void;
-}) {
-  return (
-    <Card>
-      <h2 className="font-semibold text-slate-900">Employer</h2>
-      <p className="text-sm text-slate-500">Add each job in the household. You can add your spouse&apos;s job next.</p>
-      <div className="mt-4">
-        <EmployerForm
-          initial={newEmployerSettings(hasSelf ? "spouse" : "self")}
-          notMarried={notMarried}
-          submitLabel="Save employer"
-          onSubmit={onDone}
-          onCancel={onSkip}
-          cancelLabel="Skip — go to upload"
-        />
-      </div>
     </Card>
   );
 }
