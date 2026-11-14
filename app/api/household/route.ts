@@ -11,7 +11,7 @@ import {
   setSessionCookie,
 } from "@/lib/household";
 import { readJson } from "@/lib/http";
-import { allow } from "@/lib/ratelimit";
+import { allowRequest } from "@/lib/ratelimit";
 import { HouseholdProfileSchema } from "@/lib/validation";
 import { publicOrigin } from "@/lib/origin";
 
@@ -21,7 +21,7 @@ export const runtime = "nodejs";
 // returned once as a recovery link; the server keeps only its hash.
 export async function POST(req: Request) {
   const ip = (await clientIpHash()) ?? "unknown";
-  if (!allow(`household:${ip}`, 20, 10 * 60 * 1000)) {
+  if (!allowRequest("household", ip, null)) {
     return NextResponse.json({ error: "rate_limited", message: "Too many requests. Try again in a few minutes." }, { status: 429 });
   }
   const read = await readJson(req);

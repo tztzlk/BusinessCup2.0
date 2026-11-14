@@ -10,9 +10,9 @@ import {
   PDF_MAX_PAGES,
   sniffType,
 } from "@/lib/extraction";
-import { clientIpHash } from "@/lib/household";
+import { clientIpHash, currentSession } from "@/lib/household";
 import { readBytes } from "@/lib/http";
-import { allow } from "@/lib/ratelimit";
+import { allowRequest } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -30,7 +30,8 @@ const badType = () => json(415, "bad_type", "Upload a PDF, JPG, PNG or WebP. iPh
 // The file stays in memory for the duration of this request and is never stored.
 export async function POST(req: Request) {
   const ip = (await clientIpHash()) ?? "unknown";
-  if (!allow(`extract:${ip}`, 15, 10 * 60 * 1000)) {
+  const visitor = (await currentSession().catch(() => null))?.householdId ?? null;
+  if (!allowRequest("extract", ip, visitor)) {
     return json(429, "rate_limited", "Too many uploads. Try again in a few minutes.");
   }
 

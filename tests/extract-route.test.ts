@@ -18,7 +18,7 @@ vi.mock("@/lib/extraction", async () => await import("../lib/extraction"));
 vi.mock("@/lib/http", async () => await import("../lib/http"));
 vi.mock("@/lib/ratelimit", async () => await import("../lib/ratelimit"));
 // A fresh client per request keeps the per-IP limits out of the way.
-vi.mock("@/lib/household", () => ({ clientIpHash: async () => `ip-${h.ip++}` }));
+vi.mock("@/lib/household", () => ({ clientIpHash: async () => `ip-${h.ip++}`, currentSession: async () => null }));
 
 import Anthropic from "@anthropic-ai/sdk";
 import { POST as extract } from "../app/api/extract/route";
