@@ -3,6 +3,7 @@ import { ButtonLink, Card } from "@/components/ui";
 import { CatchTicker, HeroStack } from "@/components/HeroArt";
 import { LogoMark } from "@/components/Logo";
 import { PayStubArt, W2Art } from "@/components/PaperArt";
+import { QuickEstimate } from "@/components/QuickEstimate";
 
 const VALUE = [
   {
@@ -136,6 +137,8 @@ export default function Home() {
           What our checks find on the fictional sample households. Your numbers come from your own pay stubs.
         </p>
       </div>
+
+      <QuickEstimate />
 
       <section id="how-to-test" className="mt-12 scroll-mt-20">
         <h2 className="text-2xl font-semibold text-slate-900">How to test PayTrail</h2>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { inputRow } from "@/lib/findingCopy";
 import { useExplanations } from "./useExplanations";
 import { RemindersCard } from "./RemindersCard";
+import { PaycheckHistory } from "./PaycheckHistory";
 import { Paywall } from "./Paywall";
 import { runCheckup } from "@/lib/engine";
 import { Button, Card, Notice, Section } from "./ui";
@@ -217,6 +218,8 @@ export function CheckupView({
           </div>
         </Section>
       )}
+
+      <PaycheckHistory data={data} result={result} />
 
       {!locked && (
         <div className="no-print mt-8">
