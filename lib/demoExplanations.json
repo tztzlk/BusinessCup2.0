@@ -1,0 +1,252 @@
+{
+ "_note": "Claude texts for the sample households, generated once by POST /api/explain on 15 Nov 2026 so the demos do not call the API on every visit. tests/demo-explanations.test.ts fails if a demo request changes; regenerate then.",
+ "views": {
+  "couple_november": {
+   "request": {
+    "findings": [
+     {
+      "id": "f0",
+      "code": "UNDERWITHHOLDING",
+      "severity": "critical",
+      "amountUsd": 7573,
+      "actionKind": "w4_change",
+      "inputs": {
+       "agi": 165130.16,
+       "standardDeduction": 32200,
+       "overtimeDeduction": 0,
+       "taxableIncome": 132930.16,
+       "regularTax": 18668.64,
+       "childCreditsNonRefundable": 2200,
+       "childCreditsRefundable": 0,
+       "additionalMedicareLiability": 0,
+       "projectedTax": 16468.64,
+       "projectedWithholding": 8895.64
+      }
+     },
+     {
+      "id": "f1",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "severity": "warning",
+      "amountUsd": 3120,
+      "actionKind": "contribution_change",
+      "inputs": {
+       "contributionPercent": 0,
+       "matchPercent": 100,
+       "upToPercentOfPay": 4,
+       "annualPay": 78000,
+       "missedThisYear": 480
+      }
+     },
+     {
+      "id": "f2",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "severity": "warning",
+      "amountUsd": 475,
+      "actionKind": "contribution_change",
+      "inputs": {
+       "contributionPercent": 5,
+       "matchPercent": 50,
+       "upToPercentOfPay": 6,
+       "annualPay": 95000,
+       "missedThisYear": 73.08
+      }
+     }
+    ],
+    "projection": {
+     "balance": 7573,
+     "taxYear": 2026
+    }
+   },
+   "response": {
+    "summary": "Based on current withholding, the household is projected to owe about $7,573 when filing the 2026 return in April 2027, and two jobs are leaving employer 401(k) match money unclaimed.",
+    "items": [
+     {
+      "id": "f0",
+      "code": "UNDERWITHHOLDING",
+      "title": "Withholding falls short of projected tax",
+      "body": "Your projected 2026 tax is about $16,469, but withholding is on pace for only about $8,896, leaving a gap of roughly $7,573. Consider updating your W-4 to have more withheld from each paycheck so the balance due in April is smaller or eliminated."
+     },
+     {
+      "id": "f1",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "title": "Missing full employer match on $78,000 job",
+      "body": "You're contributing 0% while your employer matches 100% up to 4% of pay, which works out to about $3,120 a year in unclaimed match, with about $480 already missed this year. Consider raising your contribution to at least 4% to capture the full match going forward."
+     },
+     {
+      "id": "f2",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "title": "Partial match missed on $95,000 job",
+      "body": "You're contributing 5%, but your employer matches 50% up to 6% of pay, so about $475 a year in match is left unclaimed, including about $73 missed so far this year. You can raise your contribution to 6% to receive the full match."
+     }
+    ]
+   }
+  },
+  "couple_january": {
+   "request": {
+    "findings": [
+     {
+      "id": "f0",
+      "code": "UNDERWITHHOLDING",
+      "severity": "critical",
+      "amountUsd": 7573,
+      "actionKind": "w4_change",
+      "inputs": {
+       "agi": 165130.16,
+       "standardDeduction": 32200,
+       "overtimeDeduction": 0,
+       "taxableIncome": 132930.16,
+       "regularTax": 18668.64,
+       "childCreditsNonRefundable": 2200,
+       "childCreditsRefundable": 0,
+       "additionalMedicareLiability": 0,
+       "projectedTax": 16468.64,
+       "projectedWithholding": 8895.64
+      }
+     },
+     {
+      "id": "f1",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "severity": "warning",
+      "amountUsd": 3120,
+      "actionKind": "contribution_change",
+      "inputs": {
+       "contributionPercent": 0,
+       "matchPercent": 100,
+       "upToPercentOfPay": 4,
+       "annualPay": 78000,
+       "missedThisYear": 0
+      }
+     },
+     {
+      "id": "f2",
+      "code": "W2_BOX12D_MISMATCH",
+      "severity": "warning",
+      "amountUsd": 1560,
+      "actionKind": "ask_w2c",
+      "inputs": {
+       "onW2": 1560,
+       "fromPayStubs": 0
+      }
+     },
+     {
+      "id": "f3",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "severity": "warning",
+      "amountUsd": 475,
+      "actionKind": "contribution_change",
+      "inputs": {
+       "contributionPercent": 5,
+       "matchPercent": 50,
+       "upToPercentOfPay": 6,
+       "annualPay": 95000,
+       "missedThisYear": 0
+      }
+     }
+    ],
+    "projection": {
+     "balance": 7573,
+     "taxYear": 2026
+    }
+   },
+   "response": {
+    "summary": "Your household is projected to owe $7,573 in April 2027, and there are also some employer 401(k) match dollars and a W-2 mismatch worth reviewing.",
+    "items": [
+     {
+      "id": "f0",
+      "code": "UNDERWITHHOLDING",
+      "title": "Not enough tax is being withheld",
+      "body": "Your projected tax for the year is $16,469, but projected withholding is only $8,896, leaving about $7,573 to pay in April. You can consider submitting a new W-4 to increase withholding for the rest of the year so the April bill is smaller."
+     },
+     {
+      "id": "f1",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "title": "Missing out on full employer match",
+      "body": "You are contributing 0% to your 401(k), while your employer matches 100% up to 4% of your $78,000 pay. That means about $3,120 a year in match money is going unclaimed. You can consider raising your contribution to at least 4% to capture the full match."
+     },
+     {
+      "id": "f2",
+      "code": "W2_BOX12D_MISMATCH",
+      "title": "W-2 retirement amount doesn't match stubs",
+      "body": "Your W-2 shows $1,560 in Box 12 code D (401(k) contributions), but your pay stubs show $0. You can ask your employer to check this and issue a corrected W-2 (W-2c) if it is wrong."
+     },
+     {
+      "id": "f3",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "title": "Small part of match left unclaimed",
+      "body": "You contribute 5%, but your employer matches 50% up to 6% of your $95,000 pay. Raising your contribution to 6% would capture about $475 more in match each year, which you can consider."
+     }
+    ]
+   }
+  },
+  "hourly": {
+   "request": {
+    "findings": [
+     {
+      "id": "f0",
+      "code": "POSSIBLE_UNPAID_OVERTIME",
+      "severity": "warning",
+      "amountUsd": 132,
+      "actionKind": "ask_hr",
+      "inputs": {
+       "hoursWorked": 92,
+       "weeks": 2,
+       "workweekHours": 40,
+       "overtimeHoursPaid": 0,
+       "regularRate": 22
+      }
+     }
+    ],
+    "projection": {
+     "balance": 0,
+     "taxYear": 2026
+    }
+   },
+   "response": {
+    "summary": "Your household is on track for April, with one possible overtime issue worth checking on this paycheck.",
+    "items": [
+     {
+      "id": "f0",
+      "code": "POSSIBLE_UNPAID_OVERTIME",
+      "title": "Overtime hours may not have been paid",
+      "body": "This pay stub shows 92 hours worked over 2 weeks, but no overtime hours paid, even though the standard workweek is 40 hours at a regular rate of $22. Based on these numbers, about $132 in overtime pay may be missing. Consider asking HR or payroll to confirm how your hours were counted for each week."
+     }
+    ]
+   }
+  },
+  "salaried": {
+   "request": {
+    "findings": [
+     {
+      "id": "f0",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "severity": "warning",
+      "amountUsd": 1920,
+      "actionKind": "contribution_change",
+      "inputs": {
+       "contributionPercent": 3,
+       "matchPercent": 100,
+       "upToPercentOfPay": 5,
+       "annualPay": 96000,
+       "missedThisYear": 295.38
+      }
+     }
+    ],
+    "projection": {
+     "balance": 0,
+     "taxYear": 2026
+    }
+   },
+   "response": {
+    "summary": "Your withholding is on track for April, and the main opportunity is capturing more of your employer's 401(k) match.",
+    "items": [
+     {
+      "id": "f0",
+      "code": "MATCH_LEFT_ON_TABLE",
+      "title": "You're missing part of your employer match",
+      "body": "You contribute 3% of pay, but your employer matches 100% of contributions up to 5% of your $96,000 annual pay, which leaves about $1,920 a year in matching money unclaimed. So far this year, about $295 of match has been missed. Consider raising your contribution to 5% to receive the full match going forward."
+     }
+    ]
+   }
+  }
+ }
+}

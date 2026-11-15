@@ -92,13 +92,14 @@ const COMPARE_COLUMNS = [
     url: "https://support.gusto.com/article/250923184715297/Paycheck-Optimizer-powered-by-april",
   },
   { name: "WageWatch", note: "iPhone app", url: "https://apps.apple.com/us/app/id6744068979" },
-  { name: "TurboTax W-4 Calculator", note: "turbotax.com", url: "https://turbotax.intuit.com/tax-tools/calculators/w4/" },
+  { name: "myw4calc", note: "myw4calc.com", url: "https://myw4calc.com/" },
+  { name: "Overchat Paystub Analyzer", note: "overchat.ai", url: "https://overchat.ai/docs/ai-paystub-analyzer" },
 ];
 
-const COMPARE_ROWS: { label: string; cells: [string, string, string, string, string] }[] = [
+const COMPARE_ROWS: { label: string; cells: [string, string, string, string, string, string] }[] = [
   {
     label: "Price",
-    cells: ["Free for one pay stub, Annual $99/year", "Free", "Free", "Free", "—"],
+    cells: ["Free for one pay stub, Annual $99/year", "Free", "Free", "Free", "Free", "Free to try"],
   },
   {
     label: "Who can use it",
@@ -107,7 +108,8 @@ const COMPARE_ROWS: { label: string; cells: [string, string, string, string, str
       "Anyone, in a browser, no login",
       "Only employees paid through Gusto, after 3 Gusto paychecks this year, in the Gusto mobile app",
       "iPhone users",
-      "In a browser, on turbotax.com",
+      "Anyone, in a browser",
+      "Anyone, in a browser, no signup",
     ],
   },
   {
@@ -117,7 +119,8 @@ const COMPARE_ROWS: { label: string; cells: [string, string, string, string, str
       "You enter figures from your recent pay statements",
       "Your Gusto payroll profile plus questions in the app",
       "Your schedule and pay rate, plus paycheck photos",
-      "You enter your taxable income per pay period from your pay stubs",
+      "You enter figures from your latest pay stubs (1–3 household jobs)",
+      "Reads your pay stub and W-2 files",
     ],
   },
   {
@@ -128,6 +131,7 @@ const COMPARE_ROWS: { label: string; cells: [string, string, string, string, str
       "—",
       "Underpayments, missed overtime, unpaid breaks",
       "—",
+      "Flags numbers that don't add up between stubs",
     ],
   },
   {
@@ -137,12 +141,13 @@ const COMPARE_ROWS: { label: string; cells: [string, string, string, string, str
       "Yes, including a working spouse; pre-filled W-4",
       "Federal only; your W-4 is updated in Gusto if you accept",
       "—",
-      "Refund or balance due; shows how to fill out your W-4",
+      "Yes, Step 4(c) for each job, down to the dollar",
+      "—",
     ],
   },
   {
     label: "January: W-2 vs. pay stubs, form checklist",
-    cells: ["Yes, plus a packet for your accountant", "—", "—", "—", "—"],
+    cells: ["Yes, plus a packet for your accountant", "—", "—", "—", "—", "W-2 vs. your December pay stub"],
   },
   {
     label: "Keeps your data",
@@ -151,7 +156,8 @@ const COMPARE_ROWS: { label: string; cells: [string, string, string, string, str
       "No: cleared when you close the browser window",
       "—",
       "—",
-      "—",
+      "In your browser only",
+      "No: files are never stored",
     ],
   },
 ];
@@ -356,11 +362,11 @@ export default function Home() {
       <section className="mt-12 scroll-mt-20" id="compare">
         <h2 className="text-2xl font-semibold text-slate-900">How PayTrail compares</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Good free withholding calculators exist. PayTrail reads your pay stubs, checks each paycheck and closes the year with your
-          W-2s.
+          Good free calculators exist, and some tools read a single pay stub. We found none that follows both earners&apos; paychecks
+          all year and then closes the year with your W-2s.
         </p>
         <div className="mt-5 overflow-x-auto rounded-xl border border-slate-200 bg-white">
-          <table className="w-full min-w-[820px] text-left text-sm">
+          <table className="w-full min-w-[1000px] text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200">
                 <th scope="col" className="w-40 px-4 py-3 font-medium text-slate-500">

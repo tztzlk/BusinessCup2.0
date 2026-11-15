@@ -13,6 +13,7 @@ import {
 } from "@/lib/explain";
 import { EXPLANATIONS_KEY } from "@/lib/browserData";
 import type { Finding, Projection } from "@/lib/types";
+import demoExplanations from "@/lib/demoExplanations.json";
 
 export interface Explanations {
   status: "idle" | "loading" | "ready" | "failed";
@@ -26,6 +27,12 @@ type Result = { bodies: Map<number, string>; summary: string | null } | null;
 // One request per distinct set of findings for the lifetime of the page (switching demo modes back and
 // forth does not call the API again). A failed request resolves to null and the engine text stays.
 const cache = new Map<string, Promise<Result>>();
+
+// The sample households' texts were generated once with the same API (lib/demoExplanations.json), so the
+// demos don't call Claude on every visit. They pass the same number checks below as a live response.
+const PREBUILT = new Map<string, ExplainResponse>(
+  Object.values(demoExplanations.views).map((v) => [JSON.stringify(v.request), v.response as ExplainResponse]),
+);
 
 // Responses are also kept in this browser, so reloading the report doesn't pay for the same texts
 // again. Requests and responses hold only finding codes and numbers, no personal data.
@@ -58,7 +65,7 @@ function fetchExplanations(req: ExplainRequest): Promise<Result> {
   const key = JSON.stringify(req);
   let pending = cache.get(key);
   if (!pending) {
-    const saved = stored(key);
+    const saved = PREBUILT.get(key) ?? stored(key);
     const response = saved
       ? Promise.resolve(saved)
       : api.explain(req).then((res) => {

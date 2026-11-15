@@ -119,8 +119,8 @@ export function ReportView() {
         }
         actions={
           <>
-            <Button variant="secondary" icon={<PrinterIcon aria-hidden="true" className="h-4 w-4" />} onClick={() => window.print()}>
-              Download PDF
+            <Button variant="secondary" icon={<PrinterIcon aria-hidden="true" className="h-4 w-4" />} onClick={() => window.print()} title="Opens your browser's print window: choose “Save as PDF” to get a file">
+              Print or save as PDF
             </Button>
             <ButtonLink href="/upload" icon={<UploadIcon aria-hidden="true" className="h-4 w-4" />}>
               Add a document

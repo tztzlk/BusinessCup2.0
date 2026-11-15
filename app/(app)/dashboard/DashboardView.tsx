@@ -149,7 +149,7 @@ function SavingsCard({ perYear, onPaychecks }: { perYear: number; onPaychecks: n
   return (
     <StatCard
       tone={none ? "neutral" : "success"}
-      label="Potential savings"
+      label={perYear > 0 ? "Unclaimed 401(k) match" : onPaychecks > 0 ? "Owed to you" : "Money to recover"}
       icon={<PiggyBankIcon className="text-success" />}
       value={
         none ? (

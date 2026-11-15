@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { AlertTriangleIcon, CircleCheckIcon, PiggyBankIcon, PrinterIcon } from "lucide-react";
+import { AlertTriangleIcon, CalendarClockIcon, CircleCheckIcon, PiggyBankIcon, PrinterIcon, WrenchIcon } from "lucide-react";
 import { Alert, Button, Card, Section, StatCard, TabPanel, Tabs } from "./ui";
 import { ChecklistView, ChecksSummary, FindingCard, PaycheckHistoryTable, ProjectionBanner, type W4Advice } from "./report";
 import { Paywall } from "./Paywall";
@@ -10,7 +10,8 @@ import { useExplanations } from "./useExplanations";
 import { runCheckup, type CheckupResult } from "@/lib/engine";
 import { householdOverview } from "@/lib/engine/overview";
 import { inputRow } from "@/lib/findingCopy";
-import { money } from "@/lib/format";
+import { money, shortDate } from "@/lib/format";
+import { nextCheck } from "@/lib/calendar";
 import { paycheckHistoryRows } from "@/lib/paycheckHistory";
 import type { ChecklistItem, ChecklistStatus, HouseholdData } from "@/lib/types";
 
@@ -92,6 +93,8 @@ export function ReportBody({
     })
     .filter((x): x is W4Advice => x !== null);
 
+  const next = useMemo(() => nextCheck(data, asOf), [data, asOf]);
+
   const checklistItems = checklistItemsFor(data, result);
   const hasW2 = data.documents.some((d) => d.docType === "w2");
   const received = checklistItems.filter((c) => c.status === "received").length;
@@ -121,7 +124,7 @@ export function ReportBody({
         />
         <StatCard
           tone={overview.savings.perYear + overview.savings.onCheckedPaychecks > 0 ? "success" : "neutral"}
-          label="Potential savings"
+          label={overview.savings.perYear > 0 ? "Unclaimed 401(k) match" : overview.savings.onCheckedPaychecks > 0 ? "Owed to you" : "Money to recover"}
           icon={<PiggyBankIcon className="text-success" />}
           value={
             overview.savings.perYear > 0 ? (
@@ -171,6 +174,41 @@ export function ReportBody({
           </div>
         )}
         {result.projection && <ProjectionBanner projection={result.projection} outlook={overview.outlook ?? "on_track"} />}
+        {overview.outlook === "owe" && w4Advice.length > 0 && (
+          <Card className="mt-4">
+            <div className="flex items-start gap-3">
+              <WrenchIcon aria-hidden="true" className="mt-0.5 h-5 w-5 shrink-0 text-brand-600" />
+              <div className="min-w-0 text-sm">
+                <p className="font-semibold text-fg-primary">The fix: extra withholding in W-4 Step 4(c)</p>
+                {locked ? (
+                  <p className="mt-1 text-fg-secondary">Annual shows the exact amount to put on each W-4 so you don&apos;t owe in April.</p>
+                ) : (
+                  <>
+                    <ul className="mt-1 space-y-0.5 text-fg-secondary">
+                      {w4Advice.map((a) => (
+                        <li key={a.employerName}>
+                          <span className="font-mono font-semibold text-fg-primary">+{money(a.recommendedStep4c, true)}</span> per paycheck at {a.employerName}
+                        </li>
+                      ))}
+                    </ul>
+                    <button type="button" className="no-print mt-1 font-medium text-brand-700 underline underline-offset-2" onClick={() => setTab("details")}>
+                      See how we got these amounts
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </Card>
+        )}
+        {next && (
+          <p className="no-print mt-4 flex items-center gap-2 text-sm text-fg-secondary">
+            <CalendarClockIcon aria-hidden="true" className="h-4 w-4 shrink-0 text-fg-muted" />
+            <span>
+              Next check: <span className="font-medium text-fg-primary">{shortDate(next.date)}</span>, your next paycheck from {next.employerName}. Upload that pay
+              stub to keep your April projection current.
+            </span>
+          </p>
+        )}
 
         {result.checks.length > 0 ? (
           <Section

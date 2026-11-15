@@ -71,6 +71,22 @@ function payRule(freq: Paystub["payFrequency"], date: string): string | undefine
 }
 
 /** Payday reminders per job (from the latest stub) and due dates of documents not yet received. */
+/** The next paycheck to check: the earliest next pay date across jobs, after each job's latest stub. */
+export function nextCheck(data: HouseholdData, asOf: string): { date: string; employerName: string } | null {
+  let best: { date: string; employerName: string } | null = null;
+  for (const e of data.employers) {
+    const latest = data.documents
+      .filter((d) => d.docType === "paystub" && d.employerId === e.id)
+      .map((d) => d.fields as Paystub)
+      .sort((a, b) => b.payDate.localeCompare(a.payDate))[0];
+    if (!latest?.payDate || !isRealDate(latest.payDate) || !isRealDate(asOf)) continue;
+    const dayAfter = addDays(latest.payDate, 1);
+    const date = nextPayDate(latest.payDate, latest.payFrequency, dayAfter > asOf ? dayAfter : asOf);
+    if (!best || date < best.date) best = { date, employerName: e.employerName };
+  }
+  return best;
+}
+
 export function reminderEvents(data: HouseholdData, checklist: Array<Omit<ChecklistItem, "id">>, asOf: string): CalendarEvent[] {
   const events: CalendarEvent[] = [];
   for (const e of data.employers) {

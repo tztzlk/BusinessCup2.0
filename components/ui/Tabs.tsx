@@ -70,7 +70,7 @@ export function Tabs({
   );
 }
 
-/** Panel for one tab. Hidden panels still print, so "Download PDF" includes every tab. */
+/** Panel for one tab. Hidden panels still print, so "Print or save as PDF" includes every tab. */
 export function TabPanel({ idBase, id, active, className, children }: { idBase: string; id: string; active: boolean; className?: string; children: ReactNode }) {
   return (
     <div

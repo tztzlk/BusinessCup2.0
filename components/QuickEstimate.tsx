@@ -101,13 +101,13 @@ export function EstimateResult({ r, twoEarnerWording, actions = true }: { r: Qui
       {r.step4cPerPaycheck > 0 && (
         <div className="mt-4 rounded-lg bg-white px-4 py-3 text-sm text-slate-800 ring-1 ring-brand-200">
           <p>
-            <span className="font-semibold text-brand-700">Fix:</span> add{" "}
+            <span className="font-semibold text-brand-700">Rough fix:</span> add about{" "}
             <span className="font-mono font-semibold">{money(r.step4cPerPaycheck, true)}</span> per paycheck in W-4 <Term k="w4Step4c">Step 4(c)</Term>
             {twoEarnerWording ? " on one of your W-4s" : ""}.
           </p>
           <p className="mt-1 text-xs text-slate-500">
-            That closes the gap over a full year of {r.payPeriods} paychecks. Later in the year it takes more per paycheck; your pay stubs give the
-            exact amount.
+            From salary alone, over a full year of {r.payPeriods} paychecks. Later in the year it takes more per paycheck. Annual reads your pay
+            stubs and gives the exact amount for each job&apos;s W-4.
           </p>
         </div>
       )}
