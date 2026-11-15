@@ -38,6 +38,7 @@ import { api } from "@/lib/api-client";
 import { localDate } from "@/lib/format";
 import { lastConfirmedAt } from "@/lib/householdMeta";
 import { HouseholdProvider, useHousehold } from "./HouseholdProvider";
+import { UploadQueueProvider } from "@/components/upload/UploadQueue";
 
 interface NavItem {
   href: string;
@@ -62,7 +63,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <ToastProvider>
       <HouseholdProvider>
-        <Shell>{children}</Shell>
+        <UploadQueueProvider>
+          <Shell>{children}</Shell>
+        </UploadQueueProvider>
       </HouseholdProvider>
     </ToastProvider>
   );

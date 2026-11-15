@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { CheckFlow } from "./CheckFlow";
+import { UploadFlow } from "./UploadFlow";
 
-export const metadata: Metadata = { title: "Check my pay stub — PayTrail" };
+export const metadata: Metadata = { title: "Upload — PayTrail" };
 
-export default function CheckPage() {
-  return <CheckFlow />;
+export default function UploadPage() {
+  return <UploadFlow />;
 }
