@@ -8,6 +8,7 @@ import {
   CalculatorIcon,
   CreditCardIcon,
   HistoryIcon,
+  HouseIcon,
   LayoutDashboardIcon,
   LinkIcon,
   LockIcon,
@@ -16,7 +17,7 @@ import {
   SettingsIcon,
   Trash2Icon,
   UploadIcon,
-  UsersIcon,
+  UserRoundIcon,
   type LucideIcon,
 } from "lucide-react";
 import { Logo, LogoMark } from "@/components/Logo";
@@ -95,7 +96,7 @@ function Shell({ children }: { children: ReactNode }) {
     <div className="flex min-h-screen">
       <Sidebar
         header={
-          <Link href="/dashboard" aria-label="PayTrail dashboard" className="rounded-control">
+          <Link href="/" aria-label="PayTrail home page" className="rounded-control">
             <span className="xl:hidden">
               <LogoMark size={28} className="h-7 w-auto text-fg-primary" />
             </span>
@@ -210,11 +211,13 @@ function AppHeader({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: ()
           { id: "settings", label: "Settings", icon: <SettingsIcon />, href: "/settings" },
           { id: "link", label: "Save recovery link", icon: <LinkIcon />, onSelect: () => setModal("link") },
           { id: "plan", label: "Plan & billing", icon: <CreditCardIcon />, href: "/settings#plan" },
+          { id: "home", label: "PayTrail home page", icon: <HouseIcon />, href: "/" },
           { id: "delete", label: "Delete my data", icon: <Trash2Icon />, tone: "danger", onSelect: () => setModal("delete") },
         ]
       : [
           { id: "start", label: "Check a pay stub", icon: <UploadIcon />, href: "/upload" },
           { id: "settings", label: "Settings", icon: <SettingsIcon />, href: "/settings" },
+          { id: "home", label: "PayTrail home page", icon: <HouseIcon />, href: "/" },
         ];
 
   return (
@@ -224,7 +227,7 @@ function AppHeader({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: ()
         onOpenMenu={onOpenMenu}
         left={
           <>
-            <Link href="/dashboard" aria-label="PayTrail dashboard" className="rounded-control md:hidden">
+            <Link href="/" aria-label="PayTrail home page" className="rounded-control md:hidden">
               <LogoMark size={26} className="h-[26px] w-auto text-fg-primary" />
             </Link>
             {checked && (
@@ -238,6 +241,16 @@ function AppHeader({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: ()
         }
         right={
           <>
+            <Tooltip content="Back to the PayTrail home page" side="bottom">
+              <Link
+                href="/"
+                aria-label="Home page"
+                className="flex items-center gap-1.5 rounded-control p-2 text-sm font-medium text-fg-secondary hover:bg-slate-100 sm:px-3"
+              >
+                <HouseIcon aria-hidden="true" className="h-5 w-5" />
+                <span className="hidden sm:inline">Home</span>
+              </Link>
+            </Tooltip>
             {state.status === "ready" && (
               <Tooltip content="Reload your data" side="bottom">
                 <button
@@ -255,8 +268,8 @@ function AppHeader({ menuOpen, onOpenMenu }: { menuOpen: boolean; onOpenMenu: ()
               <span className="hidden sm:inline">Upload</span>
             </ButtonLink>
             <Dropdown
-              label="Household menu"
-              trigger={<UsersIcon aria-hidden="true" className="h-5 w-5" />}
+              label="My account"
+              trigger={<UserRoundIcon aria-hidden="true" className="h-5 w-5" />}
               buttonClassName="flex h-10 w-10 items-center justify-center rounded-full bg-primary-50 text-primary hover:bg-primary-100"
               header={
                 <p className="text-[13px] text-fg-muted">

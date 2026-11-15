@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType, SVGProps } from "react";
 import { Logo, LogoMark } from "./Logo";
-import { LayoutDashboardIcon, LayoutGridIcon, ScanLineIcon } from "lucide-react";
+import { LayoutGridIcon, ScanLineIcon, UserRoundIcon } from "lucide-react";
 
 type NavItem = {
   href: string;
@@ -19,10 +19,12 @@ type NavItem = {
 
 const LINKS: NavItem[] = [
   { href: "/demo", label: "Sample households", short: "Samples", hint: "See finished checkups for fictional families — no upload", icon: LayoutGridIcon },
-  { href: "/dashboard", label: "Dashboard", short: "Dashboard", hint: "Your checkup status, April outlook and paycheck history", icon: LayoutDashboardIcon },
 ];
 
 const CTA: NavItem = { href: "/upload", label: "Check my pay stub", short: "Check", hint: "Upload a pay stub or W-2 and get it checked", icon: ScanLineIcon };
+
+/** The round account button: opens the product (dashboard, history, settings). */
+const ACCOUNT = { href: "/dashboard", label: "My account", hint: "Your dashboard: checkup status, April outlook, history and settings" };
 
 // The layout keeps the nav mounted across client navigation, so the logo animates once per visit.
 export function Nav() {
@@ -33,7 +35,7 @@ export function Nav() {
     <header className="no-print sticky top-0 z-20 border-b border-white/10 bg-ink/95 text-white backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-2 px-4 py-2.5 sm:px-6 sm:py-3">
         <Link href="/" aria-label="PayTrail home" className="shrink-0 rounded-md focus-visible:outline-2 focus-visible:outline-brand-400">
-          {/* Phones: the mark alone, so four nav items fit at 375 px. */}
+          {/* Phones: the mark alone, so the nav fits at 375 px. */}
           <span className="sm:hidden">
             <LogoMark size={26} animate className="h-[26px] w-auto text-white" />
           </span>
@@ -66,6 +68,14 @@ export function Nav() {
             <CTA.icon className="h-4 w-4" />
             <span className="sm:hidden">{CTA.short}</span>
             <span className="hidden sm:inline">{CTA.label}</span>
+          </Link>
+          <Link
+            href={ACCOUNT.href}
+            title={ACCOUNT.hint}
+            aria-label={ACCOUNT.label}
+            className="ml-1.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25 transition-colors hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-brand-400"
+          >
+            <UserRoundIcon aria-hidden="true" className="h-5 w-5" />
           </Link>
         </nav>
       </div>
