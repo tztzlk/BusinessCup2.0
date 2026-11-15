@@ -132,17 +132,21 @@ export function explainCalculation(f: Finding, p: FederalParams): Calculation {
       };
     }
     case "POSSIBLE_UNPAID_OVERTIME": {
-      const regular = n("regularHours");
+      const worked = n("hoursWorked") ?? n("regularHours"); // regularHours: findings saved before this field existed
       const weeks = n("weeks");
+      const limit = n("workweekHours") ?? p.flsa.workweekHours;
+      const paidOt = n("overtimeHoursPaid") ?? 0;
       const rate = n("regularRate");
       const premium = p.flsa.overtimeMultiplier - 1;
       return {
         ...base,
         formula:
-          `Hours over 40 in a workweek are owed at ${p.flsa.overtimeMultiplier}x. Paid at the regular rate, the missing part is (hours − 40 × weeks) × regular rate × ${premium}.`,
+          `Hours over ${limit} in a workweek are owed at ${p.flsa.overtimeMultiplier}x and can't be averaged across weeks. ` +
+          `The least overtime owed is hours worked − ${limit} × workweeks in the pay period; hours beyond the overtime already paid ` +
+          `got only the regular rate, so the missing part is those hours × regular rate × ${premium}.`,
         substituted:
-          regular !== null && weeks !== null && rate !== null
-            ? `(${hours(regular)} − 40 h × ${weeks}) × ${usd(rate)} × ${premium} = ${usd(f.amountUsd)}`
+          worked !== null && weeks !== null && rate !== null
+            ? `(${hours(worked)} − ${limit} h × ${weeks}${paidOt ? ` − ${hours(paidOt)} paid as overtime` : ""}) × ${usd(rate)} × ${premium} = ${usd(f.amountUsd)}`
             : null,
         expectedLabel: "Overtime premium owed",
         actualLabel: "Overtime premium paid",

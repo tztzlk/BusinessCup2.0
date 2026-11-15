@@ -55,7 +55,7 @@ export interface FederalParams {
     phaseOutThreshold: { married_joint: number; other: number };
     phaseOutPer1000: number;
   };
-  flsa: { overtimeMultiplier: number };
+  flsa: { overtimeMultiplier: number; workweekHours: number };
   estimates: { standardHoursPerYear: number };
 }
 

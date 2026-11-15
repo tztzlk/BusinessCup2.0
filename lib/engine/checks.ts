@@ -142,14 +142,19 @@ export function runPaystubChecks(
     }
   }
 
-  // 6. Overtime paid at less than 1.5x the regular rate (FLSA non-exempt workers).
+  // 6. Overtime (FLSA non-exempt workers): hours over 40 in a workweek at 1.5x the regular rate.
+  // A stub only has totals for the pay period, not hours per workweek. Overtime is owed per workweek and
+  // can't be averaged, so `hours worked − 40 × workweeks in the period` is the least overtime owed; the
+  // real amount can only be higher. Hours worked = regular + overtime hours (PTO and holiday hours are
+  // paid but not worked, so they don't count toward 40).
   if (settings.payType === "hourly" && settings.overtimeEligible) {
     const regularRate = settings.hourlyRate ?? stub.earnings.find((e) => e.type === "regular" && e.rate)?.rate ?? null;
-    const weeks = stub.payFrequency === "weekly" ? 1 : stub.payFrequency === "biweekly" ? 2 : null;
-    // Ran only if there was something to check: an overtime line with hours, or a weekly/biweekly period.
-    if (regularRate && (weeks || stub.earnings.some((x) => x.type === "overtime" && x.hours))) ran.push("overtime");
+    const span = workweeksInPeriod(stub);
+    const otLines = stub.earnings.filter((x) => x.type === "overtime" && (x.current > 0 || (x.hours ?? 0) > 0));
+    // Ran only if there was something to check: an overtime line with hours, or a known period length.
+    if (regularRate && (span || otLines.some((x) => x.hours))) ran.push("overtime");
     if (regularRate) {
-      for (const e of stub.earnings.filter((x) => x.type === "overtime" && x.hours)) {
+      for (const e of otLines.filter((x) => x.hours)) {
         const expected = round2((e.hours ?? 0) * regularRate * p.flsa.overtimeMultiplier);
         if (e.current + 1 < expected) {
           findings.push({
@@ -162,17 +167,27 @@ export function runPaystubChecks(
           });
         }
       }
-      const regularHours = sum(stub.earnings.filter((e) => e.type === "regular").map((e) => e.hours ?? 0));
-      const hasOvertimeLine = stub.earnings.some((e) => e.type === "overtime" && e.current > 0);
-      if (weeks && !hasOvertimeLine && regularHours > 40 * weeks) {
-        findings.push({
-          code: "POSSIBLE_UNPAID_OVERTIME",
-          severity: "warning",
-          amountUsd: round2((regularHours - 40 * weeks) * regularRate * (p.flsa.overtimeMultiplier - 1)),
-          employerId,
-          inputs: { regularHours, weeks, regularRate },
-          action: { kind: "ask_hr", details: "More than 40 hours a week were paid at the regular rate. Hours over 40 in a workweek usually require 1.5x pay." },
-        });
+      // An overtime amount without hours: we can't tell how many hours it covers, so we don't guess.
+      const otHoursKnown = otLines.every((x) => x.hours !== null && x.hours > 0);
+      if (span && otHoursKnown) {
+        const hoursWorked = sum(stub.earnings.filter((e) => e.type === "regular" || e.type === "overtime").map((e) => e.hours ?? 0));
+        const overtimeHoursPaid = sum(otLines.map((e) => e.hours ?? 0));
+        const workweekHours = p.flsa.workweekHours;
+        const unpaidHours = round2(pos(hoursWorked - workweekHours * span.weeks - overtimeHoursPaid));
+        // Half an hour of slack for rounding on the stub.
+        if (unpaidHours >= 0.5) {
+          findings.push({
+            code: "POSSIBLE_UNPAID_OVERTIME",
+            severity: "warning",
+            amountUsd: round2(unpaidHours * regularRate * (p.flsa.overtimeMultiplier - 1)),
+            employerId,
+            inputs: { hoursWorked, weeks: span.weeks, workweekHours, overtimeHoursPaid, regularRate },
+            action: {
+              kind: "ask_hr",
+              details: `More than ${workweekHours} hours a week were paid at the regular rate. Hours over ${workweekHours} in a workweek require ${p.flsa.overtimeMultiplier}x pay. Ask payroll for your hours by workweek.`,
+            },
+          });
+        }
       }
     }
   }
@@ -238,4 +253,23 @@ export function runPaystubChecks(
   }
 
   return { findings, ran };
+}
+
+/**
+ * How many workweeks a pay period can touch. Periods that are a whole number of weeks (weekly, biweekly)
+ * line up with the employer's workweek. Other periods (semi-monthly, monthly) cut across workweeks, so
+ * we count every workweek the period could touch: that keeps the overtime estimate a lower bound.
+ * Uses the period dates on the stub; falls back to the pay frequency when they are missing or odd.
+ */
+export function workweeksInPeriod(stub: Pick<Paystub, "payPeriodStart" | "payPeriodEnd" | "payFrequency">): { weeks: number; aligned: boolean } | null {
+  const start = Date.parse(`${stub.payPeriodStart}T00:00:00Z`);
+  const end = Date.parse(`${stub.payPeriodEnd}T00:00:00Z`);
+  const days = Math.round((end - start) / 86_400_000) + 1;
+  if (Number.isFinite(days) && days >= 1 && days <= 31) {
+    if (days % 7 === 0) return { weeks: days / 7, aligned: true };
+    return { weeks: Math.ceil((days - 1) / 7) + 1, aligned: false };
+  }
+  if (stub.payFrequency === "weekly") return { weeks: 1, aligned: true };
+  if (stub.payFrequency === "biweekly") return { weeks: 2, aligned: true };
+  return null;
 }

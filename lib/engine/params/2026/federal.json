@@ -84,7 +84,9 @@
     "phaseOutPer1000": 100
   },
   "flsa": {
-    "overtimeMultiplier": 1.5
+    "_source": "flsaWorkweek (FLSA: hours worked over 40 in a workweek at 1.5x the regular rate; a workweek is a fixed 7-day period, so hours are never averaged across weeks)",
+    "overtimeMultiplier": 1.5,
+    "workweekHours": 40
   },
   "estimates": {
     "_source": "flsaWorkweek (40-hour workweek x 52 weeks); used only to estimate a year of pay for an hourly job with no pay stub",

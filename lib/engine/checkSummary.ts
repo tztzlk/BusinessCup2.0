@@ -79,7 +79,7 @@ function copy(id: PaystubCheckId, p: FederalParams): { label: string; detail: st
     case "overtime":
       return {
         label: `Overtime at ${p.flsa.overtimeMultiplier}x`,
-        detail: `Overtime should be paid at ${p.flsa.overtimeMultiplier}x your regular rate, and hours over 40 a week not at the regular rate.`,
+        detail: `Overtime should be paid at ${p.flsa.overtimeMultiplier}x your regular rate, and hours over ${p.flsa.workweekHours} in a workweek not at the regular rate. A stub shows totals for the pay period, so we check the least overtime owed.`,
       };
     case "match_contribution":
       return { label: "Getting the full 401(k) match", detail: "Whether your 401(k) contribution is high enough to get all of the employer match." };
