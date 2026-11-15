@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ArrowRightIcon, BriefcaseIcon, FileIcon, FlaskConicalIcon, RotateCwIcon, XIcon } from "lucide-react";
+import { ArrowRightIcon, BriefcaseIcon, DownloadIcon, FileIcon, FlaskConicalIcon, RotateCwIcon, XIcon } from "lucide-react";
 import { useHousehold } from "@/components/app/HouseholdProvider";
 import { CheckIntro } from "@/components/check/CheckIntro";
 import { EmployerWizard } from "@/components/check/EmployerWizard";
@@ -14,7 +14,7 @@ import { useUploadQueue, type QueueItem } from "@/components/upload/UploadQueue"
 import { Alert, Badge, Button, Card, FileUploader, PageHeader, PageSkeleton, ProgressBar, Stepper, useToast } from "@/components/ui";
 import { api } from "@/lib/api-client";
 import { isAnnual, FREE_LIMITS } from "@/lib/plan";
-import { isSampleEmployer, SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
+import { isSampleEmployer, REAL_EMPLOYER, REAL_PAYSTUB_URL, SAMPLE_EMPLOYER, SAMPLE_PAYSTUB_URL, SAMPLE_PROFILE } from "@/lib/sample";
 import { IMAGE_MAX_BYTES, PDF_MAX_BYTES, PDF_MAX_PAGES } from "@/lib/upload";
 import type { HouseholdData } from "@/lib/types";
 
@@ -38,7 +38,7 @@ export function UploadFlow() {
   const queue = useUploadQueue();
   const [setup, setSetup] = useState<Setup | "auto">("auto");
   const [recoveryUrl, setRecoveryUrl] = useState<string | null>(null);
-  const [sampleBusy, setSampleBusy] = useState(false);
+  const [sampleBusy, setSampleBusy] = useState<"fictional" | "real" | null>(null);
   const [sampleError, setSampleError] = useState<string | null>(null);
 
   // Before any upload: a household and at least one job. New visitors start with the intro.
@@ -59,9 +59,12 @@ export function UploadFlow() {
   }, [busy, ready.length, failed.length, router]);
 
   // One click for judges: sample household + matching job, then the fictional PDF through the real reader.
-  const trySample = async () => {
+  // "real" runs the real New Jersey stub (personal data blacked out) the same way, under its own job.
+  const trySample = async (kind: "fictional" | "real" = "fictional") => {
+    const employer = kind === "real" ? REAL_EMPLOYER : SAMPLE_EMPLOYER;
+    const url = kind === "real" ? REAL_PAYSTUB_URL : SAMPLE_PAYSTUB_URL;
     setSampleError(null);
-    setSampleBusy(true);
+    setSampleBusy(kind);
     try {
       let household = data;
       if (!household) {
@@ -69,19 +72,19 @@ export function UploadFlow() {
         queue.setRecoveryUrl(visibleRecoveryUrl(created.recoveryUrl));
         household = await refresh();
       }
-      if (!household?.employers.some(isSampleEmployer)) {
-        await api.addEmployer(SAMPLE_EMPLOYER);
+      if (!household?.employers.some((e) => e.employerName === employer.employerName)) {
+        await api.addEmployer(employer);
         await refresh();
       }
-      const res = await fetch(SAMPLE_PAYSTUB_URL);
+      const res = await fetch(url);
       if (!res.ok) throw new Error("Could not load the sample pay stub. Try again.");
-      const file = new File([await res.blob()], "sample-paystub.pdf", { type: "application/pdf" });
+      const file = new File([await res.blob()], url.split("/").pop()!, { type: "application/pdf" });
       setSetup(null);
       queue.add([file], { sample: true });
     } catch (e) {
       setSampleError(e instanceof Error ? e.message : "Could not start the sample. Try again.");
     } finally {
-      setSampleBusy(false);
+      setSampleBusy(null);
     }
   };
 
@@ -286,20 +289,65 @@ function QueueList() {
   );
 }
 
-function SampleBanner({ busy, error, onTry }: { busy: boolean; error: string | null; onTry: () => void }) {
+function SampleBanner({
+  busy,
+  error,
+  onTry,
+}: {
+  busy: "fictional" | "real" | null;
+  error: string | null;
+  onTry: (kind: "fictional" | "real") => void;
+}) {
   return (
-    <div className="rounded-card border border-brand-200 bg-surface p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
-      <div className="min-w-0">
-        <p className="font-medium text-fg-primary">No pay stub at hand?</p>
-        <p className="text-sm text-fg-secondary">
-          Try a fictional sample: an hourly job in Texas. It goes through the same reader and checks as your own document, and one mistake is
-          hidden in it.
-        </p>
-        {error && <p className="mt-1 text-sm text-danger">{error}</p>}
+    <div className="space-y-3">
+      <div className="rounded-card border border-brand-200 bg-surface p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <p className="font-medium text-fg-primary">No pay stub at hand?</p>
+          <p className="text-sm text-fg-secondary">
+            Try a fictional sample: an hourly job in Texas. It goes through the same reader and checks as your own document, and one mistake is
+            hidden in it.
+          </p>
+          {error && <p className="mt-1 text-sm text-danger">{error}</p>}
+        </div>
+        <Button
+          variant="secondary"
+          loading={busy === "fictional"}
+          disabled={busy !== null}
+          className="mt-3 w-full sm:mt-0 sm:w-auto"
+          onClick={() => onTry("fictional")}
+          icon={<FlaskConicalIcon aria-hidden="true" className="h-4 w-4" />}
+        >
+          Try with a sample
+        </Button>
       </div>
-      <Button variant="secondary" loading={busy} className="mt-3 w-full sm:mt-0 sm:w-auto" onClick={onTry} icon={<FlaskConicalIcon aria-hidden="true" className="h-4 w-4" />}>
-        Try with a sample
-      </Button>
+      <div className="rounded-card border border-brand-200 bg-surface p-4 sm:flex sm:items-center sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <p className="font-medium text-fg-primary">Or a real pay stub</p>
+          <p className="text-sm text-fg-secondary">
+            A real weekly stub from a summer job in New Jersey, with the name, address, SSN and bank account blacked out. Download it, or run it
+            through the checks right here.
+          </p>
+        </div>
+        <div className="mt-3 flex shrink-0 flex-col gap-2 sm:mt-0 sm:flex-row">
+          <a
+            href={REAL_PAYSTUB_URL}
+            download
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm font-medium text-fg-primary hover:bg-slate-50"
+          >
+            <DownloadIcon aria-hidden="true" className="h-4 w-4" />
+            Download PDF
+          </a>
+          <Button
+            variant="secondary"
+            loading={busy === "real"}
+            disabled={busy !== null}
+            onClick={() => onTry("real")}
+            icon={<FlaskConicalIcon aria-hidden="true" className="h-4 w-4" />}
+          >
+            Check this stub
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

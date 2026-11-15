@@ -24,7 +24,21 @@ export const SAMPLE_EMPLOYER: Omit<EmploymentSettings, "id"> = {
   w4: { step2Checked: false, step3Credits: 0, step4aOtherIncome: 0, step4bDeductions: 0, step4cExtraWithholding: 0 },
 };
 
-/** The sample job. Its pay stubs don't count toward the free plan, so judges can try the sample and their own stub. */
+// "Try a real pay stub": a real weekly stub from a summer job in New Jersey (public/samples/real-paystub-nj.pdf).
+// The worker's name, address, SSN and bank account are blacked out. Withholding is $0 for federal income tax,
+// Social Security and Medicare, so the checks flag those lines; it can be correct for some nonresident visa holders.
+export const REAL_PAYSTUB_URL = "/samples/real-paystub-nj.pdf";
+
+export const REAL_EMPLOYER: Omit<EmploymentSettings, "id"> = {
+  member: "self",
+  employerName: "The Island Grille, LLC (SAMPLE)",
+  payType: "hourly",
+  hourlyRate: 15.95,
+  overtimeEligible: true,
+  w4: { step2Checked: false, step3Credits: 0, step4aOtherIncome: 0, step4bDeductions: 0, step4cExtraWithholding: 0 },
+};
+
+/** The sample jobs. Their pay stubs don't count toward the free plan, so judges can try the samples and their own stub. */
 export function isSampleEmployer(settings: Pick<EmploymentSettings, "employerName">): boolean {
-  return settings.employerName === SAMPLE_EMPLOYER.employerName;
+  return settings.employerName === SAMPLE_EMPLOYER.employerName || settings.employerName === REAL_EMPLOYER.employerName;
 }
