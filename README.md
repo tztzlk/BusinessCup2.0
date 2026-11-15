@@ -13,6 +13,7 @@ Built in 24 hours at Business Cup 2.0 by team ENUshniki.
 ## How it works
 
 - **Claude reads, code calculates.** Claude (Anthropic API) only extracts fields from a pay stub or W-2 and writes plain-English explanations. Every number is computed by a deterministic, tested engine with tax parameters versioned by year and linked to IRS sources.
+- **Sample households run the same engine live.** Their numbers are computed in your browser on every visit; only Claude's plain-English texts for these three fictional households were generated once with the same API and saved in `lib/demoExplanations.json`, so the demos don't depend on the API. A test fails if a demo's findings change and the texts go stale.
 - **You confirm every field** before anything is saved.
 - **Documents are never stored by us.** Files live in memory while Claude reads them through Anthropic's commercial API; only the fields you confirm are kept. SSN, addresses and account numbers are not extracted.
 - **Encrypted at the field level.** Each household's data is encrypted with AES-256-GCM using a key rebuilt for every request from a secret kept in your browser (httpOnly cookie) and a server key; the key is never stored. A copy of the database alone is unreadable.

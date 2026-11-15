@@ -167,6 +167,17 @@ describe("POST /api/extract", () => {
     expect((await res.json()).error).toBe("unreadable");
   });
 
+  it("out of API credit is our outage, not an unreadable document: 503 upstream, retryable", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const msg = "Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.";
+    h.create.mockRejectedValue(Anthropic.APIError.generate(400, { error: { type: "invalid_request_error", message: msg } }, msg, new Headers()));
+    const res = await extract(upload(pdf(1), "application/pdf"));
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error).toBe("upstream");
+    expect(body.message).toContain("sample household");
+  });
+
   it("answers 503 upstream when the API key is missing", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
     delete process.env.ANTHROPIC_API_KEY;

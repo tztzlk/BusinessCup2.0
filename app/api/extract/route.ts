@@ -71,15 +71,20 @@ export async function POST(req: Request) {
       return json(400, "too_many_pages", `Upload a single pay stub or W-2 (up to ${PDF_MAX_PAGES} pages).`);
     }
 
-    if (!allowClaudeCall()) return json(503, "busy", "Our reader is busy. Try again in a minute.");
+    if (!allowClaudeCall()) return json(503, "busy", "Our document reader is busy. Try again in a minute, or open a sample household under Sample households to see a full report.");
 
     return NextResponse.json(await extractDocument(data, type));
   } catch (err) {
     if (err instanceof ExtractionError) return json(422, err.code, err.message);
     if (err instanceof ClaudeNotConfiguredError) {
-      return json(503, "upstream", "Could not read the document right now.");
+      return json(503, "upstream", "Our document reader is unavailable right now. Try again later, or open a sample household under Sample households to see a full report.");
     }
-    if (err instanceof Anthropic.RateLimitError) return json(503, "busy", "Our reader is busy. Try again in a minute.");
+    if (err instanceof Anthropic.RateLimitError) return json(503, "busy", "Our document reader is busy. Try again in a minute, or open a sample household under Sample households to see a full report.");
+    // Out of API credit is also a 400; it is our problem, not the user's document.
+    if (err instanceof Anthropic.APIError && /credit balance/i.test(err.message)) {
+      console.error("extract: Claude API credit exhausted", err.status);
+      return json(503, "upstream", "Our document reader is unavailable right now. Try again later, or open a sample household under Sample households to see a full report.");
+    }
     // A 400 from Claude for a file that passed our checks is almost always a corrupt,
     // encrypted or otherwise unreadable document.
     if (err instanceof Anthropic.BadRequestError) {
@@ -88,7 +93,7 @@ export async function POST(req: Request) {
     }
     if (err instanceof Anthropic.APIError) {
       console.error("extract: Claude API error", err.status, err.message);
-      return json(502, "upstream", "Could not read the document right now.");
+      return json(502, "upstream", "Our document reader is unavailable right now. Try again later, or open a sample household under Sample households to see a full report.");
     }
     console.error("extract: unexpected error", err);
     return json(500, "internal");
