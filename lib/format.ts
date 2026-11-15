@@ -13,6 +13,14 @@ export function shortDate(iso: string | null | undefined): string {
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+/** A full timestamp (e.g. a document's createdAt) as a date in the visitor's time zone. */
+export function localDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 export function label(value: string): string {
   return value
     .replace(/_/g, " ")

@@ -60,11 +60,12 @@ function DollarInput({ id, value, onChange, placeholder }: { id: string; value: 
   );
 }
 
-function Result({ r, twoEarnerWording }: { r: QuickEstimateResult; twoEarnerWording: boolean }) {
+/** The estimate in words: owe / refund / even, the Step 4(c) fix and the likely cause. Shared with /calculator. */
+export function EstimateResult({ r, twoEarnerWording, actions = true }: { r: QuickEstimateResult; twoEarnerWording: boolean; actions?: boolean }) {
   const owe = r.balance > 0 && !r.aboutEven;
   const refund = r.balance < 0 && !r.aboutEven;
   const april = `April ${r.taxYear + 1}`;
-  const tone = owe ? "bg-rose-50 text-rose-950 ring-rose-200" : refund ? "bg-emerald-50 text-emerald-950 ring-emerald-200" : "bg-slate-50 text-slate-900 ring-slate-200";
+  const tone = owe ? "bg-warning-soft text-warning-strong ring-warning-border" : refund ? "bg-success-soft text-success-strong ring-success-border" : "bg-slate-50 text-fg-primary ring-border";
 
   return (
     <div className={`flex h-full flex-col rounded-xl p-5 ring-1 ${tone}`} aria-live="polite">
@@ -118,12 +119,14 @@ function Result({ r, twoEarnerWording }: { r: QuickEstimateResult; twoEarnerWord
         </p>
       )}
 
+      {actions && (
       <div className="mt-auto flex flex-col gap-2 pt-5 sm:flex-row">
-        <ButtonLink href="/check">Check your real pay stub</ButtonLink>
+        <ButtonLink href="/upload">Check your real pay stub</ButtonLink>
         <ButtonLink href="/demo/couple" variant="secondary">
           See a sample report
         </ButtonLink>
       </div>
+      )}
     </div>
   );
 }
@@ -231,7 +234,7 @@ export function QuickEstimate() {
         </div>
 
         {result ? (
-          <Result r={result} twoEarnerWording={twoEarners} />
+          <EstimateResult r={result} twoEarnerWording={twoEarners} />
         ) : (
           <div className="flex items-center rounded-xl bg-slate-50 p-5 text-sm text-slate-600 ring-1 ring-slate-200">
             Enter a salary to see your estimate.

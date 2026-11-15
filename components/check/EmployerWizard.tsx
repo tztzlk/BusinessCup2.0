@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button, Field, inputClass, Notice } from "../ui";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button, Field, inputClass, Alert } from "../ui";
 import { newEmployerSettings, type EmployerSettings } from "../EmployerForm";
-import { IconBriefcase, IconCheckCircle, IconClock, IconDollar, IconFileText, IconPerson, IconPiggy, IconUsers } from "../Icons";
+import { BriefcaseIcon, CircleCheckIcon, ClockIcon, DollarSignIcon, FileTextIcon, PiggyBankIcon, UserIcon, UsersIcon } from "lucide-react";
 import { money } from "@/lib/format";
 import { AnswerList, ChoiceCard, QuestionShell } from "./Wizard";
 import type { EmploymentSettings } from "@/lib/types";
+import { EmployerFormSchema, employerFormValues, employerSettingsFrom, formError, type EmployerFormValues } from "@/lib/formSchemas";
 
 // The job part of /check, one topic per screen, ending with "Check your answers".
 
 const QUESTIONS = ["job", "pay", "match", "w4", "review"] as const;
 type Q = (typeof QUESTIONS)[number];
-const DEFAULT_MATCH = { matchPercent: 50, upToPercentOfPay: 6 };
 
 const num = (v: string) => (v === "" ? 0 : Number(v) || 0);
 
@@ -29,7 +31,15 @@ export function EmployerWizard({
   /** Shown when the household already has a job: go straight to upload. */
   onSkip?: () => void;
 }) {
-  const [s, setS] = useState<EmployerSettings>(() => newEmployerSettings(hasSelf ? "spouse" : "self"));
+  // Answers live in React Hook Form; the API's zod schema (lib/formSchemas.ts) checks them on save.
+  const form = useForm<EmployerFormValues, unknown, EmployerFormValues>({
+    resolver: zodResolver(EmployerFormSchema, { error: formError }),
+    defaultValues: employerFormValues(newEmployerSettings(hasSelf ? "spouse" : "self")),
+  });
+  const s = form.watch();
+  const setS = (next: Partial<EmployerFormValues>) =>
+    (Object.keys(next) as Array<keyof EmployerFormValues>).forEach((k) => form.setValue(k, next[k] as never, { shouldDirty: true }));
+  const errors = form.formState.errors;
   const [matchAnswer, setMatchAnswer] = useState<"yes" | "no" | "unsure" | null>(null);
   const hasMatch = matchAnswer === "yes";
   const [q, setQ] = useState<Q>("job");
@@ -46,7 +56,7 @@ export function EmployerWizard({
   };
   const common = { section: "Your job", index: i + 1, total: QUESTIONS.length, onBack: back };
   const w4 = (k: keyof EmploymentSettings["w4"], v: number | boolean) => setS({ ...s, w4: { ...s.w4, [k]: v } });
-  const match = s.match401k ?? DEFAULT_MATCH;
+  const match = s.match401k;
   const payOk = s.payType === "salary" ? (s.annualSalary ?? 0) > 0 : (s.hourlyRate ?? 0) > 0;
   const w4Changed =
     s.w4.step2Checked || s.w4.step3Credits > 0 || s.w4.step4aOtherIncome > 0 || s.w4.step4bDeductions > 0 || s.w4.step4cExtraWithholding > 0;
@@ -55,7 +65,7 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconBriefcase}
+        icon={BriefcaseIcon}
         question="Whose job is this, and where?"
         hint="Add one job at a time. If you both work, you can add the second job right after."
         continueDisabled={s.employerName.trim() === ""}
@@ -70,30 +80,30 @@ export function EmployerWizard({
       >
         <fieldset className="grid gap-3 sm:grid-cols-2">
           <legend className="sr-only">Whose job</legend>
-          <ChoiceCard name="member" value="self" checked={s.member === "self"} onChange={() => setS({ ...s, member: "self" })} icon={IconPerson} title="Mine" />
+          <ChoiceCard name="member" value="self" checked={s.member === "self"} onChange={() => setS({ ...s, member: "self" })} icon={UserIcon} title="Mine" />
           <ChoiceCard
             name="member"
             value="spouse"
             checked={s.member === "spouse"}
             onChange={() => setS({ ...s, member: "spouse" })}
-            icon={IconUsers}
+            icon={UsersIcon}
             title="My spouse's"
           />
         </fieldset>
         {s.member === "spouse" && notMarried && (
           <div className="mt-4">
-            <Notice tone="warning">
+            <Alert tone="warning">
               Your household is set to file as single or head of household, so a spouse&apos;s income won&apos;t be counted the
               way a joint return does. If you&apos;re married, change the filing status on your{" "}
               <Link href="/report" className="font-medium underline">
                 report
               </Link>{" "}
               (Edit profile). If this is your own second job, choose &quot;Mine&quot;.
-            </Notice>
+            </Alert>
           </div>
         )}
         <div className="mt-5 max-w-md">
-          <Field label="Employer name" hint="As it appears at the top of the pay stub.">
+          <Field error={errors.employerName?.message} label="Employer name" hint="As it appears at the top of the pay stub.">
             <input
               required
               maxLength={200}
@@ -111,7 +121,7 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconDollar}
+        icon={DollarSignIcon}
         question="How are you paid at this job?"
         hint="Before taxes, as on your offer letter or pay stub."
         why="We use your pay to check each pay stub, like overtime paid at the regular rate, and to project your tax for the year."
@@ -125,7 +135,7 @@ export function EmployerWizard({
             value="salary"
             checked={s.payType === "salary"}
             onChange={() => setS({ ...s, payType: "salary" })}
-            icon={IconBriefcase}
+            icon={BriefcaseIcon}
             title="Salary"
             description="A fixed amount per year"
           />
@@ -134,14 +144,14 @@ export function EmployerWizard({
             value="hourly"
             checked={s.payType === "hourly"}
             onChange={() => setS({ ...s, payType: "hourly", overtimeEligible: true })}
-            icon={IconClock}
+            icon={ClockIcon}
             title="Hourly"
             description="Paid for each hour you work"
           />
         </fieldset>
         <div className="mt-5 max-w-xs">
           {s.payType === "salary" ? (
-            <Field label="Annual salary (USD)">
+            <Field error={errors.annualSalary?.message} label="Annual salary (USD)">
               <input
                 type="number"
                 inputMode="decimal"
@@ -154,7 +164,7 @@ export function EmployerWizard({
               />
             </Field>
           ) : (
-            <Field label="Hourly rate (USD)">
+            <Field error={errors.hourlyRate?.message} label="Hourly rate (USD)">
               <input
                 type="number"
                 inputMode="decimal"
@@ -189,13 +199,13 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconPiggy}
+        icon={PiggyBankIcon}
         question="Does this employer match your 401(k)?"
         hint="Many employers add money when you save for retirement. Check your benefits page if you're not sure."
         why="If you save less than the match, you leave free money on the table. We show exactly how much."
         continueDisabled={matchAnswer === null}
         onContinue={() => {
-          setS({ ...s, match401k: hasMatch ? match : undefined });
+          form.setValue("hasMatch", hasMatch);
           next();
         }}
       >
@@ -248,7 +258,7 @@ export function EmployerWizard({
     return (
       <QuestionShell
         {...common}
-        icon={IconFileText}
+        icon={FileTextIcon}
         question="What's on your W-4 at this job?"
         hint="The form you filled in for HR when you started. Optional — most people left these empty."
         why="We compare it with what your household really needs, then tell you the exact numbers to put on a new W-4."
@@ -289,7 +299,7 @@ export function EmployerWizard({
   return (
     <QuestionShell
       {...common}
-      icon={IconCheckCircle}
+      icon={CircleCheckIcon}
       question="Check your answers"
       hint="You can edit this job later from your report."
       continueLabel="Save job and continue"
@@ -299,12 +309,10 @@ export function EmployerWizard({
         setBusy(true);
         setErr(null);
         try {
-          await onDone({
-            ...s,
-            employerName: s.employerName.trim(),
-            annualSalary: s.payType === "salary" ? s.annualSalary : undefined,
-            hourlyRate: s.payType === "hourly" ? s.hourlyRate : undefined,
-          });
+          await form.handleSubmit(
+            (values) => onDone(employerSettingsFrom(values)),
+            (invalid) => setErr(firstError(invalid) ?? "Check your answers."),
+          )();
         } catch (e) {
           setErr(e instanceof Error ? e.message : "Something went wrong.");
         } finally {
@@ -319,7 +327,7 @@ export function EmployerWizard({
           { label: "Pay", value: `${pay}${s.overtimeEligible ? " · overtime" : ""}`, onChange: change("pay") },
           {
             label: "401(k) match",
-            value: s.match401k ? `${s.match401k.matchPercent}% up to ${s.match401k.upToPercentOfPay}% of pay` : "None",
+            value: s.hasMatch ? `${s.match401k.matchPercent}% up to ${s.match401k.upToPercentOfPay}% of pay` : "None",
             onChange: change("match"),
           },
           { label: "W-4", value: w4Changed ? "Filled in" : "Left empty", onChange: change("w4") },
@@ -327,4 +335,16 @@ export function EmployerWizard({
       />
     </QuestionShell>
   );
+}
+
+/** The first zod message in a nested RHF error object, for the review screen. */
+function firstError(e: unknown): string | null {
+  if (!e || typeof e !== "object") return null;
+  const msg = (e as { message?: unknown }).message;
+  if (typeof msg === "string") return msg;
+  for (const v of Object.values(e)) {
+    const m = firstError(v);
+    if (m) return m;
+  }
+  return null;
 }

@@ -133,7 +133,7 @@ describe("EITC in the annual projection", () => {
     expect(r.notes.some((n) => n.includes("Earned Income Tax Credit of $4,250"))).toBe(true);
     // Mostly refundable credits, not over-withholding: the title doesn't say "overpaying".
     expect(findingTitle(f)).toBe("You're on track for a refund");
-    expect(inputRow("earnedIncomeCredit", f.inputs.earnedIncomeCredit as number)).toEqual({ label: "Earned income credit", value: "$4,249.62" });
+    expect(inputRow("earnedIncomeCredit", f.inputs.earnedIncomeCredit as number)).toEqual({ label: "Earned income credit", value: "$4,249.62", known: true });
   });
 
   it("a refund that is mostly withheld tax keeps the over-withholding title", () => {

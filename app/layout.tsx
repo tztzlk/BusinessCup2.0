@@ -1,7 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { Nav } from "@/components/Nav";
-import { Footer } from "@/components/Footer";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
   title: "PayTrail — paycheck checkups & tax-season prep",
@@ -15,14 +16,12 @@ export const viewport: Viewport = {
   themeColor: "#0b1024",
 };
 
+// Two shells under this root: app/(site) for the public pages (landing, demo, about, recover, billing)
+// and app/(app) for the product (dashboard, upload, report, settings, privacy, accuracy).
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className="flex min-h-screen flex-col font-sans antialiased">
-        <Nav />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">{children}</main>
-        <Footer />
-      </body>
+    <html lang="en" className={inter.variable}>
+      <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>
   );
 }

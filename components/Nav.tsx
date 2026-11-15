@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ComponentType, SVGProps } from "react";
 import { Logo, LogoMark } from "./Logo";
-import { IconDemo, IconPerson, IconReport, IconScan } from "./Icons";
+import { LayoutDashboardIcon, LayoutGridIcon, ScanLineIcon } from "lucide-react";
 
 type NavItem = {
   href: string;
@@ -18,12 +18,11 @@ type NavItem = {
 };
 
 const LINKS: NavItem[] = [
-  { href: "/demo", label: "Sample households", short: "Samples", hint: "See finished checkups for fictional families — no upload", icon: IconDemo },
-  { href: "/report", label: "My report", short: "Report", hint: "Your saved results, projection and tax-season checklist", icon: IconReport },
-  { href: "/account", label: "Account", short: "Account", hint: "Your plan, private sign-in link, household and jobs", icon: IconPerson },
+  { href: "/demo", label: "Sample households", short: "Samples", hint: "See finished checkups for fictional families — no upload", icon: LayoutGridIcon },
+  { href: "/dashboard", label: "Dashboard", short: "Dashboard", hint: "Your checkup status, April outlook and paycheck history", icon: LayoutDashboardIcon },
 ];
 
-const CTA: NavItem = { href: "/check", label: "Check my pay stub", short: "Check", hint: "Upload a pay stub or W-2 and get it checked", icon: IconScan };
+const CTA: NavItem = { href: "/upload", label: "Check my pay stub", short: "Check", hint: "Upload a pay stub or W-2 and get it checked", icon: ScanLineIcon };
 
 // The layout keeps the nav mounted across client navigation, so the logo animates once per visit.
 export function Nav() {

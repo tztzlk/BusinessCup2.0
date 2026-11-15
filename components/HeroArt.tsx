@@ -1,5 +1,5 @@
 import { CheckArt, PayStubArt, W2Art } from "./PaperArt";
-import { IconCheckCircle } from "./Icons";
+import { CircleCheckIcon } from "lucide-react";
 
 /** The sample pay stub being checked, with the paycheck and W-2 behind it. The check runs once. */
 export function HeroStack() {
@@ -17,7 +17,7 @@ export function HeroStack() {
           Overtime at 1× · $100 short
         </div>
         <div className="stub-ok absolute -left-6 bottom-[14%] flex items-center gap-1.5 rounded-md bg-white px-2.5 py-1 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200 sm:-left-10">
-          <IconCheckCircle className="h-3.5 w-3.5" /> Taxes check out
+          <CircleCheckIcon className="h-3.5 w-3.5" /> Taxes check out
         </div>
       </div>
     </div>

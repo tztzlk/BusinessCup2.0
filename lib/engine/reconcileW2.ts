@@ -9,6 +9,8 @@ export interface ReconcileRow {
   w2: number;
   expected: number;
   matches: boolean;
+  /** |W-2 − pay stubs|, rounded to cents. */
+  difference: number;
 }
 
 /** Compares a W-2 with the year-end totals on the last pay stub of the same year. */
@@ -26,7 +28,7 @@ export function reconcileW2(w2: W2, lastStub: Paystub, employerId: string | null
     { box: "6", label: "Medicare tax withheld", w2: w2.box6MedicareWithheld, expected: tax(lastStub, "medicare", "ytd") },
     { box: "12 D", label: "401(k) elective deferrals", w2: box12("D"), expected: deduction(lastStub, "401k_pretax", "ytd") },
     { box: "12 W", label: "HSA contributions", w2: box12("W"), expected: deduction(lastStub, "hsa", "ytd") + hsaEmployer },
-  ].map((r) => ({ ...r, expected: round2(r.expected), matches: !differs(r.w2, r.expected) }));
+  ].map((r) => ({ ...r, expected: round2(r.expected), matches: !differs(r.w2, r.expected), difference: round2(Math.abs(r.w2 - r.expected)) }));
 
   const findings: Finding[] = rows
     .filter((r) => !r.matches)

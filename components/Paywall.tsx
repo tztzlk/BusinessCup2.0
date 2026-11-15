@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { api } from "@/lib/api-client";
 import { ANNUAL_PRICE_LABEL } from "@/lib/plan";
-import { IconCheckCircle } from "./Icons";
-import { Button, Card, Notice } from "./ui";
+import { CircleCheckIcon } from "lucide-react";
+import { Button, Card, Alert } from "./ui";
 
-const ANNUAL_FEATURES = [
+export const ANNUAL_FEATURES = [
   "Every pay stub for both earners, all year",
   "The exact W-4 Step 4(c) fix for each job",
   "January: tax-document checklist, W-2 reconciliation, accountant packet",
@@ -38,7 +38,7 @@ export function Paywall({ title, reason }: { title: string; reason: string }) {
       <ul className="mt-4 space-y-1.5 text-sm text-slate-700">
         {ANNUAL_FEATURES.map((f) => (
           <li key={f} className="flex gap-2.5">
-            <IconCheckCircle className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
+            <CircleCheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
             {f}
           </li>
         ))}
@@ -52,7 +52,7 @@ export function Paywall({ title, reason }: { title: string; reason: string }) {
       </p>
       {error && (
         <div className="mt-3">
-          <Notice tone="danger">{error}</Notice>
+          <Alert tone="danger">{error}</Alert>
         </div>
       )}
     </Card>

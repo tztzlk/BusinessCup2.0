@@ -82,15 +82,15 @@ export function LogoMark({
 
 const WORD = ["P", "a", "y", "T", "r", "a", "i", "l"];
 
-export function Logo({ size = 28, animate = false }: { size?: number; animate?: boolean }) {
+export function Logo({ size = 28, animate = false, onLight = false }: { size?: number; animate?: boolean; /** Dark text on a light background. */ onLight?: boolean }) {
   return (
-    <span className="inline-flex items-center gap-2" aria-label="PayTrail">
+    <span className={`inline-flex items-center gap-2 ${onLight ? "text-fg-primary" : ""}`} aria-label="PayTrail">
       <LogoMark size={size} animate={animate} />
       <span className="text-lg font-semibold tracking-tight" aria-hidden="true">
         {WORD.map((ch, i) => (
           <span
             key={i}
-            className={`${animate ? "logo-letter" : ""} inline-block ${i >= 3 ? "text-brand-300" : ""}`}
+            className={`${animate ? "logo-letter" : ""} inline-block ${i >= 3 ? (onLight ? "text-primary" : "text-brand-300") : ""}`}
             style={animate ? { animationDelay: `${1.2 + i * 0.05}s` } : undefined}
           >
             {ch}

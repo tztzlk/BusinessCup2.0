@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
+import { useForm, type FieldValues } from "react-hook-form";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GLOSSARY, splitTerms } from "../lib/glossary";
 import { PaystubEditor } from "../components/DocumentEditor";
@@ -8,6 +9,7 @@ import type { Paystub } from "../lib/types";
 
 // Components import "@/..."; map it the same way as tests/extract-route.test.ts.
 vi.mock("@/lib/glossary", async () => await import("../lib/glossary"));
+vi.mock("@/lib/formSchemas", async () => await import("../lib/formSchemas"));
 
 describe("glossary", () => {
   it("has a short definition for every term", () => {
@@ -59,13 +61,17 @@ describe("confirm step: uncertain fields", () => {
     netCurrent: 1850,
     grossYtd: null,
   };
-  const render = (confidence: Record<string, "medium" | "low">) =>
-    renderToStaticMarkup(createElement(PaystubEditor, { value: stub, onChange: () => {}, confidence }));
+  function Editor({ confidence }: { confidence: Record<string, "medium" | "low"> }) {
+    const form = useForm<FieldValues>({ defaultValues: { employerId: "", fields: stub } });
+    return createElement(PaystubEditor, { form, confidence });
+  }
+  const render = (confidence: Record<string, "medium" | "low">) => renderToStaticMarkup(createElement(Editor, { confidence }));
 
-  it("shows a hint only under the fields the model flagged", () => {
-    expect(render({})).not.toContain("Check this against your document");
+  it("marks only the fields the model flagged with Please verify", () => {
+    expect(render({})).not.toContain("Please verify");
     const html = render({ netCurrent: "medium", "taxes[0].current": "low" });
-    expect(html.match(/Check this against your document/g)).toHaveLength(2);
+    expect(html.match(/Please verify/g)).toHaveLength(2);
+    expect(html.match(/Compare with your document/g)).toHaveLength(2);
     expect(html).toContain("Likely misread.");
     expect(html).toContain('aria-invalid="true"');
   });

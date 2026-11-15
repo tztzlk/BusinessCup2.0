@@ -1,24 +1,85 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  /* Brand scale built around the logo dot, #5B7CFA (brand-500). */
-  --color-brand-50: #f1f4ff;
-  --color-brand-100: #e3e9ff;
-  --color-brand-200: #c9d4fe;
-  --color-brand-300: #a6b8fd;
-  --color-brand-400: #7f97fb;
-  --color-brand-500: #5b7cfa;
-  --color-brand-600: #4561e8;
-  --color-brand-700: #374dc9;
-  --color-brand-800: #2e3f9f;
-  --color-brand-900: #26326f;
-  --color-brand-950: #0d1330;
+  /* Primary: #5146F5, with hover/active and soft tints. brand-* is the same hue as a full scale. */
+  --color-primary: #5146f5;
+  --color-primary-hover: #4439e0;
+  --color-primary-active: #382fb8;
+  --color-primary-50: #f0effe;
+  --color-primary-100: #e3e1fd;
+
+  --color-brand-50: #f0effe;
+  --color-brand-100: #e3e1fd;
+  --color-brand-200: #cbc7fb;
+  --color-brand-300: #aaa3f8;
+  --color-brand-400: #8379f6;
+  --color-brand-500: #6157f6;
+  --color-brand-600: #5146f5;
+  --color-brand-700: #4439e0;
+  --color-brand-800: #382fb8;
+  --color-brand-900: #2e2890;
+  --color-brand-950: #1c1856;
+
+  /* Neutrals with a lavender tint. slate-* is remapped so older pages pick up the same greys. */
+  --color-slate-50: #f6f6fb;
+  --color-slate-100: #efeff6;
+  --color-slate-200: #e4e4ee;
+  --color-slate-300: #cfd0de;
+  --color-slate-400: #9a9db3;
+  --color-slate-500: #636882;
+  --color-slate-600: #4c5068;
+  --color-slate-700: #383b52;
+  --color-slate-800: #25283c;
+  --color-slate-900: #14162a;
+  --color-slate-950: #0b0c1a;
+
+  /* Surfaces and text. Muted text keeps 4.5:1 on both white and the app background. */
+  --color-canvas: #f4f4fa;
+  --color-surface: #ffffff;
+  --color-fg-primary: #14162a;
+  --color-fg-secondary: #4c5068;
+  --color-fg-muted: #636882;
+  --color-border: #e4e4ee;
+  --color-border-strong: #cfd0de;
+
+  /* Status colors: the base passes AA as text on white and on its soft background. */
+  --color-success: #0b7a50;
+  --color-success-soft: #e5f6ee;
+  --color-warning: #9a5800;
+  --color-warning-soft: #fdf2dd;
+  --color-danger: #c4262e;
+  --color-danger-soft: #fdeceb;
+  --color-info: #1f62c6;
+  --color-info-soft: #e7effc;
+  /* Borders and darker text for messages on the soft backgrounds. */
+  --color-success-border: #bfe6d3;
+  --color-success-strong: #08583a;
+  --color-warning-border: #f3d9a6;
+  --color-warning-strong: #6b3d00;
+  --color-danger-border: #f5c2c0;
+  --color-danger-strong: #8a1a20;
+  --color-danger-hover: #a91f27;
+  --color-danger-active: #8f1a21;
+  --color-info-border: #c5d8f6;
+  --color-info-strong: #173f80;
+
+  /* Radii: cards, controls; pills use rounded-full. */
+  --radius-card: 1rem;
+  --radius-control: 0.625rem;
+
+  /* Soft shadows. */
+  --shadow-soft-sm: 0 1px 2px rgb(20 22 42 / 0.04), 0 1px 3px rgb(20 22 42 / 0.06);
+  --shadow-soft-md: 0 8px 24px -6px rgb(20 22 42 / 0.1), 0 2px 6px -2px rgb(20 22 42 / 0.06);
 
   /* Deep navy behind the white logo. */
   --color-ink: #0b1024;
+}
+
+/* Inter comes from next/font (app/layout.tsx) as a CSS variable on <html>. */
+@theme inline {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 html {
@@ -26,8 +87,14 @@ html {
 }
 
 body {
-  background: #f5f7fa;
-  color: #111827;
+  background: var(--color-canvas);
+  color: var(--color-fg-primary);
+}
+
+/* One visible focus ring for keyboard users everywhere. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 /* One easing for every transition and entrance. */

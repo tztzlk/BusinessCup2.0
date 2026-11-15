@@ -1,4 +1,4 @@
-import { sortByPayDate } from "./engine/paystub";
+import { sortByPayDate, tax } from "./engine/paystub";
 import type { CheckupResult } from "./engine";
 import type { HouseholdData, Paystub, StoredDocument } from "./types";
 
@@ -8,7 +8,10 @@ import type { HouseholdData, Paystub, StoredDocument } from "./types";
 export interface PaycheckHistoryRow {
   id: string;
   stub: Paystub;
+  employerId: string | null;
   employerName: string;
+  /** Federal income tax withheld on this paycheck (the stub's federal_income lines). */
+  federalWithheld: number;
   /** null = the engine didn't check this stub (only the latest one per job is checked). */
   findings: number | null;
 }
@@ -34,8 +37,45 @@ export function paycheckHistoryRows(data: HouseholdData, result: CheckupResult):
     return {
       id: d.id,
       stub: d.fields,
+      employerId: employer?.id ?? null,
       employerName: employer?.employerName ?? d.fields.employerName,
+      federalWithheld: tax(d.fields, "federal_income", "current"),
       findings: checked.get(d.id) ?? null,
     };
   });
+}
+
+export type PaycheckMetric = "netCurrent" | "grossCurrent" | "federalWithheld";
+
+export interface PaycheckChart {
+  /** One line per job, in the order of `rows`. */
+  series: Array<{ key: string; name: string }>;
+  /** Oldest first; one point per pay date, with a value for each job paid that day. */
+  points: Array<{ date: string } & Record<string, number | string>>;
+}
+
+/** First day of the window `months` back from `asOf` (YYYY-MM-DD). */
+export function windowStart(asOf: string, months: number): string {
+  const d = new Date(`${asOf}T00:00:00Z`);
+  d.setUTCMonth(d.getUTCMonth() - months);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Paychecks paid in the last `months` months, ready for a line chart. Values are the stub amounts as saved. */
+export function paycheckChart(rows: readonly PaycheckHistoryRow[], metric: PaycheckMetric, months: number, asOf: string): PaycheckChart {
+  const from = windowStart(asOf, months);
+  const inWindow = rows.filter((r) => r.stub.payDate >= from && r.stub.payDate <= asOf);
+  const series: PaycheckChart["series"] = [];
+  const keyOf = (r: PaycheckHistoryRow) => r.employerId ?? `name:${r.employerName}`;
+  for (const r of inWindow) {
+    const key = keyOf(r);
+    if (!series.some((s) => s.key === key)) series.push({ key, name: r.employerName });
+  }
+  const byDate = new Map<string, { date: string } & Record<string, number | string>>();
+  for (const r of [...inWindow].reverse()) {
+    const point = byDate.get(r.stub.payDate) ?? { date: r.stub.payDate };
+    point[keyOf(r)] = metric === "federalWithheld" ? r.federalWithheld : r.stub[metric];
+    byDate.set(r.stub.payDate, point);
+  }
+  return { series, points: [...byDate.values()].sort((a, b) => a.date.localeCompare(b.date)) };
 }

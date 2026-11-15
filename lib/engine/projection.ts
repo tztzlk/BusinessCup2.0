@@ -58,7 +58,12 @@ interface JobRow {
  * A job without a stub is estimated from its settings (Pub. 15-T Worksheet 1A for withholding).
  * Standard deduction only (itemizing is out of scope for now).
  */
-export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: FederalParams): ProjectionDetail {
+export interface ProjectionOptions {
+  /** Yearly income with no withholding (e.g. bank interest), added to AGI as ordinary income. Used by the quick estimate. */
+  otherIncome?: number;
+}
+
+export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: FederalParams, opts: ProjectionOptions = {}): ProjectionDetail {
   const status = profile.filingStatus;
   const notes: string[] = [];
   let estimated = false;
@@ -149,7 +154,8 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
     }
   }
 
-  const agi = sum(rows.map((r) => r.fedWages));
+  const otherIncome = opts.otherIncome && opts.otherIncome > 0 ? opts.otherIncome : 0;
+  const agi = sum(rows.map((r) => r.fedWages)) + otherIncome;
   const otPremium = sum(rows.map((r) => r.overtime)) / 3; // the "half" in time-and-a-half
   const otDeduction = overtimeDeduction(otPremium, agi, status, p);
   const taxable = pos(agi - p.standardDeduction[status] - otDeduction);
@@ -188,6 +194,7 @@ export function projectYear(jobs: JobInput[], profile: HouseholdProfile, p: Fede
     notes,
     inputs: {
       agi: round2(agi),
+      ...(otherIncome > 0 ? { otherIncome: round2(otherIncome) } : {}),
       standardDeduction: p.standardDeduction[status],
       overtimeDeduction: otDeduction,
       taxableIncome: round2(taxable),
