@@ -21,6 +21,14 @@ const parseDollars = (s: string) => {
   return Number.isFinite(n) ? n : 0;
 };
 
+/** Why a salary field can't be used yet, or null when it's fine. Empty and negative amounts are not guessed. */
+const dollarProblem = (s: string): string | null => {
+  if (s.trim() === "") return "Enter a yearly amount, or 0.";
+  if (/-/.test(s)) return "Enter an amount of 0 or more.";
+  if (!/^[\s$0-9,.]+$/.test(s) || !Number.isFinite(Number(s.replace(/[^0-9.]/g, "")))) return "Use digits only, like 60,000.";
+  return null;
+};
+
 function YesNo({ label, value, onChange }: { label: ReactNode; value: boolean; onChange: (v: boolean) => void }) {
   return (
     <fieldset className="text-sm">
@@ -43,7 +51,9 @@ function YesNo({ label, value, onChange }: { label: ReactNode; value: boolean; o
 }
 
 function DollarInput({ id, value, onChange, placeholder }: { id: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  const problem = dollarProblem(value);
   return (
+    <div>
     <div className="relative">
       <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-slate-500">$</span>
       <input
@@ -54,8 +64,16 @@ function DollarInput({ id, value, onChange, placeholder }: { id: string; value: 
         value={value}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
+        aria-invalid={problem ? true : undefined}
+        aria-describedby={problem ? `${id}-error` : undefined}
         className={`${inputClass} pl-7 tabular-nums`}
       />
+    </div>
+      {problem && (
+        <span id={`${id}-error`} className="mt-1 block text-xs font-medium text-danger">
+          {problem}
+        </span>
+      )}
     </div>
   );
 }
@@ -144,9 +162,10 @@ export function QuickEstimate() {
 
   const married = status === "married_joint";
   const twoEarners = married && parseDollars(spouseSalary) > 0 && parseDollars(salary) > 0;
+  const invalid = dollarProblem(salary) !== null || (married && dollarProblem(spouseSalary) !== null);
   const result = useMemo(
     () =>
-      quickEstimate({
+      invalid ? null : quickEstimate({
         filingStatus: status,
         salary: parseDollars(salary),
         spouseSalary: married ? parseDollars(spouseSalary) : 0,
@@ -154,7 +173,7 @@ export function QuickEstimate() {
         step2Checked: step2,
         childrenOnW4: children > 0 && childrenOnW4,
       }),
-    [status, salary, spouseSalary, married, children, step2, childrenOnW4],
+    [invalid, status, salary, spouseSalary, married, children, step2, childrenOnW4],
   );
 
   return (
@@ -237,7 +256,7 @@ export function QuickEstimate() {
           <EstimateResult r={result} twoEarnerWording={twoEarners} />
         ) : (
           <div className="flex items-center rounded-xl bg-slate-50 p-5 text-sm text-slate-600 ring-1 ring-slate-200">
-            Enter a salary to see your estimate.
+            {invalid ? "Fix the amount above to see your estimate." : "Enter a salary to see your estimate."}
           </div>
         )}
       </div>

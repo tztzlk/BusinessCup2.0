@@ -244,8 +244,8 @@ export default function PrivacyPage() {
       <Card className="mt-4">
         <h3 className="font-semibold text-slate-900">Delete everything, any time</h3>
         <p className="mt-1 text-sm">
-          Use <Link href="/report" className="font-medium text-brand-700 underline underline-offset-2">My report</Link> or{" "}
-          <Link href="/settings" className="font-medium text-brand-700 underline underline-offset-2">Settings</Link>. One click removes, right away:
+          Use <Link href="/settings#privacy" className="font-medium text-brand-700 underline underline-offset-2">Settings → Privacy &amp; data</Link> or
+          the account menu. One click removes, right away:
         </p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
           <li>your household profile and jobs</li>
@@ -256,7 +256,7 @@ export default function PrivacyPage() {
         </ul>
         <p className="mt-2 text-sm">
           Your private link stops working. We keep one log line saying that a household was deleted and when, with no household ID
-          and no IP hash. You can also delete a single document from My report.
+          and no IP hash. You can also delete a single document in Settings.
         </p>
       </Card>
       <Card className="mt-4">

@@ -325,8 +325,14 @@ export function ReportBody({
               title="Tax documents to expect"
               subtitle="Built from your pay stubs and household profile."
               action={
-                <Button variant="secondary" className="no-print" icon={<PrinterIcon aria-hidden="true" className="h-4 w-4" />} onClick={() => window.print()}>
-                  Download accountant packet
+                <Button
+                  variant="secondary"
+                  className="no-print"
+                  icon={<PrinterIcon aria-hidden="true" className="h-4 w-4" />}
+                  onClick={() => window.print()}
+                  title="Opens your browser's print window: choose “Save as PDF” to get a file"
+                >
+                  Print or save packet as PDF
                 </Button>
               }
             >
@@ -345,7 +351,11 @@ export function ReportBody({
             <Section title="W-2 reconciliation" subtitle="Each W-2 box compared with your last pay stub of the year.">
               {recRows.length === 0 ? (
                 <Card>
-                  <p className="text-sm text-fg-secondary">Upload your W-2s to reconcile them against your pay stubs.</p>
+                  <p className="text-sm text-fg-secondary">
+                    {hasW2
+                      ? `To reconcile a W-2, add the last pay stub of ${result.taxYear} from the same job (paid in December).`
+                      : "Upload your W-2s to reconcile them against your pay stubs."}
+                  </p>
                 </Card>
               ) : (
                 <>

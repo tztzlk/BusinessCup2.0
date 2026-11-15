@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { get, type FieldValues, type UseFormReturn } from "react-hook-form";
-import { ConfidenceBadge, Input, Select, cn } from "./ui";
+import { useState, type ReactNode } from "react";
+import { get, useFieldArray, type FieldValues, type UseFormReturn } from "react-hook-form";
+import { PlusIcon, Trash2Icon } from "lucide-react";
+import { Button, ConfidenceBadge, Input, Select, cn } from "./ui";
 import { optionalNumber, requiredNumber } from "@/lib/formSchemas";
 import type { Confidence, Paystub } from "@/lib/types";
 
@@ -126,27 +127,51 @@ const ITEM_LABELS: Record<string, Record<string, string>> = {
 
 type ListKey = "earnings" | "taxes" | "deductions" | "employerContributions";
 
+/** A new, empty line of the given type, in the shape PaystubSchema expects. */
+function newLine(listKey: ListKey, type: string): Record<string, unknown> {
+  const line: Record<string, unknown> = { type, current: 0, ytd: null };
+  if (listKey === "earnings") Object.assign(line, { hours: null, rate: null });
+  if (listKey === "deductions") line.preTax = type !== "401k_roth" && type !== "other";
+  return line;
+}
+
+// The reader may miss a line (e.g. an overtime line), so the user can add one and remove a wrong one.
 function AmountTable({ form, listKey, title, hint, conf }: { form: Form; listKey: ListKey; title: string; hint?: string; conf: ConfidenceMap }) {
+  const { fields, append, remove } = useFieldArray({ control: form.control, name: `fields.${listKey}` });
   const rows = (form.watch(`fields.${listKey}`) ?? []) as Array<{ type: string; preTax?: boolean }>;
-  if (rows.length === 0) return null;
+  const types = Object.entries(ITEM_LABELS[listKey] ?? {});
+  const [addType, setAddType] = useState(types[0]?.[0] ?? "other");
   return (
     <fieldset className="mt-6">
       <legend className="text-sm font-semibold text-fg-primary">{title}</legend>
       {hint && <p className="text-[13px] text-fg-muted">{hint}</p>}
+      {fields.length > 0 && (
       <ul className="mt-2 divide-y divide-border rounded-control border border-border">
-        {rows.map((row, i) => {
-          const name = ITEM_LABELS[listKey]?.[row.type] ?? row.type.replace(/_/g, " ");
+        {fields.map((field, i) => {
+          const type = rows[i]?.type ?? "other";
+          const name = ITEM_LABELS[listKey]?.[type] ?? type.replace(/_/g, " ");
           const base = `fields.${listKey}.${i}`;
           return (
-            <li key={i} className="px-3 py-3">
+            <li key={field.id} className="px-3 py-3">
               <div className="mb-2 flex items-center justify-between gap-2">
                 <p className="text-sm font-medium text-fg-primary">{name}</p>
-                {listKey === "deductions" && (
-                  <label className="inline-flex items-center gap-1.5 text-xs text-fg-secondary">
-                    <input type="checkbox" className="h-4 w-4 accent-brand-600" {...form.register(`${base}.preTax`)} />
-                    Pre-tax
-                  </label>
-                )}
+                <div className="flex items-center gap-3">
+                  {listKey === "deductions" && (
+                    <label className="inline-flex items-center gap-1.5 text-xs text-fg-secondary">
+                      <input type="checkbox" className="h-4 w-4 accent-brand-600" {...form.register(`${base}.preTax`)} />
+                      Pre-tax
+                    </label>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => remove(i)}
+                    className="inline-flex items-center gap-1 rounded text-xs font-medium text-fg-muted hover:text-danger"
+                    aria-label={`Remove the ${name} line`}
+                  >
+                    <Trash2Icon aria-hidden="true" className="h-3.5 w-3.5" />
+                    Remove
+                  </button>
+                </div>
               </div>
               <div className={cn("grid gap-3", listKey === "earnings" ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2")}>
                 {listKey === "earnings" && (
@@ -162,6 +187,24 @@ function AmountTable({ form, listKey, title, hint, conf }: { form: Form; listKey
           );
         })}
       </ul>
+      )}
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        <Select
+          aria-label={`Type of ${title.toLowerCase()} line to add`}
+          value={addType}
+          onChange={(e) => setAddType(e.target.value)}
+          className="w-auto py-1.5 text-sm"
+        >
+          {types.map(([t, label]) => (
+            <option key={t} value={t}>
+              {label}
+            </option>
+          ))}
+        </Select>
+        <Button type="button" variant="secondary" size="sm" icon={<PlusIcon aria-hidden="true" className="h-4 w-4" />} onClick={() => append(newLine(listKey, addType))}>
+          Add a line
+        </Button>
+      </div>
     </fieldset>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "@/lib/api-client";
 import { ANNUAL_PRICE_LABEL } from "@/lib/plan";
 import { CircleCheckIcon } from "lucide-react";
@@ -17,6 +17,16 @@ export const ANNUAL_FEATURES = [
 export function Paywall({ title, reason }: { title: string; reason: string }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // The browser's Back button from Stripe restores this page from the back/forward cache with the button
+  // still "Opening checkout…"; reset it so the user can try again.
+  useEffect(() => {
+    const onShow = (e: PageTransitionEvent) => {
+      if (e.persisted) setBusy(false);
+    };
+    window.addEventListener("pageshow", onShow);
+    return () => window.removeEventListener("pageshow", onShow);
+  }, []);
 
   const unlock = async () => {
     setBusy(true);

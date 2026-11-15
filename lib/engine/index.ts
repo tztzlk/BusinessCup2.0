@@ -94,6 +94,14 @@ export function runCheckup(data: HouseholdData, asOf: string = new Date().toISOS
       notes.push(`W-2 from ${w2.employerName}: add the last pay stub of ${taxYear} from this employer to reconcile it.`);
       continue;
     }
+    // A W-2 covers the whole year, so it can only be compared with the year-end totals on the last stub of
+    // the year. A stub from before December would show every box as "off" and suggest a W-2c for nothing.
+    if (last.payDate < `${taxYear}-12-01`) {
+      notes.push(
+        `W-2 from ${w2.employerName}: your latest pay stub from this job is from ${last.payDate}. Add the last pay stub of ${taxYear} (paid in December) to reconcile it.`,
+      );
+      continue;
+    }
     const r = reconcileW2(w2, last, employer.id, p);
     reconciliation.push({ employerId: employer.id, employerName: employer.employerName, rows: r.rows });
     findings.push(...r.findings);

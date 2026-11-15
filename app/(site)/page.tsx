@@ -39,7 +39,7 @@ const HOW_TO_TEST = [
     points: [
       "The same household after year end, with both W-2s in",
       "W-2 reconciliation catches a $1,560 box 12 D error",
-      "Mark a form received, download the accountant packet, add reminders to your calendar",
+      "Mark a form received, save the accountant packet as a PDF, add reminders to your calendar",
     ],
     cta: "Open the January view",
     href: "/demo/couple?view=january",
@@ -49,8 +49,8 @@ const HOW_TO_TEST = [
     points: [
       "Upload a PDF or a phone photo of a pay stub or W-2, or press “Try with a sample pay stub”",
       "Confirm the fields Claude read, then see your report",
-      "Get Annual on My report with the Stripe test card 4242 4242 4242 4242 (test mode, no charge)",
-      "Only confirmed fields are kept, encrypted; delete them anytime from My report",
+      "Get Annual on your report with the Stripe test card 4242 4242 4242 4242 (test mode, no charge)",
+      "Only confirmed fields are kept, encrypted; delete them anytime in Settings → Privacy & data",
     ],
     cta: "Check a pay stub",
     href: "/upload",

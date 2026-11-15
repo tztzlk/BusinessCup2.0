@@ -32,3 +32,14 @@ describe("demo couple", () => {
     expect(byForm["1099-INT:Bank"]).toBe("expected");
   });
 });
+
+describe("W-2 reconciliation needs the last pay stub of the year", () => {
+  it("with only a November stub, the W-2 is not reconciled and a note asks for the December stub", () => {
+    const data = coupleJanuary();
+    const noYearEnd = { ...data, documents: data.documents.filter((d) => !d.id.endsWith("_ye")) };
+    const r = runCheckup(noYearEnd, DEMO_JANUARY_AS_OF);
+    expect(r.reconciliation).toEqual([]);
+    expect(r.findings.some((f) => f.code.startsWith("W2_"))).toBe(false);
+    expect(r.notes.filter((n) => n.includes("paid in December"))).toHaveLength(2);
+  });
+});
