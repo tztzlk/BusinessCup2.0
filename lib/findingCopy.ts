@@ -31,6 +31,7 @@ type Kind = "usd" | "percent" | "rate" | "number" | "hours" | "date" | "text";
 const INPUTS: Record<string, [string, Kind]> = {
   // projection
   agi: ["Adjusted gross income", "usd"],
+  otherIncome: ["Other income (not withheld)", "usd"],
   standardDeduction: ["Standard deduction", "usd"],
   overtimeDeduction: ["Overtime deduction", "usd"],
   taxableIncome: ["Taxable income", "usd"],

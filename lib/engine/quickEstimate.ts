@@ -24,6 +24,10 @@ export interface QuickEstimateInput {
   step2Checked: boolean;
   /** Children claimed in W-4 Step 3 (on the higher-paying job's W-4, as the form instructs). */
   childrenOnW4: boolean;
+  /** Yearly income with nothing withheld (interest, side work). Added to AGI; 0 or missing = none. */
+  otherIncome?: number;
+  /** Extra withholding per paycheck already on the W-4 (Step 4(c)), on the higher-paying job. */
+  extraWithholdingPerPaycheck?: number;
 }
 
 /** Plain-English reason for the result, when one of the common causes applies. */
@@ -55,7 +59,7 @@ export interface QuickEstimateResult {
 
 const clean = (n: number) => (Number.isFinite(n) && n > 0 ? n : 0);
 
-function job(id: string, member: Member, salary: number, step2Checked: boolean, step3Credits: number): JobInput {
+function job(id: string, member: Member, salary: number, step2Checked: boolean, step3Credits: number, step4c: number): JobInput {
   const settings: EmploymentSettings = {
     id,
     member,
@@ -63,7 +67,7 @@ function job(id: string, member: Member, salary: number, step2Checked: boolean, 
     payType: "salary",
     annualSalary: salary,
     overtimeEligible: false,
-    w4: { step2Checked, step3Credits, step4aOtherIncome: 0, step4bDeductions: 0, step4cExtraWithholding: 0 },
+    w4: { step2Checked, step3Credits, step4aOtherIncome: 0, step4bDeductions: 0, step4cExtraWithholding: step4c },
   };
   return { settings, latestStub: null };
 }
@@ -76,9 +80,10 @@ function project(input: QuickEstimateInput, step2Checked: boolean, p: FederalPar
   const step3 = input.childrenOnW4 ? children * p.childTaxCredit.perChild : 0;
   const selfGetsCredits = salary >= spouse;
 
+  const extra = clean(input.extraWithholdingPerPaycheck ?? 0);
   const jobs: JobInput[] = [];
-  if (salary > 0) jobs.push(job("self", "self", salary, step2Checked, selfGetsCredits ? step3 : 0));
-  if (spouse > 0) jobs.push(job("spouse", "spouse", spouse, step2Checked, selfGetsCredits ? 0 : step3));
+  if (salary > 0) jobs.push(job("self", "self", salary, step2Checked, selfGetsCredits ? step3 : 0, selfGetsCredits ? extra : 0));
+  if (spouse > 0) jobs.push(job("spouse", "spouse", spouse, step2Checked, selfGetsCredits ? 0 : step3, selfGetsCredits ? 0 : extra));
   if (jobs.length === 0) return null;
 
   const profile: HouseholdProfile = {
@@ -88,7 +93,7 @@ function project(input: QuickEstimateInput, step2Checked: boolean, p: FederalPar
     otherDependents: 0,
     flags: { mortgage: false, bankInterest: false, brokerage: false, hsa: false },
   };
-  return { proj: projectYear(jobs, profile, p), earners: jobs.length, children };
+  return { proj: projectYear(jobs, profile, p, { otherIncome: clean(input.otherIncome ?? 0) }), earners: jobs.length, children };
 }
 
 export function quickEstimate(input: QuickEstimateInput, taxYear: number = SUPPORTED_YEARS[SUPPORTED_YEARS.length - 1]): QuickEstimateResult | null {
