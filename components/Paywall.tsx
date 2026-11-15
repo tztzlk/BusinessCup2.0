@@ -6,7 +6,7 @@ import { ANNUAL_PRICE_LABEL } from "@/lib/plan";
 import { CircleCheckIcon } from "lucide-react";
 import { Button, Card, Alert } from "./ui";
 
-const ANNUAL_FEATURES = [
+export const ANNUAL_FEATURES = [
   "Every pay stub for both earners, all year",
   "The exact W-4 Step 4(c) fix for each job",
   "January: tax-document checklist, W-2 reconciliation, accountant packet",

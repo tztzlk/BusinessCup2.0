@@ -7,7 +7,7 @@ import { ChecklistView, ChecksSummary, FindingCard, PaycheckHistoryTable, Projec
 import { Paywall } from "./Paywall";
 import { RemindersCard } from "./RemindersCard";
 import { useExplanations } from "./useExplanations";
-import { runCheckup } from "@/lib/engine";
+import { runCheckup, type CheckupResult } from "@/lib/engine";
 import { householdOverview } from "@/lib/engine/overview";
 import { inputRow } from "@/lib/findingCopy";
 import { money } from "@/lib/format";
@@ -16,6 +16,21 @@ import type { ChecklistItem, ChecklistStatus, HouseholdData } from "@/lib/types"
 
 // The checkup report: summary cards and Overview / Details / History / Tax season tabs.
 // Used by /report and by the demo households. Numbers come from lib/engine only.
+
+/**
+ * The January checklist from the engine (expectedDocs). W-2 rows come from uploaded W-2s (one per
+ * employer), so they keep the engine key; other forms map to the stored checklist row so status
+ * changes can be saved.
+ */
+export function checklistItemsFor(data: HouseholdData, result: CheckupResult): ChecklistItem[] {
+  return result.checklist.map((c) => ({
+    id: c.formType === "W-2" ? c.key : (data.checklist.find((x) => x.formType === c.formType)?.id ?? c.key),
+    formType: c.formType,
+    source: c.source,
+    status: c.status,
+    dueDate: c.dueDate,
+  }));
+}
 
 export type ReportTab = "overview" | "details" | "history" | "tax_season";
 
@@ -71,15 +86,7 @@ export function ReportBody({
     })
     .filter((x): x is W4Advice => x !== null);
 
-  // W-2 rows come from uploaded W-2s (one per employer), so they keep the engine key; other forms map to
-  // the stored checklist row so status changes can be saved.
-  const checklistItems: ChecklistItem[] = result.checklist.map((c) => ({
-    id: c.formType === "W-2" ? c.key : (data.checklist.find((x) => x.formType === c.formType)?.id ?? c.key),
-    formType: c.formType,
-    source: c.source,
-    status: c.status,
-    dueDate: c.dueDate,
-  }));
+  const checklistItems = checklistItemsFor(data, result);
   const hasW2 = data.documents.some((d) => d.docType === "w2");
   const received = checklistItems.filter((c) => c.status === "received").length;
   const taxSeasonStarted = hasW2 || data.checklist.length > 0;
