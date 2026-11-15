@@ -77,11 +77,50 @@ Rules:
 export const ACCEPTED_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp", "image/gif"] as const;
 export type AcceptedType = (typeof ACCEPTED_TYPES)[number];
 
-export { IMAGE_MAX_BYTES, PDF_MAX_BYTES, PDF_MAX_PAGES } from "./upload";
+export { IMAGE_MAX_BYTES, IMAGE_MAX_SIDE, PDF_MAX_BYTES, PDF_MAX_PAGES } from "./upload";
 
 const startsWith = (b: Uint8Array, sig: number[], offset = 0) =>
   b.length >= offset + sig.length && sig.every((v, i) => b[offset + i] === v);
 const ascii = (b: Uint8Array, from: number, to: number) => String.fromCharCode(...b.subarray(from, to));
+
+/**
+ * Pixel size read from the image header (JPEG SOF, PNG IHDR, WebP VP8/VP8L/VP8X, GIF), without decoding.
+ * Null when the header can't be read; the caller then lets Claude decide.
+ */
+export function imageSize(b: Uint8Array, type: AcceptedType): { width: number; height: number } | null {
+  const u16be = (i: number) => (b[i] << 8) | b[i + 1];
+  const u16le = (i: number) => b[i] | (b[i + 1] << 8);
+  const u24le = (i: number) => b[i] | (b[i + 1] << 8) | (b[i + 2] << 16);
+  const u32be = (i: number) => ((b[i] << 24) >>> 0) + (b[i + 1] << 16) + (b[i + 2] << 8) + b[i + 3];
+  if (type === "image/png" && b.length >= 24) return { width: u32be(16), height: u32be(20) };
+  if (type === "image/gif" && b.length >= 10) return { width: u16le(6), height: u16le(8) };
+  if (type === "image/webp" && b.length >= 30) {
+    const chunk = ascii(b, 12, 16);
+    if (chunk === "VP8X") return { width: u24le(24) + 1, height: u24le(27) + 1 };
+    if (chunk === "VP8L") {
+      const bits = b[21] | (b[22] << 8) | (b[23] << 16) | (b[24] << 24);
+      return { width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 };
+    }
+    if (chunk === "VP8 ") return { width: u16le(26) & 0x3fff, height: u16le(28) & 0x3fff };
+    return null;
+  }
+  if (type === "image/jpeg") {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) return null;
+      const marker = b[i + 1];
+      if (marker === 0xff) { i++; continue; } // fill byte
+      if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { i += 2; continue; } // no length
+      // SOF0..SOF15 except DHT (C4), JPG (C8) and DAC (CC) carry the frame size.
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+        return { width: u16be(i + 7), height: u16be(i + 5) };
+      }
+      if (marker === 0xda || marker === 0xd9) return null; // image data started without a frame header
+      i += 2 + u16be(i + 2);
+    }
+  }
+  return null;
+}
 
 /**
  * Detects the real file type from its first bytes; the browser-declared type is not trusted.

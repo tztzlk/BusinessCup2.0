@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { api, ApiError, FRIENDLY } from "@/lib/api-client";
+import { prepareUpload } from "@/lib/prepareUpload";
 import { uploadProblem } from "@/lib/upload";
 import type { ExtractResult } from "@/lib/types";
 
@@ -64,8 +65,13 @@ export function UploadQueueProvider({ children }: { children: ReactNode }) {
     if (!next) return;
     started.current.add(next.id);
     patch(next.id, { status: "reading", error: undefined });
-    api
-      .extract(next.file)
+    prepareUpload(next.file)
+      .then((file) => {
+        // Checked again after the photo is shrunk: the server enforces the same limits.
+        const problem = uploadProblem(file);
+        if (problem) throw new ApiError(400, problem, FRIENDLY[problem] ?? FRIENDLY.internal);
+        return api.extract(file);
+      })
       .then((res) => {
         if (res.documentType === "other")
           patch(next.id, { status: "error", retryable: false, error: res.warnings[0] ?? "This doesn't look like a pay stub or a W-2." });
@@ -84,7 +90,8 @@ export function UploadQueueProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((files: File[], opts?: { sample?: boolean }) => {
     const fresh: QueueItem[] = files.map((file) => {
-      const problem = uploadProblem(file);
+      // Photos are shrunk before upload, so only the raw-size limit applies here.
+      const problem = uploadProblem(file, { beforeResize: true });
       return problem
         ? { id: `f${nextId++}`, file, status: "error", retryable: false, error: FRIENDLY[problem], sample: opts?.sample }
         : { id: `f${nextId++}`, file, status: "queued", sample: opts?.sample };

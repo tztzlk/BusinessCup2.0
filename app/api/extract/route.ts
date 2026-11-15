@@ -5,7 +5,9 @@ import {
   countPdfPages,
   extractDocument,
   ExtractionError,
+  imageSize,
   IMAGE_MAX_BYTES,
+  IMAGE_MAX_SIDE,
   PDF_MAX_BYTES,
   PDF_MAX_PAGES,
   sniffType,
@@ -55,7 +57,14 @@ export async function POST(req: Request) {
     const type = sniffType(data);
     if (type === null || type === "heic") return badType();
     if (type !== "application/pdf" && data.length > IMAGE_MAX_BYTES) {
-      return json(413, "image_too_large", "Photos must be under 7 MB. Try a smaller photo or the PDF.");
+      return json(413, "image_too_large", "This photo is too large to read. Take a new photo of just the document, or upload the PDF.");
+    }
+    if (type !== "application/pdf") {
+      // Claude rejects images over IMAGE_MAX_SIDE px; say so instead of "could not be read".
+      const size = imageSize(data, type);
+      if (size && Math.max(size.width, size.height) > IMAGE_MAX_SIDE) {
+        return json(413, "image_too_large", "This photo is too large to read. Take a new photo of just the document, or upload the PDF.");
+      }
     }
     if (type === "application/pdf" && countPdfPages(data) > PDF_MAX_PAGES) {
       // 0 means the count is unknown (e.g. compressed object streams) and the file is allowed.

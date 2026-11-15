@@ -24,7 +24,7 @@ export class ApiError extends Error {
 }
 
 export const FRIENDLY: Record<string, string> = {
-  bad_type: "Upload a PDF, JPG, PNG or WebP. iPhone HEIC photos: export as JPG first.",
+  bad_type: "Upload a PDF, JPG, PNG or WebP. If this is an iPhone HEIC photo, open it in Safari or export it as JPG first.",
   bad_size: "File must be under 10 MB.",
   no_file: "Choose a file to upload.",
   rate_limited: "Too many requests. Try again in a few minutes.",
@@ -56,7 +56,7 @@ export const FRIENDLY: Record<string, string> = {
   too_large: "That's too much data to send at once.",
   duplicate_document: "This document is already saved for this job. Open your report to see it.",
   too_many_pages: "Upload a single pay stub or W-2 (up to 5 pages).",
-  image_too_large: "Photos must be under 7 MB. Try a smaller photo or the PDF.",
+  image_too_large: "This photo is too large to read. Take a new photo of just the document, or upload the PDF.",
 };
 
 const fieldLabel = (path: unknown): string | null =>

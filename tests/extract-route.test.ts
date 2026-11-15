@@ -20,6 +20,7 @@ vi.mock("@/lib/ratelimit", async () => await import("../lib/ratelimit"));
 // A fresh client per request keeps the per-IP limits out of the way.
 vi.mock("@/lib/household", () => ({ clientIpHash: async () => `ip-${h.ip++}`, currentSession: async () => null }));
 
+import { readFileSync } from "node:fs";
 import Anthropic from "@anthropic-ai/sdk";
 import { POST as extract } from "../app/api/extract/route";
 import { POST as explain } from "../app/api/explain/route";
@@ -125,6 +126,14 @@ describe("POST /api/extract", () => {
     const res = await extract(upload(big));
     expect(res.status).toBe(413);
     expect((await res.json()).error).toBe("image_too_large");
+  });
+
+  it("rejects photos over 8000 px on a side with a clear message, before calling Claude", async () => {
+    const wide = new Uint8Array(readFileSync("tests/fixtures/images/wide-9000x40.jpg"));
+    const res = await extract(upload(wide));
+    expect(res.status).toBe(413);
+    expect((await res.json()).error).toBe("image_too_large");
+    expect(h.create).not.toHaveBeenCalled();
   });
 
   it("rejects PDFs over 5 pages before calling Claude, allows unknown counts", async () => {
