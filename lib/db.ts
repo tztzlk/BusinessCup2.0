@@ -68,6 +68,8 @@ export function getDb(): Database.Database {
   try {
     conn.pragma("journal_mode = WAL");
     conn.pragma("foreign_keys = ON");
+    // Deleted rows are overwritten with zeros, so a deleted household leaves no ciphertext behind in free pages.
+    conn.pragma("secure_delete = ON");
     const current = conn.pragma("user_version", { simple: true }) as number;
     if (current > MIGRATIONS.length) {
       console.warn(`db: schema version ${current} is newer than this build (${MIGRATIONS.length})`);
