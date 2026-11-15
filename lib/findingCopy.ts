@@ -71,6 +71,9 @@ const INPUTS: Record<string, [string, Kind]> = {
   upToPercentOfPay: ["Matched up to", "percent"],
   annualPay: ["Annual pay", "usd"],
   missedThisYear: ["Missed so far this year", "usd"],
+  deferralLimit: ["Yearly 401(k) limit", "usd"],
+  deferralRoomLeft: ["401(k) room left this year", "usd"],
+  excessSocialSecurityCredit: ["Excess Social Security credit", "usd"],
   // W-2 reconciliation
   box: ["W-2 box", "text"],
   onW2: ["On W-2", "usd"],
@@ -101,13 +104,12 @@ function formatValue(v: number | string, kind: Kind): string {
   }
 }
 
-/** Label and formatted value for one entry of a finding's or projection's `inputs`. */
-export function inputRow(key: string, value: number | string): { label: string; value: string } {
-  const [label, kind] = INPUTS[key] ?? [humanize(key), typeof value === "number" ? "number" : "text"];
-  return { label, value: formatValue(value, kind) };
-}
-
-function humanize(key: string): string {
-  const s = key.replace(/([a-z0-9])([A-Z])/g, "$1 $2").toLowerCase();
-  return s.charAt(0).toUpperCase() + s.slice(1);
+/**
+ * Label and formatted value for one entry of a finding's or projection's `inputs`. All labels live in
+ * INPUTS above; a key that isn't there is shown as it is, never hidden.
+ */
+export function inputRow(key: string, value: number | string): { label: string; value: string; known: boolean } {
+  const known = INPUTS[key];
+  const [label, kind] = known ?? [key, typeof value === "number" ? "number" : "text"];
+  return { label, value: formatValue(value, kind), known: !!known };
 }
