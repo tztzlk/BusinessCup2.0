@@ -23,11 +23,11 @@ Built in 24 hours at Business Cup 2.0 by team ENUshniki.
 | What | Result | Details |
 |---|---|---|
 | Per-paycheck withholding vs IRS Pub. 15-T (2026) | All 4,350 wage-bracket amounts, all annual percentage-method values and 20 Worksheet 1A cases match | [docs/ENGINE-CROSSCHECK.md](docs/ENGINE-CROSSCHECK.md) |
-| Annual federal tax vs two open-source tax models (PolicyEngine-US, Tax-Calculator) | Within $0.01 on 11 households, incl. the 2026 overtime deduction and the $2,200 Child Tax Credit | [docs/ENGINE-CROSSCHECK.md](docs/ENGINE-CROSSCHECK.md) |
-| Document reading (Claude) on synthetic pay stubs and W-2s | 209 of 209 fields exact on 11 files (our own layouts, small sample) | [docs/EVAL-EXTRACT.md](docs/EVAL-EXTRACT.md) |
+| Annual federal tax vs two open-source tax models (PolicyEngine-US, Tax-Calculator) | Within $0.01 on 18 of 18 households vs PolicyEngine-US and 17 of 18 vs Tax-Calculator (the other differs by design), incl. the 2026 overtime deduction, the $2,200 Child Tax Credit and the EITC | [docs/ENGINE-CROSSCHECK.md](docs/ENGINE-CROSSCHECK.md) |
+| Document reading (Claude) | 209 of 209 fields exact on 11 synthetic files (our own layouts); 198 of 198 on the official 2026 IRS W-2 (PDF and simulated photo) and 4 published university pay stubs. Small samples, one run each | [docs/EVAL-EXTRACT.md](docs/EVAL-EXTRACT.md) |
 | Automated tests | `npm test` (Vitest), run in CI before every deploy | `tests/` |
 
-**Not supported yet:** state income tax, EITC, itemized deductions, self-employment (1099) tax, other income in the April projection, a job that ended mid-year (the projection assumes each job pays through December). Full list: the in-app [Accuracy](https://paytrail-enushniki.fly.dev/accuracy) page.
+**Not supported yet:** state income tax, itemized deductions, self-employment (1099) tax, other income in the April projection, a job that ended mid-year (the projection assumes each job pays through December, and a W-2 is reconciled only against a pay stub paid in December). Full list: the in-app [Accuracy](https://paytrail-enushniki.fly.dev/accuracy) page.
 
 ## Stack
 

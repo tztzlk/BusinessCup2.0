@@ -14,7 +14,7 @@ const UPDATED = "15 November 2026";
 const params = federalParams(2026);
 
 // Measured numbers only (rule 7). Update them when the measurement is re-run.
-// Tests: `npx vitest run`, 15 Nov 2026 (226 passed; the 1 skipped is the optional XCHECK_DUMP step).
+// Tests: `npx vitest run`, 15 Nov 2026 (268 passed; the 1 skipped is the optional XCHECK_DUMP step).
 // Reader: docs/EVAL-EXTRACT.md. Cross-checks: docs/ENGINE-CROSSCHECK.md.
 const READER = { fields: 209, exact: 209, files: 11, documents: 9 };
 const REPO = "https://github.com/tztzlk/BusinessCup2.0/blob/main";
@@ -104,7 +104,7 @@ const LIMITS = [
   "Age-based items are not modeled because we don't ask your age: the extra standard deduction and the new deduction for people 65 and older, and 401(k) catch-up contributions for ages 50+.",
   "The tips and car-loan interest deductions are not modeled.",
   "The overtime check uses the federal 40-hour workweek and assumes time-and-a-half. State daily-overtime rules, such as California's, and double time are not checked.",
-  "A job that ended during the year: the April projection assumes each job keeps paying through December.",
+  "A job that ended during the year: the April projection assumes each job keeps paying through December, and a W-2 is reconciled only against a pay stub paid in December.",
   "2026 tax rules, up to 4 jobs per household.",
   "The document reader was tested on clean, digitally made documents. Phone photos and real payroll layouts may read worse, which is why you confirm every field.",
 ];
