@@ -8,6 +8,7 @@ import { ProfileForm } from "@/components/ProfileForm";
 import { EmployerForm } from "@/components/EmployerForm";
 import { SaveLinkCard } from "@/components/SaveLinkCard";
 import { DeletionScope } from "@/components/DeletionScope";
+import { DocumentsList } from "@/components/settings/DocumentsList";
 import { Paywall } from "@/components/Paywall";
 import { BriefcaseIcon, CircleCheckIcon, FileTextIcon, HouseIcon, LockIcon, UserIcon } from "lucide-react";
 import { money, shortDate } from "@/lib/format";
@@ -247,6 +248,10 @@ export function AccountView() {
             </ul>
           </Card>
         )}
+      </Section>
+
+      <Section title="Documents" subtitle="Confirmed fields only, encrypted. Original files are never stored.">
+        <DocumentsList documents={data.documents} employers={data.employers} onDeleted={reload} />
       </Section>
 
       <Section title="Your data" subtitle="Confirmed fields only, encrypted with this account's key. Original files are never stored.">

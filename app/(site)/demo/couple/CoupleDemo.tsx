@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { ButtonLink, DemoBadge, Section } from "@/components/ui";
 import { HouseholdSummary } from "@/components/report";
-import { CheckupView } from "@/components/CheckupView";
+import { ReportBody } from "@/components/ReportBody";
 import { coupleJanuary, coupleNovember, DEMO_JANUARY_AS_OF, DEMO_NOVEMBER_AS_OF } from "@/lib/demo";
 import type { ChecklistItem, ChecklistStatus } from "@/lib/types";
 
@@ -48,10 +48,12 @@ export function CoupleDemo({ initialMode = "november" }: { initialMode?: "novemb
         </div>
       </div>
 
-      <CheckupView
+      <ReportBody
+        key={mode}
+        idBase={`demo-${mode}`}
         data={data}
         asOf={mode === "november" ? DEMO_NOVEMBER_AS_OF : DEMO_JANUARY_AS_OF}
-        mode={mode}
+        initialTab={mode === "november" ? "overview" : "tax_season"}
         onChecklistStatus={markReceived}
         packetTitle="Accountant packet — Alex & Jordan (sample, fictional)"
       />

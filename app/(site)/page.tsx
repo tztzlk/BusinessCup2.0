@@ -172,7 +172,7 @@ const PRIVACY = [
 ];
 
 // Only what the plans actually enforce today: lib/plan.ts, the 402s in app/api/documents and
-// app/api/checklist, and the locked sections of CheckupView. `true` = included, a string = included with a limit.
+// app/api/checklist, and the locked sections of ReportBody. `true` = included, a string = included with a limit.
 const PLAN_ROWS: Array<[feature: string, free: string | boolean, annual: string | boolean]> = [
   ["Pay stub checkup, every finding in dollars", "1 pay stub", "Every pay stub, both earners"],
   ["April projection: owe or refund", true, true],

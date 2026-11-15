@@ -39,7 +39,7 @@ export function Tabs({
     refs.current[next]?.focus();
   };
   return (
-    <div role="tablist" aria-label={label} className={cn("no-print flex gap-1 overflow-x-auto border-b border-border", className)}>
+    <div role="tablist" aria-label={label} className={cn("no-print flex gap-1 overflow-x-auto overflow-y-hidden border-b border-border [scrollbar-width:none] [&::-webkit-scrollbar]:hidden", className)}>
       {tabs.map((t, i) => {
         const active = t.id === value;
         return (
@@ -57,7 +57,7 @@ export function Tabs({
             onClick={() => onChange(t.id)}
             onKeyDown={(e) => move(e, i)}
             className={cn(
-              "-mb-px inline-flex items-center gap-2 whitespace-nowrap border-b-2 px-3 py-2.5 text-sm font-medium transition-colors sm:px-4",
+              "-mb-px inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap border-b-2 px-2.5 py-2.5 text-sm font-medium transition-colors sm:gap-2 sm:px-4",
               active ? "border-primary text-brand-700" : "border-transparent text-fg-secondary hover:border-border-strong hover:text-fg-primary",
             )}
           >
