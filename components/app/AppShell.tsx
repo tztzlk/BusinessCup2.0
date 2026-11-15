@@ -4,7 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
+  BookOpenIcon,
+  CalculatorIcon,
   CreditCardIcon,
+  HistoryIcon,
   LayoutDashboardIcon,
   LinkIcon,
   LockIcon,
@@ -48,9 +51,11 @@ interface NavItem {
   also?: string[];
 }
 
-// History, Calculator and Resources join this list together with their pages.
 const NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboardIcon, also: ["/upload", "/report"] },
+  { href: "/history", label: "History", icon: HistoryIcon },
+  { href: "/calculator", label: "Calculator", icon: CalculatorIcon },
+  { href: "/resources", label: "Resources", icon: BookOpenIcon },
   { href: "/settings", label: "Settings", icon: SettingsIcon },
 ];
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { AccountView } from "./AccountView";
+import { SettingsView } from "./SettingsView";
 
-export const metadata: Metadata = { title: "My account — PayTrail" };
+export const metadata: Metadata = { title: "Settings — PayTrail" };
 
-export default function AccountPage() {
-  return <AccountView />;
+export default function SettingsPage() {
+  return <SettingsView />;
 }
