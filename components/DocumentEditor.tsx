@@ -1,13 +1,28 @@
 "use client";
 
-import { useId } from "react";
-import type { Confidence, Paystub, W2 } from "@/lib/types";
-import { inputClass } from "./ui";
+import type { ReactNode } from "react";
+import { get, type FieldValues, type UseFormReturn } from "react-hook-form";
+import { ConfidenceBadge, Input, Select, cn } from "./ui";
+import { optionalNumber, requiredNumber } from "@/lib/formSchemas";
+import type { Confidence, Paystub } from "@/lib/types";
 
-// Editable confirmation forms for extracted documents. Fields the model flagged as
-// uncertain are highlighted (medium = amber, low = red) with a short hint to compare with the document.
+// Confirmation forms for an extracted pay stub or W-2, driven by React Hook Form. The form's values
+// are { employerId, fields }; `fields` is checked with the API's PaystubSchema / W2Schema on submit.
+// Every field shows how sure the reader was; medium and low are highlighted with "Please verify".
 
 type ConfidenceMap = Record<string, Confidence>;
+type Form = UseFormReturn<FieldValues>;
+
+/** "fields.earnings.0.current" → "earnings[0].current", the reader's path format. */
+export function confidencePath(name: string): string {
+  return name.replace(/^fields\./, "").replace(/\.(\d+)(?=\.|$)/g, "[$1]");
+}
+
+const FLAG: Record<Confidence, string> = {
+  high: "",
+  medium: "border-warning bg-warning-soft/60 ring-1 ring-warning-border",
+  low: "border-danger bg-danger-soft/60 ring-1 ring-danger-border",
+};
 
 const PAY_FREQUENCIES: Array<[Paystub["payFrequency"], string]> = [
   ["weekly", "Weekly"],
@@ -17,121 +32,77 @@ const PAY_FREQUENCIES: Array<[Paystub["payFrequency"], string]> = [
   ["unknown", "Not sure"],
 ];
 
-function tone(conf: ConfidenceMap, path: string): string {
-  const c = conf[path];
-  if (c === "low") return "border-rose-400 bg-rose-50 ring-1 ring-rose-200";
-  if (c === "medium") return "border-amber-400 bg-amber-50 ring-1 ring-amber-200";
-  return "";
-}
-
-const CHECK_HINT = "Check this against your document";
-
-/** Hint under a field the model was unsure about; the input points to it with aria-describedby. */
-function FlagHint({ id, conf, path }: { id: string; conf: ConfidenceMap; path: string }) {
-  const c = conf[path];
-  if (!c) return null;
-  return (
-    <span id={id} className={`mt-0.5 block text-[11px] leading-tight ${c === "low" ? "text-rose-700" : "text-amber-700"}`}>
-      {c === "low" ? "Likely misread. " : ""}
-      {CHECK_HINT}
-    </span>
-  );
-}
-
-function NumberInput({
-  value,
-  onChange,
-  path,
+function FieldShell({
+  form,
+  name,
+  label,
   conf,
-  nullable = false,
-  ariaLabel,
+  children,
+  compact = false,
 }: {
-  value: number | null;
-  onChange: (v: number | null) => void;
-  path: string;
+  form: Form;
+  name: string;
+  label: string;
   conf: ConfidenceMap;
-  nullable?: boolean;
-  ariaLabel: string;
+  children: (props: { id: string; className: string; "aria-describedby"?: string; "aria-invalid"?: boolean }) => ReactNode;
+  compact?: boolean;
 }) {
-  const hintId = useId();
+  const level = conf[confidencePath(name)];
+  const error = (get(form.formState.errors, name) as { message?: string } | undefined)?.message;
+  const id = `doc-${name.replace(/\./g, "-")}`;
+  const flagged = level === "medium" || level === "low";
+  const describedBy = [error ? `${id}-error` : null, flagged ? `${id}-flag` : null].filter(Boolean).join(" ") || undefined;
   return (
-    <>
-      <input
-        type="number"
-        inputMode="decimal"
-        step="0.01"
-        aria-label={ariaLabel}
-        aria-describedby={conf[path] ? hintId : undefined}
-        aria-invalid={conf[path] === "low" || undefined}
-        className={`${inputClass} px-2 text-right font-mono [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none ${tone(conf, path)}`}
-        value={value ?? ""}
-        placeholder={nullable ? "—" : "0.00"}
-        onChange={(e) => {
-          const raw = e.target.value;
-          if (raw === "") onChange(nullable ? null : 0);
-          else {
-            const n = Number(raw);
-            if (!Number.isNaN(n)) onChange(n);
-          }
-        }}
-      />
-      <FlagHint id={hintId} conf={conf} path={path} />
-    </>
-  );
-}
-
-function TextInput({
-  value,
-  onChange,
-  path,
-  conf,
-  type = "text",
-  ariaLabel,
-}: {
-  value: string;
-  onChange: (v: string) => void;
-  path: string;
-  conf: ConfidenceMap;
-  type?: string;
-  ariaLabel: string;
-}) {
-  const hintId = useId();
-  return (
-    <>
-      <input
-        type={type}
-        aria-label={ariaLabel}
-        aria-describedby={conf[path] ? hintId : undefined}
-        aria-invalid={conf[path] === "low" || undefined}
-        className={`${inputClass} ${tone(conf, path)}`}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
-      <FlagHint id={hintId} conf={conf} path={path} />
-    </>
-  );
-}
-
-function Labeled({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="text-sm">
-      <span className="mb-1 block font-medium text-slate-700">{label}</span>
-      {children}
+    <div className="min-w-0">
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-1">
+        <label htmlFor={id} className={cn("font-medium text-fg-primary", compact ? "text-xs" : "text-sm")}>
+          {label}
+        </label>
+        <ConfidenceBadge level={level} compact />
+      </div>
+      {children({ id, className: level ? FLAG[level] : "", "aria-describedby": describedBy, "aria-invalid": !!error || level === "low" || undefined })}
+      {flagged && (
+        <span id={`${id}-flag`} className={cn("mt-0.5 block text-xs font-medium", level === "low" ? "text-danger" : "text-warning")}>
+          {level === "low" ? "Likely misread. " : ""}Compare with your document.
+        </span>
+      )}
+      {error && (
+        <span id={`${id}-error`} className="mt-0.5 block text-xs font-medium text-danger">
+          {error}
+        </span>
+      )}
     </div>
   );
 }
 
-type Row = { type: string; current: number; ytd: number | null };
+function NumberField({ form, name, label, conf, nullable = false, compact }: { form: Form; name: string; label: string; conf: ConfidenceMap; nullable?: boolean; compact?: boolean }) {
+  return (
+    <FieldShell form={form} name={name} label={label} conf={conf} compact={compact}>
+      {(p) => (
+        <Input
+          {...p}
+          type="number"
+          inputMode="decimal"
+          step="0.01"
+          placeholder={nullable ? "—" : "0.00"}
+          className={cn("px-2 text-right tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none", p.className)}
+          {...form.register(name, { setValueAs: nullable ? (v: unknown) => optionalNumber(v) ?? null : requiredNumber })}
+        />
+      )}
+    </FieldShell>
+  );
+}
+
+function TextField({ form, name, label, conf, type = "text" }: { form: Form; name: string; label: string; conf: ConfidenceMap; type?: string }) {
+  return (
+    <FieldShell form={form} name={name} label={label} conf={conf}>
+      {(p) => <Input {...p} type={type} {...form.register(name)} />}
+    </FieldShell>
+  );
+}
 
 const ITEM_LABELS: Record<string, Record<string, string>> = {
-  earnings: {
-    regular: "Regular pay",
-    overtime: "Overtime",
-    bonus: "Bonus",
-    pto: "Paid time off",
-    holiday: "Holiday pay",
-    other: "Other earnings",
-  },
+  earnings: { regular: "Regular pay", overtime: "Overtime", bonus: "Bonus", pto: "Paid time off", holiday: "Holiday pay", other: "Other earnings" },
   taxes: {
     federal_income: "Federal income tax",
     social_security: "Social Security",
@@ -150,232 +121,92 @@ const ITEM_LABELS: Record<string, Record<string, string>> = {
     fsa: "FSA",
     other: "Other deduction",
   },
-  employerContributions: {
-    "401k_match": "401(k) match",
-    hsa: "HSA contribution",
-    other: "Other",
-  },
+  employerContributions: { "401k_match": "401(k) match", hsa: "HSA contribution", other: "Other" },
 };
 
-function itemLabel(listKey: string, type: string): string {
-  return ITEM_LABELS[listKey]?.[type] ?? type.replace(/_/g, " ");
-}
+type ListKey = "earnings" | "taxes" | "deductions" | "employerContributions";
 
-function Mini({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="min-w-0">
-      <span className="mb-0.5 block text-xs text-slate-500">{label}</span>
-      {children}
-    </div>
-  );
-}
-
-function AmountTable<T extends Row>({
-  title,
-  hint,
-  listKey,
-  rows,
-  conf,
-  onRowChange,
-  extra,
-  aside,
-}: {
-  title: string;
-  hint?: string;
-  listKey: string;
-  rows: T[];
-  conf: ConfidenceMap;
-  onRowChange: (i: number, row: T) => void;
-  /** Extra inputs placed before the amounts (e.g. hours and rate). */
-  extra?: (row: T, i: number, name: string) => React.ReactNode;
-  /** Small control shown next to the item name (e.g. pre-tax checkbox). */
-  aside?: (row: T, i: number) => React.ReactNode;
-}) {
+function AmountTable({ form, listKey, title, hint, conf }: { form: Form; listKey: ListKey; title: string; hint?: string; conf: ConfidenceMap }) {
+  const rows = (form.watch(`fields.${listKey}`) ?? []) as Array<{ type: string; preTax?: boolean }>;
   if (rows.length === 0) return null;
   return (
-    <div className="mt-6">
-      <h4 className="text-sm font-semibold text-slate-800">{title}</h4>
-      {hint && <p className="text-xs text-slate-500">{hint}</p>}
-      <ul className="mt-2 divide-y divide-slate-100 rounded-lg border border-slate-200">
+    <fieldset className="mt-6">
+      <legend className="text-sm font-semibold text-fg-primary">{title}</legend>
+      {hint && <p className="text-[13px] text-fg-muted">{hint}</p>}
+      <ul className="mt-2 divide-y divide-border rounded-control border border-border">
         {rows.map((row, i) => {
-          const name = itemLabel(listKey, row.type);
+          const name = ITEM_LABELS[listKey]?.[row.type] ?? row.type.replace(/_/g, " ");
+          const base = `fields.${listKey}.${i}`;
           return (
-            <li key={i} className="grid gap-2 px-3 py-3 sm:grid-cols-[11rem_1fr] sm:items-end">
-              <div className="flex items-center justify-between gap-2 sm:block sm:pb-2">
-                <p className="text-sm font-medium text-slate-800">{name}</p>
-                {aside?.(row, i)}
+            <li key={i} className="px-3 py-3">
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-sm font-medium text-fg-primary">{name}</p>
+                {listKey === "deductions" && (
+                  <label className="inline-flex items-center gap-1.5 text-xs text-fg-secondary">
+                    <input type="checkbox" className="h-4 w-4 accent-brand-600" {...form.register(`${base}.preTax`)} />
+                    Pre-tax
+                  </label>
+                )}
               </div>
-              <div className={`grid gap-2 ${extra ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2"}`}>
-                {extra?.(row, i, name)}
-                <Mini label="This paycheck">
-                  <NumberInput
-                    ariaLabel={`${name} this paycheck`}
-                    value={row.current}
-                    path={`${listKey}[${i}].current`}
-                    conf={conf}
-                    onChange={(v) => onRowChange(i, { ...row, current: v ?? 0 })}
-                  />
-                </Mini>
-                <Mini label="Year to date">
-                  <NumberInput
-                    ariaLabel={`${name} year to date`}
-                    value={row.ytd}
-                    nullable
-                    path={`${listKey}[${i}].ytd`}
-                    conf={conf}
-                    onChange={(v) => onRowChange(i, { ...row, ytd: v })}
-                  />
-                </Mini>
+              <div className={cn("grid gap-3", listKey === "earnings" ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2")}>
+                {listKey === "earnings" && (
+                  <>
+                    <NumberField compact form={form} conf={conf} name={`${base}.hours`} label="Hours" nullable />
+                    <NumberField compact form={form} conf={conf} name={`${base}.rate`} label="Rate ($/h)" nullable />
+                  </>
+                )}
+                <NumberField compact form={form} conf={conf} name={`${base}.current`} label="This paycheck" />
+                <NumberField compact form={form} conf={conf} name={`${base}.ytd`} label="Year to date" nullable />
               </div>
             </li>
           );
         })}
       </ul>
-    </div>
+    </fieldset>
   );
 }
 
-export function PaystubEditor({
-  value,
-  onChange,
-  confidence,
-}: {
-  value: Paystub;
-  onChange: (v: Paystub) => void;
-  confidence: ConfidenceMap;
-}) {
-  const formId = useId();
-  const set = <K extends keyof Paystub>(key: K, v: Paystub[K]) => onChange({ ...value, [key]: v });
-  const setRow =
-    <K extends "earnings" | "taxes" | "deductions" | "employerContributions">(key: K) =>
-    (i: number, row: Paystub[K][number]) => {
-      const list = [...value[key]] as Paystub[K][number][];
-      list[i] = row;
-      onChange({ ...value, [key]: list });
-    };
-
+export function PaystubEditor({ form, confidence }: { form: Form; confidence: ConfidenceMap }) {
+  const freqLevel = confidence.payFrequency;
   return (
     <div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Labeled label="Employer">
-          <TextInput ariaLabel="Employer" value={value.employerName} path="employerName" conf={confidence} onChange={(v) => set("employerName", v)} />
-        </Labeled>
-        <Labeled label="Pay date">
-          <TextInput ariaLabel="Pay date" type="date" value={value.payDate} path="payDate" conf={confidence} onChange={(v) => set("payDate", v)} />
-        </Labeled>
-        <Labeled label="Period start">
-          <TextInput
-            ariaLabel="Period start"
-            type="date"
-            value={value.payPeriodStart}
-            path="payPeriodStart"
-            conf={confidence}
-            onChange={(v) => set("payPeriodStart", v)}
-          />
-        </Labeled>
-        <Labeled label="Period end">
-          <TextInput
-            ariaLabel="Period end"
-            type="date"
-            value={value.payPeriodEnd}
-            path="payPeriodEnd"
-            conf={confidence}
-            onChange={(v) => set("payPeriodEnd", v)}
-          />
-        </Labeled>
-        <Labeled label="Pay frequency">
-          <select
-            aria-label="Pay frequency"
-            className={`${inputClass} ${tone(confidence, "payFrequency")}`}
-            value={value.payFrequency}
-            onChange={(e) => set("payFrequency", e.target.value as Paystub["payFrequency"])}
-            aria-describedby={confidence.payFrequency ? `${formId}-freq-hint` : undefined}
-          >
-            {PAY_FREQUENCIES.map(([f, text]) => (
-              <option key={f} value={f}>
-                {text}
-              </option>
-            ))}
-          </select>
-          <FlagHint id={`${formId}-freq-hint`} conf={confidence} path="payFrequency" />
-        </Labeled>
-        <div className="grid grid-cols-3 gap-2 sm:col-span-2">
-          <Labeled label="Gross pay">
-            <NumberInput ariaLabel="Gross pay this paycheck" value={value.grossCurrent} path="grossCurrent" conf={confidence} onChange={(v) => set("grossCurrent", v ?? 0)} />
-          </Labeled>
-          <Labeled label="Net pay">
-            <NumberInput ariaLabel="Net pay this paycheck" value={value.netCurrent} path="netCurrent" conf={confidence} onChange={(v) => set("netCurrent", v ?? 0)} />
-          </Labeled>
-          <Labeled label="Gross YTD">
-            <NumberInput ariaLabel="Gross year to date" value={value.grossYtd} nullable path="grossYtd" conf={confidence} onChange={(v) => set("grossYtd", v)} />
-          </Labeled>
-        </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField form={form} conf={confidence} name="fields.employerName" label="Employer" />
+        <TextField form={form} conf={confidence} name="fields.payDate" label="Pay date" type="date" />
+        <TextField form={form} conf={confidence} name="fields.payPeriodStart" label="Period start" type="date" />
+        <TextField form={form} conf={confidence} name="fields.payPeriodEnd" label="Period end" type="date" />
+        <FieldShell form={form} conf={confidence} name="fields.payFrequency" label="Pay frequency">
+          {(p) => (
+            <Select {...p} className={freqLevel ? FLAG[freqLevel] : undefined} {...form.register("fields.payFrequency")}>
+              {PAY_FREQUENCIES.map(([f, text]) => (
+                <option key={f} value={f}>
+                  {text}
+                </option>
+              ))}
+            </Select>
+          )}
+        </FieldShell>
       </div>
-
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <NumberField form={form} conf={confidence} name="fields.grossCurrent" label="Gross pay" />
+        <NumberField form={form} conf={confidence} name="fields.netCurrent" label="Net pay" />
+        <NumberField form={form} conf={confidence} name="fields.grossYtd" label="Gross YTD" nullable />
+      </div>
+      <AmountTable form={form} conf={confidence} listKey="earnings" title="Earnings" hint="Hours and rate are optional for salaried pay." />
+      <AmountTable form={form} conf={confidence} listKey="taxes" title="Taxes withheld" />
       <AmountTable
-        title="Earnings"
-        listKey="earnings"
-        rows={value.earnings}
+        form={form}
         conf={confidence}
-        onRowChange={setRow("earnings")}
-        hint="Hours and rate are optional for salaried pay."
-        extra={(row, i, name) => (
-          <>
-            <Mini label="Hours">
-              <NumberInput
-                ariaLabel={`${name} hours`}
-                value={row.hours}
-                nullable
-                path={`earnings[${i}].hours`}
-                conf={confidence}
-                onChange={(v) => setRow("earnings")(i, { ...row, hours: v })}
-              />
-            </Mini>
-            <Mini label="Rate ($/h)">
-              <NumberInput
-                ariaLabel={`${name} hourly rate`}
-                value={row.rate}
-                nullable
-                path={`earnings[${i}].rate`}
-                conf={confidence}
-                onChange={(v) => setRow("earnings")(i, { ...row, rate: v })}
-              />
-            </Mini>
-          </>
-        )}
-      />
-      <AmountTable title="Taxes withheld" listKey="taxes" rows={value.taxes} conf={confidence} onRowChange={setRow("taxes")} />
-      <AmountTable
+        listKey="deductions"
         title="Deductions"
         hint="Pre-tax deductions lower your taxable wages. Untick if the stub lists it as after-tax."
-        listKey="deductions"
-        rows={value.deductions}
-        conf={confidence}
-        onRowChange={setRow("deductions")}
-        aside={(row, i) => (
-          <label className="inline-flex items-center gap-1 text-xs text-slate-600">
-            <input
-              type="checkbox"
-              checked={row.preTax}
-              onChange={(e) => setRow("deductions")(i, { ...row, preTax: e.target.checked })}
-            />
-            Pre-tax
-          </label>
-        )}
       />
-      <AmountTable
-        title="Paid by your employer"
-        hint="Not taken from your pay, e.g. the 401(k) match."
-        listKey="employerContributions"
-        rows={value.employerContributions}
-        conf={confidence}
-        onRowChange={setRow("employerContributions")}
-      />
+      <AmountTable form={form} conf={confidence} listKey="employerContributions" title="Paid by your employer" hint="Not taken from your pay, e.g. the 401(k) match." />
     </div>
   );
 }
 
-const W2_BOXES: Array<[keyof W2, string]> = [
+const W2_BOXES: Array<[string, string]> = [
   ["box1Wages", "Box 1 · Wages, tips, other comp."],
   ["box2FederalWithheld", "Box 2 · Federal income tax withheld"],
   ["box3SsWages", "Box 3 · Social Security wages"],
@@ -384,80 +215,44 @@ const W2_BOXES: Array<[keyof W2, string]> = [
   ["box6MedicareWithheld", "Box 6 · Medicare tax withheld"],
 ];
 
-export function W2Editor({ value, onChange, confidence }: { value: W2; onChange: (v: W2) => void; confidence: ConfidenceMap }) {
+export function W2Editor({ form, confidence }: { form: Form; confidence: ConfidenceMap }) {
+  const box12 = (form.watch("fields.box12") ?? []) as Array<{ code: string }>;
   return (
     <div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <Labeled label="Employer">
-          <TextInput
-            ariaLabel="Employer"
-            value={value.employerName}
-            path="employerName"
-            conf={confidence}
-            onChange={(v) => onChange({ ...value, employerName: v })}
-          />
-        </Labeled>
-        <Labeled label="Tax year">
-          <NumberInput
-            ariaLabel="Tax year"
-            value={value.taxYear}
-            path="taxYear"
-            conf={confidence}
-            onChange={(v) => onChange({ ...value, taxYear: Math.round(v ?? value.taxYear) })}
-          />
-        </Labeled>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <TextField form={form} conf={confidence} name="fields.employerName" label="Employer" />
+        <FieldShell form={form} conf={confidence} name="fields.taxYear" label="Tax year">
+          {(p) => <Input {...p} type="number" inputMode="numeric" {...form.register("fields.taxYear", { setValueAs: requiredNumber })} />}
+        </FieldShell>
         {W2_BOXES.map(([key, text]) => (
-          <Labeled key={key} label={text}>
-            <NumberInput
-              ariaLabel={text}
-              value={value[key] as number}
-              path={key}
-              conf={confidence}
-              onChange={(v) => onChange({ ...value, [key]: v ?? 0 })}
-            />
-          </Labeled>
+          <NumberField key={key} form={form} conf={confidence} name={`fields.${key}`} label={text} />
         ))}
       </div>
-      {value.box12.length > 0 && (
-        <div className="mt-5">
-          <h4 className="text-sm font-semibold text-slate-800">Box 12</h4>
-          <p className="mb-2 text-xs text-slate-500">A letter code and an amount. Code D is your 401(k) contributions.</p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {value.box12.map((b, i) => (
-              <div key={i} className="flex items-center gap-2">
-                <span className="text-xs text-slate-500">12{String.fromCharCode(97 + i)}</span>
-                <input
-                  aria-label={`Box 12 code ${i + 1}`}
-                  className={`${inputClass} w-16 text-center font-mono ${tone(confidence, `box12[${i}].code`)}`}
-                  value={b.code}
-                  onChange={(e) => {
-                    const box12 = [...value.box12];
-                    box12[i] = { ...b, code: e.target.value.toUpperCase().slice(0, 3) };
-                    onChange({ ...value, box12 });
-                  }}
-                />
-                <NumberInput
-                  ariaLabel={`Box 12 amount ${i + 1}`}
-                  value={b.amount}
-                  path={`box12[${i}].amount`}
-                  conf={confidence}
-                  onChange={(v) => {
-                    const box12 = [...value.box12];
-                    box12[i] = { ...b, amount: v ?? 0 };
-                    onChange({ ...value, box12 });
-                  }}
-                />
+      {box12.length > 0 && (
+        <fieldset className="mt-6">
+          <legend className="text-sm font-semibold text-fg-primary">Box 12</legend>
+          <p className="mb-2 text-[13px] text-fg-muted">A letter code and an amount. Code D is your 401(k) contributions.</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {box12.map((_, i) => (
+              <div key={i} className="grid grid-cols-[5rem_1fr] gap-2">
+                <FieldShell compact form={form} conf={confidence} name={`fields.box12.${i}.code`} label={`12${String.fromCharCode(97 + i)} code`}>
+                  {(p) => (
+                    <Input
+                      {...p}
+                      maxLength={3}
+                      className={cn("text-center font-mono uppercase", p.className)}
+                      {...form.register(`fields.box12.${i}.code`, { setValueAs: (v: unknown) => String(v ?? "").toUpperCase() })}
+                    />
+                  )}
+                </FieldShell>
+                <NumberField compact form={form} conf={confidence} name={`fields.box12.${i}.amount`} label="Amount" />
               </div>
             ))}
           </div>
-        </div>
+        </fieldset>
       )}
-      <label className="mt-4 inline-flex items-center gap-2 text-sm text-slate-700">
-        <input
-          type="checkbox"
-          checked={value.box13RetirementPlan}
-          onChange={(e) => onChange({ ...value, box13RetirementPlan: e.target.checked })}
-        />
+      <label className="mt-4 inline-flex items-center gap-2 text-sm text-fg-secondary">
+        <input type="checkbox" className="h-4 w-4 accent-brand-600" {...form.register("fields.box13RetirementPlan")} />
         Box 13 · &ldquo;Retirement plan&rdquo; is checked
       </label>
     </div>
