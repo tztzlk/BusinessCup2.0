@@ -65,3 +65,19 @@ export function employerSettingsFrom(v: EmployerFormValues): z.infer<typeof Empl
     match401k: hasMatch ? match401k : undefined,
   };
 }
+
+/** /calculator: the inputs lib/engine/quickEstimate.ts takes. Amounts in dollars. */
+export const CalculatorSchema = z.object({
+  filingStatus: z.enum(["married_joint", "single", "head_of_household"]),
+  salary: z.number().finite().min(0).max(10_000_000),
+  spouseSalary: z.number().finite().min(0).max(10_000_000),
+  childrenUnder17: z.number().int().min(0).max(20),
+  otherIncome: z.number().finite().min(0).max(10_000_000),
+  extraWithholdingPerPaycheck: z.number().finite().min(0).max(100_000),
+  step2Checked: z.boolean(),
+  childrenOnW4: z.boolean(),
+}).refine((v) => v.salary > 0 || (v.filingStatus === "married_joint" && v.spouseSalary > 0), {
+  path: ["salary"],
+  message: "Enter an annual salary above $0.",
+});
+export type CalculatorValues = z.infer<typeof CalculatorSchema>;
