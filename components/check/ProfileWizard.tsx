@@ -1,6 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { formError, ProfileFormSchema, type ProfileFormValues } from "@/lib/formSchemas";
 import { inputClass } from "../ui";
 import { DEFAULT_HOUSEHOLD_PROFILE } from "../ProfileForm";
 import { CircleCheckIcon, HeartHandshakeIcon, HeartPulseIcon, HouseIcon, KeyRoundIcon, LandmarkIcon, MapPinIcon, TrendingUpIcon, UserIcon, UsersIcon } from "lucide-react";
@@ -32,7 +35,14 @@ const QUESTIONS = ["filing", "dependents", "state", "extras", "review"] as const
 type Q = (typeof QUESTIONS)[number];
 
 export function ProfileWizard({ onDone }: { onDone: (p: HouseholdProfile) => Promise<void> }) {
-  const [p, setP] = useState<HouseholdProfile>(DEFAULT_HOUSEHOLD_PROFILE);
+  // Answers live in React Hook Form; the API's zod schema checks them on save.
+  const form = useForm<ProfileFormValues, unknown, ProfileFormValues>({
+    resolver: zodResolver(ProfileFormSchema, { error: formError }),
+    defaultValues: DEFAULT_HOUSEHOLD_PROFILE as ProfileFormValues,
+  });
+  const p = form.watch() as HouseholdProfile;
+  const setP = (next: HouseholdProfile) =>
+    (Object.keys(next) as Array<keyof ProfileFormValues>).forEach((k) => form.setValue(k, next[k] as never, { shouldDirty: true }));
   const [q, setQ] = useState<Q>("filing");
   // After "Change" on the review screen, Continue goes straight back to the review.
   const [reviewing, setReviewing] = useState(false);
@@ -168,7 +178,10 @@ export function ProfileWizard({ onDone }: { onDone: (p: HouseholdProfile) => Pro
         setBusy(true);
         setErr(null);
         try {
-          await onDone(p);
+          await form.handleSubmit(
+            (values) => onDone(values as HouseholdProfile),
+            () => setErr("Check your answers: one of them isn't valid."),
+          )();
         } catch (e) {
           setErr(e instanceof Error ? e.message : "Something went wrong.");
         } finally {

@@ -2,14 +2,23 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { Button, Field, inputClass, Alert } from "./ui";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Alert, Button, Field, Input, Select, describedBy } from "./ui";
+import {
+  EmployerFormSchema,
+  employerFormValues,
+  employerSettingsFrom,
+  formError,
+  optionalNumber,
+  requiredNumber,
+  type EmployerFormValues,
+} from "@/lib/formSchemas";
 import type { EmploymentSettings } from "@/lib/types";
 
-// Job settings form, shared by the employer step of /check and "Edit job" on /report.
+// Job settings form (React Hook Form + the API's zod schema), used to add and edit jobs on /settings.
 
 export type EmployerSettings = Omit<EmploymentSettings, "id">;
-
-const DEFAULT_MATCH = { matchPercent: 50, upToPercentOfPay: 6 };
 
 export function newEmployerSettings(member: EmploymentSettings["member"]): EmployerSettings {
   return {
@@ -19,7 +28,7 @@ export function newEmployerSettings(member: EmploymentSettings["member"]): Emplo
     annualSalary: undefined,
     hourlyRate: undefined,
     overtimeEligible: false,
-    match401k: DEFAULT_MATCH,
+    match401k: { matchPercent: 50, upToPercentOfPay: 6 },
     w4: { step2Checked: false, step3Credits: 0, step4aOtherIncome: 0, step4bDeductions: 0, step4cExtraWithholding: 0 },
   };
 }
@@ -39,153 +48,163 @@ export function EmployerForm({
   onCancel?: () => void;
   cancelLabel?: string;
 }) {
-  const [s, setS] = useState<EmployerSettings>({ ...initial, match401k: initial.match401k ?? DEFAULT_MATCH });
-  // A job saved without a match rule opens with the box unchecked.
-  const [hasMatch, setHasMatch] = useState(initial.match401k !== undefined);
-  const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const num = (v: string) => (v === "" ? 0 : Number(v) || 0);
-  const w4 = (k: keyof EmploymentSettings["w4"], v: number | boolean) => setS({ ...s, w4: { ...s.w4, [k]: v } });
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<EmployerFormValues, unknown, EmployerFormValues>({ resolver: zodResolver(EmployerFormSchema, { error: formError }), defaultValues: employerFormValues(initial) });
+  const member = watch("member");
+  const payType = watch("payType");
+  const hasMatch = watch("hasMatch");
+
+  const submit = handleSubmit(async (values) => {
+    setErr(null);
+    try {
+      await onSubmit(employerSettingsFrom(values));
+    } catch (error) {
+      setErr(error instanceof Error ? error.message : "Something went wrong.");
+    }
+  });
+
+  const money = (name: "w4.step3Credits" | "w4.step4aOtherIncome" | "w4.step4bDeductions" | "w4.step4cExtraWithholding", label: string) => {
+    const id = `ef-${name.replace(".", "-")}`;
+    const error = name.split(".").reduce<unknown>((o, k) => (o as Record<string, unknown> | undefined)?.[k], errors) as { message?: string } | undefined;
+    return (
+      <Field label={label} htmlFor={id} error={error?.message}>
+        <Input
+          id={id}
+          type="number"
+          inputMode="decimal"
+          min={0}
+          invalid={!!error}
+          aria-describedby={describedBy(id, { error: !!error })}
+          {...register(name, { setValueAs: requiredNumber })}
+        />
+      </Field>
+    );
+  };
 
   return (
-    <form
-      className="grid gap-4 sm:grid-cols-2"
-      onSubmit={async (e) => {
-        e.preventDefault();
-        setBusy(true);
-        setErr(null);
-        try {
-          await onSubmit({
-            ...s,
-            annualSalary: s.payType === "salary" ? s.annualSalary : undefined,
-            hourlyRate: s.payType === "hourly" ? s.hourlyRate : undefined,
-            match401k: hasMatch ? s.match401k : undefined,
-          });
-        } catch (error) {
-          setErr(error instanceof Error ? error.message : "Something went wrong.");
-        } finally {
-          setBusy(false);
-        }
-      }}
-    >
-      <Field label="Whose job">
-        <select className={inputClass} value={s.member} onChange={(e) => setS({ ...s, member: e.target.value as "self" | "spouse" })}>
+    <form className="grid gap-4 sm:grid-cols-2" onSubmit={submit} noValidate>
+      <Field label="Whose job" htmlFor="ef-member">
+        <Select id="ef-member" {...register("member")}>
           <option value="self">Mine</option>
           <option value="spouse">My spouse&apos;s</option>
-        </select>
+        </Select>
       </Field>
-      {s.member === "spouse" && notMarried && (
+      {member === "spouse" && notMarried && (
         <div className="sm:col-span-2">
           <Alert tone="warning">
-            Your household is set to file as single or head of household, so the forecast won&apos;t count a spouse&apos;s
-            income the way a joint return does. If you&apos;re married, change the filing status on your{" "}
-            <Link href="/report" className="font-medium underline">
-              report
-            </Link>{" "}
-            (Edit profile). If this is your own second job, choose &quot;Mine&quot;.
+            Your household is set to file as single or head of household, so the forecast won&apos;t count a spouse&apos;s income the way a
+            joint return does. If you&apos;re married, change the filing status in{" "}
+            <Link href="/settings#profile" className="font-medium underline">
+              Settings
+            </Link>
+            . If this is your own second job, choose &quot;Mine&quot;.
           </Alert>
         </div>
       )}
-      <Field label="Employer name">
-        <input required maxLength={200} className={inputClass} value={s.employerName} onChange={(e) => setS({ ...s, employerName: e.target.value })} />
+      <Field label="Employer name" htmlFor="ef-name" error={errors.employerName?.message}>
+        <Input
+          id="ef-name"
+          maxLength={200}
+          invalid={!!errors.employerName}
+          aria-describedby={describedBy("ef-name", { error: !!errors.employerName })}
+          {...register("employerName")}
+        />
       </Field>
-      <Field label="Pay type">
-        <select className={inputClass} value={s.payType} onChange={(e) => setS({ ...s, payType: e.target.value as "salary" | "hourly" })}>
+      <Field label="Pay type" htmlFor="ef-paytype">
+        <Select id="ef-paytype" {...register("payType")}>
           <option value="salary">Salary</option>
           <option value="hourly">Hourly</option>
-        </select>
+        </Select>
       </Field>
-      {s.payType === "salary" ? (
-        <Field label="Annual salary (USD)">
-          <input
-            required
+      {payType === "salary" ? (
+        <Field label="Annual salary (USD)" htmlFor="ef-salary" error={errors.annualSalary?.message}>
+          <Input
+            id="ef-salary"
             type="number"
+            inputMode="decimal"
             min={0}
             step="1"
-            className={inputClass}
-            value={s.annualSalary ?? ""}
-            onChange={(e) => setS({ ...s, annualSalary: e.target.value === "" ? undefined : num(e.target.value) })}
+            invalid={!!errors.annualSalary}
+            aria-describedby={describedBy("ef-salary", { error: !!errors.annualSalary })}
+            {...register("annualSalary", { setValueAs: optionalNumber })}
           />
         </Field>
       ) : (
-        <Field label="Hourly rate (USD)">
-          <input
-            required
+        <Field label="Hourly rate (USD)" htmlFor="ef-rate" error={errors.hourlyRate?.message}>
+          <Input
+            id="ef-rate"
             type="number"
+            inputMode="decimal"
             min={0}
             step="0.01"
-            className={inputClass}
-            value={s.hourlyRate ?? ""}
-            onChange={(e) => setS({ ...s, hourlyRate: e.target.value === "" ? undefined : num(e.target.value) })}
+            invalid={!!errors.hourlyRate}
+            aria-describedby={describedBy("ef-rate", { error: !!errors.hourlyRate })}
+            {...register("hourlyRate", { setValueAs: optionalNumber })}
           />
         </Field>
       )}
-      <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
-        <input type="checkbox" checked={s.overtimeEligible} onChange={(e) => setS({ ...s, overtimeEligible: e.target.checked })} />
+      <label className="flex items-center gap-2 text-sm text-fg-secondary sm:col-span-2">
+        <input type="checkbox" className="h-4 w-4 accent-brand-600" {...register("overtimeEligible")} />
         Eligible for overtime pay (non-exempt)
       </label>
 
-      <div className="rounded-lg border border-slate-200 p-4 sm:col-span-2">
-        <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-          <input type="checkbox" checked={hasMatch} onChange={(e) => setHasMatch(e.target.checked)} />
+      <fieldset className="rounded-control border border-border p-4 sm:col-span-2">
+        <legend className="sr-only">401(k) match</legend>
+        <label className="flex items-center gap-2 text-sm font-medium text-fg-primary">
+          <input type="checkbox" className="h-4 w-4 accent-brand-600" {...register("hasMatch")} />
           Employer matches 401(k) contributions
         </label>
-        {hasMatch && s.match401k && (
+        {hasMatch && (
           <div className="mt-3 grid grid-cols-2 gap-3">
-            <Field label="Matches (%)" hint="e.g. 50 = 50 cents per dollar">
-              <input
+            <Field label="Matches (%)" hint="e.g. 50 = 50 cents per dollar" htmlFor="ef-match" error={errors.match401k?.matchPercent?.message}>
+              <Input
+                id="ef-match"
                 type="number"
+                inputMode="decimal"
                 min={0}
                 max={200}
-                className={inputClass}
-                value={s.match401k.matchPercent}
-                onChange={(e) => setS({ ...s, match401k: { ...s.match401k!, matchPercent: num(e.target.value) } })}
+                invalid={!!errors.match401k?.matchPercent}
+                aria-describedby={describedBy("ef-match", { hint: true, error: !!errors.match401k?.matchPercent })}
+                {...register("match401k.matchPercent", { setValueAs: requiredNumber })}
               />
             </Field>
-            <Field label="Up to (% of pay)">
-              <input
+            <Field label="Up to (% of pay)" htmlFor="ef-upto" error={errors.match401k?.upToPercentOfPay?.message}>
+              <Input
+                id="ef-upto"
                 type="number"
+                inputMode="decimal"
                 min={0}
                 max={100}
-                className={inputClass}
-                value={s.match401k.upToPercentOfPay}
-                onChange={(e) => setS({ ...s, match401k: { ...s.match401k!, upToPercentOfPay: num(e.target.value) } })}
+                invalid={!!errors.match401k?.upToPercentOfPay}
+                aria-describedby={describedBy("ef-upto", { error: !!errors.match401k?.upToPercentOfPay })}
+                {...register("match401k.upToPercentOfPay", { setValueAs: requiredNumber })}
               />
             </Field>
           </div>
         )}
-      </div>
+      </fieldset>
 
-      <div className="rounded-lg border border-slate-200 p-4 sm:col-span-2">
-        <p className="text-sm font-medium text-slate-700">Current W-4 at this job</p>
-        <p className="text-xs text-slate-500">
+      <fieldset className="rounded-control border border-border p-4 sm:col-span-2">
+        <legend className="px-1 text-sm font-medium text-fg-primary">Current W-4 at this job</legend>
+        <p className="text-[13px] text-fg-muted">
           From the W-4 you gave HR, or your payroll portal. Not sure? Leave the zeros — most people never fill these in.
         </p>
-        <label className="mt-3 flex items-center gap-2 text-sm text-slate-700">
-          <input type="checkbox" checked={s.w4.step2Checked} onChange={(e) => w4("step2Checked", e.target.checked)} />
+        <label className="mt-3 flex items-center gap-2 text-sm text-fg-secondary">
+          <input type="checkbox" className="h-4 w-4 accent-brand-600" {...register("w4.step2Checked")} />
           Step 2 checkbox is checked (multiple jobs / spouse works)
         </label>
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <Field label="Step 3 credits ($/yr)">
-            <input type="number" min={0} className={inputClass} value={s.w4.step3Credits} onChange={(e) => w4("step3Credits", num(e.target.value))} />
-          </Field>
-          <Field label="Step 4(a) other income ($/yr)">
-            <input type="number" min={0} className={inputClass} value={s.w4.step4aOtherIncome} onChange={(e) => w4("step4aOtherIncome", num(e.target.value))} />
-          </Field>
-          <Field label="Step 4(b) deductions ($/yr)">
-            <input type="number" min={0} className={inputClass} value={s.w4.step4bDeductions} onChange={(e) => w4("step4bDeductions", num(e.target.value))} />
-          </Field>
-          <Field label="Step 4(c) extra ($/paycheck)">
-            <input
-              type="number"
-              min={0}
-              className={inputClass}
-              value={s.w4.step4cExtraWithholding}
-              onChange={(e) => w4("step4cExtraWithholding", num(e.target.value))}
-            />
-          </Field>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {money("w4.step3Credits", "Step 3 credits ($/yr)")}
+          {money("w4.step4aOtherIncome", "Step 4(a) other income ($/yr)")}
+          {money("w4.step4bDeductions", "Step 4(b) deductions ($/yr)")}
+          {money("w4.step4cExtraWithholding", "Step 4(c) extra ($/paycheck)")}
         </div>
-      </div>
+      </fieldset>
 
       {err && (
         <div className="sm:col-span-2">
@@ -193,11 +212,11 @@ export function EmployerForm({
         </div>
       )}
       <div className="flex flex-col gap-3 sm:col-span-2 sm:flex-row">
-        <Button type="submit" disabled={busy}>
-          {busy ? "Saving…" : submitLabel}
+        <Button type="submit" loading={isSubmitting}>
+          {isSubmitting ? "Saving…" : submitLabel}
         </Button>
         {onCancel && (
-          <Button type="button" variant="secondary" onClick={onCancel} disabled={busy}>
+          <Button variant="secondary" onClick={onCancel} disabled={isSubmitting}>
             {cancelLabel}
           </Button>
         )}

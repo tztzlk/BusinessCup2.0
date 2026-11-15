@@ -2,18 +2,20 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button, Field, inputClass, Alert } from "../ui";
 import { newEmployerSettings, type EmployerSettings } from "../EmployerForm";
 import { BriefcaseIcon, CircleCheckIcon, ClockIcon, DollarSignIcon, FileTextIcon, PiggyBankIcon, UserIcon, UsersIcon } from "lucide-react";
 import { money } from "@/lib/format";
 import { AnswerList, ChoiceCard, QuestionShell } from "./Wizard";
 import type { EmploymentSettings } from "@/lib/types";
+import { EmployerFormSchema, employerFormValues, employerSettingsFrom, formError, type EmployerFormValues } from "@/lib/formSchemas";
 
 // The job part of /check, one topic per screen, ending with "Check your answers".
 
 const QUESTIONS = ["job", "pay", "match", "w4", "review"] as const;
 type Q = (typeof QUESTIONS)[number];
-const DEFAULT_MATCH = { matchPercent: 50, upToPercentOfPay: 6 };
 
 const num = (v: string) => (v === "" ? 0 : Number(v) || 0);
 
@@ -29,7 +31,15 @@ export function EmployerWizard({
   /** Shown when the household already has a job: go straight to upload. */
   onSkip?: () => void;
 }) {
-  const [s, setS] = useState<EmployerSettings>(() => newEmployerSettings(hasSelf ? "spouse" : "self"));
+  // Answers live in React Hook Form; the API's zod schema (lib/formSchemas.ts) checks them on save.
+  const form = useForm<EmployerFormValues, unknown, EmployerFormValues>({
+    resolver: zodResolver(EmployerFormSchema, { error: formError }),
+    defaultValues: employerFormValues(newEmployerSettings(hasSelf ? "spouse" : "self")),
+  });
+  const s = form.watch();
+  const setS = (next: Partial<EmployerFormValues>) =>
+    (Object.keys(next) as Array<keyof EmployerFormValues>).forEach((k) => form.setValue(k, next[k] as never, { shouldDirty: true }));
+  const errors = form.formState.errors;
   const [matchAnswer, setMatchAnswer] = useState<"yes" | "no" | "unsure" | null>(null);
   const hasMatch = matchAnswer === "yes";
   const [q, setQ] = useState<Q>("job");
@@ -46,7 +56,7 @@ export function EmployerWizard({
   };
   const common = { section: "Your job", index: i + 1, total: QUESTIONS.length, onBack: back };
   const w4 = (k: keyof EmploymentSettings["w4"], v: number | boolean) => setS({ ...s, w4: { ...s.w4, [k]: v } });
-  const match = s.match401k ?? DEFAULT_MATCH;
+  const match = s.match401k;
   const payOk = s.payType === "salary" ? (s.annualSalary ?? 0) > 0 : (s.hourlyRate ?? 0) > 0;
   const w4Changed =
     s.w4.step2Checked || s.w4.step3Credits > 0 || s.w4.step4aOtherIncome > 0 || s.w4.step4bDeductions > 0 || s.w4.step4cExtraWithholding > 0;
@@ -93,7 +103,7 @@ export function EmployerWizard({
           </div>
         )}
         <div className="mt-5 max-w-md">
-          <Field label="Employer name" hint="As it appears at the top of the pay stub.">
+          <Field error={errors.employerName?.message} label="Employer name" hint="As it appears at the top of the pay stub.">
             <input
               required
               maxLength={200}
@@ -141,7 +151,7 @@ export function EmployerWizard({
         </fieldset>
         <div className="mt-5 max-w-xs">
           {s.payType === "salary" ? (
-            <Field label="Annual salary (USD)">
+            <Field error={errors.annualSalary?.message} label="Annual salary (USD)">
               <input
                 type="number"
                 inputMode="decimal"
@@ -154,7 +164,7 @@ export function EmployerWizard({
               />
             </Field>
           ) : (
-            <Field label="Hourly rate (USD)">
+            <Field error={errors.hourlyRate?.message} label="Hourly rate (USD)">
               <input
                 type="number"
                 inputMode="decimal"
@@ -195,7 +205,7 @@ export function EmployerWizard({
         why="If you save less than the match, you leave free money on the table. We show exactly how much."
         continueDisabled={matchAnswer === null}
         onContinue={() => {
-          setS({ ...s, match401k: hasMatch ? match : undefined });
+          form.setValue("hasMatch", hasMatch);
           next();
         }}
       >
@@ -299,12 +309,10 @@ export function EmployerWizard({
         setBusy(true);
         setErr(null);
         try {
-          await onDone({
-            ...s,
-            employerName: s.employerName.trim(),
-            annualSalary: s.payType === "salary" ? s.annualSalary : undefined,
-            hourlyRate: s.payType === "hourly" ? s.hourlyRate : undefined,
-          });
+          await form.handleSubmit(
+            (values) => onDone(employerSettingsFrom(values)),
+            (invalid) => setErr(firstError(invalid) ?? "Check your answers."),
+          )();
         } catch (e) {
           setErr(e instanceof Error ? e.message : "Something went wrong.");
         } finally {
@@ -319,7 +327,7 @@ export function EmployerWizard({
           { label: "Pay", value: `${pay}${s.overtimeEligible ? " · overtime" : ""}`, onChange: change("pay") },
           {
             label: "401(k) match",
-            value: s.match401k ? `${s.match401k.matchPercent}% up to ${s.match401k.upToPercentOfPay}% of pay` : "None",
+            value: s.hasMatch ? `${s.match401k.matchPercent}% up to ${s.match401k.upToPercentOfPay}% of pay` : "None",
             onChange: change("match"),
           },
           { label: "W-4", value: w4Changed ? "Filled in" : "Left empty", onChange: change("w4") },
@@ -327,4 +335,16 @@ export function EmployerWizard({
       />
     </QuestionShell>
   );
+}
+
+/** The first zod message in a nested RHF error object, for the review screen. */
+function firstError(e: unknown): string | null {
+  if (!e || typeof e !== "object") return null;
+  const msg = (e as { message?: unknown }).message;
+  if (typeof msg === "string") return msg;
+  for (const v of Object.values(e)) {
+    const m = firstError(v);
+    if (m) return m;
+  }
+  return null;
 }
