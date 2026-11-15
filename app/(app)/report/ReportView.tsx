@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { FileSearchIcon, FlaskConicalIcon, PrinterIcon, UploadIcon } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeftIcon, FileSearchIcon, FlaskConicalIcon, PrinterIcon, UploadIcon } from "lucide-react";
 import { useHousehold } from "@/components/app/HouseholdProvider";
 import { ReportBody } from "@/components/ReportBody";
 import { SaveLinkCard } from "@/components/SaveLinkCard";
@@ -10,7 +11,8 @@ import { api, ApiError } from "@/lib/api-client";
 import { localDate, shortDate } from "@/lib/format";
 import { pendingDocumentLabel, takePendingDocument } from "@/lib/pendingDocument";
 import { isAnnual } from "@/lib/plan";
-import type { ChecklistItem, ChecklistStatus } from "@/lib/types";
+import { householdAsOfStub } from "@/lib/engine/history";
+import type { ChecklistItem, ChecklistStatus, Paystub } from "@/lib/types";
 
 export function ReportView() {
   const toast = useToast();
@@ -18,12 +20,15 @@ export function ReportView() {
   const [checkoutNotice, setCheckoutNotice] = useState<"upgraded" | "cancelled" | null>(null);
   const [pendingNotice, setPendingNotice] = useState<{ tone: "success" | "warning"; text: string } | null>(null);
   const [today, setToday] = useState<string | null>(null);
+  // /report?stub=<id> (from History): the checkup as it looked on that pay stub.
+  const [stubId, setStubId] = useState<string | null>(null);
 
   useEffect(() => {
     const now = new Date();
     setToday(new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10));
     // Stripe returns here with ?upgraded=1 (after /billing/success) or ?checkout=cancelled.
     const q = new URLSearchParams(window.location.search);
+    setStubId(q.get("stub"));
     if (q.get("upgraded") === "1") setCheckoutNotice("upgraded");
     else if (q.get("checkout") === "cancelled") setCheckoutNotice("cancelled");
   }, []);
@@ -87,6 +92,9 @@ export function ReportView() {
     );
 
   const annual = data.plan?.tier === "annual";
+  const stubDoc = stubId ? data.documents.find((d) => d.id === stubId && d.docType === "paystub") : undefined;
+  const scoped = stubDoc ? householdAsOfStub(data, stubDoc.id) : null;
+  const stubPayDate = stubDoc ? (stubDoc.fields as Paystub).payDate : null;
   const saveStatus = async (item: ChecklistItem, status: ChecklistStatus) => {
     try {
       const existing = data.checklist.find((c) => c.formType === item.formType);
@@ -137,9 +145,30 @@ export function ReportView() {
         </Alert>
       )}
 
+      {stubId && !scoped && (
+        <Alert tone="warning" className="mt-4">
+          That pay stub isn&apos;t in your household any more. Showing your full report.
+        </Alert>
+      )}
+      {scoped && stubDoc && (
+        <Alert
+          tone="info"
+          className="mt-4"
+          title={`Checkup as of the pay stub paid ${shortDate(stubPayDate)}`}
+          action={
+            <Link href="/report" onClick={() => setStubId(null)} className="inline-flex items-center gap-1 text-sm font-medium text-brand-700 hover:underline">
+              <ArrowLeftIcon aria-hidden="true" className="h-4 w-4" /> Back to the full report
+            </Link>
+          }
+        >
+          Pay stubs up to that payday only, as the checkup looked then. W-2s and later pay stubs are left out.
+        </Alert>
+      )}
+
       <ReportBody
-        data={data}
-        asOf={today}
+        key={scoped ? `stub-${stubId}` : "full"}
+        data={scoped ?? data}
+        asOf={scoped && stubPayDate ? stubPayDate : today}
         locked={!isAnnual(data)}
         onChecklistStatus={saveStatus}
         packetTitle="Accountant packet"
