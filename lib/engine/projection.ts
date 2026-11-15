@@ -59,7 +59,7 @@ interface JobRow {
  * Standard deduction only (itemizing is out of scope for now).
  */
 export interface ProjectionOptions {
-  /** Yearly income with no withholding (interest, side work), added to AGI. Used by the quick estimate. */
+  /** Yearly income with no withholding (e.g. bank interest), added to AGI as ordinary income. Used by the quick estimate. */
   otherIncome?: number;
 }
 

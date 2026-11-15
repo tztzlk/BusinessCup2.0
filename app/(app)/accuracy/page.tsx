@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { CircleCheckIcon } from "lucide-react";
 import { Card } from "@/components/ui";
 import { federalParams } from "@/lib/engine/params";
 
@@ -15,7 +16,6 @@ const params = federalParams(2026);
 // Measured numbers only (rule 7). Update them when the measurement is re-run.
 // Tests: `npm test` on main, 15 Nov 2026 (186 passed; the 1 skipped is the optional XCHECK_DUMP step).
 // Reader: docs/EVAL-EXTRACT.md. Cross-checks: docs/ENGINE-CROSSCHECK.md.
-const TESTS_PASSING = 186;
 const READER = { fields: 209, exact: 209, files: 11, documents: 9 };
 const REPO = "https://github.com/tztzlk/BusinessCup2.0/blob/main";
 const EVAL_DOC = `${REPO}/docs/EVAL-EXTRACT.md`;
@@ -114,8 +114,12 @@ const SAMPLES = [
   ["/demo/salaried", "Nina & Marcus", "A 401(k) match left on the table"],
 ];
 
-function H2({ children }: { children: ReactNode }) {
-  return <h2 className="mt-10 text-xl font-semibold text-slate-900">{children}</h2>;
+function H2({ id, children }: { id?: string; children: ReactNode }) {
+  return (
+    <h2 id={id} className="mt-10 scroll-mt-20 text-xl font-semibold text-fg-primary">
+      {children}
+    </h2>
+  );
 }
 
 function Ext({ href, children }: { href: string; children: ReactNode }) {
@@ -131,32 +135,25 @@ export default function AccuracyPage() {
   return (
     <article className="mx-auto max-w-3xl text-slate-700">
       <p className="text-sm text-slate-500">Last updated {UPDATED}</p>
-      <h1 className="mt-1 text-3xl font-semibold text-slate-900">Accuracy and limits</h1>
+      <h1 className="mt-1 text-[28px] font-semibold leading-tight tracking-tight text-fg-primary sm:text-[32px]">Accuracy and limits</h1>
       <p className="mt-3 text-lg leading-relaxed">
         How PayTrail&apos;s numbers are made, how we test them, and what PayTrail doesn&apos;t cover yet. Estimates only. Not tax
         advice. Not affiliated with the IRS.
       </p>
 
+      {/* Headline numbers only from docs/ENGINE-CROSSCHECK.md. The reader's smoke test is described below, with its caveats. */}
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
-        <Card className="p-4">
-          <p className="text-3xl font-semibold tabular-nums text-slate-900">4,350 / 4,350</p>
-          <p className="mt-1 text-sm text-slate-600">withholding amounts in the IRS&apos;s 2026 Pub. 15-T wage-bracket tables reproduced.</p>
+        <Card padding="sm">
+          <CircleCheckIcon aria-hidden="true" className="h-6 w-6 text-success" />
+          <p className="mt-2 text-[28px] font-bold leading-tight tabular-nums text-fg-primary">4,350 / 4,350</p>
+          <p className="mt-1 text-sm text-fg-secondary">withholding amounts in the IRS&apos;s 2026 Pub. 15-T wage-bracket tables reproduced.</p>
         </Card>
-        <Card className="p-4">
-          <p className="text-3xl font-semibold tabular-nums text-slate-900">±$0.01</p>
-          <p className="mt-1 text-sm text-slate-600">
-            annual federal tax vs. PolicyEngine-US and Tax-Calculator on 11 households. EITC not modeled.
+        <Card padding="sm">
+          <CircleCheckIcon aria-hidden="true" className="h-6 w-6 text-success" />
+          <p className="mt-2 text-[28px] font-bold leading-tight tabular-nums text-fg-primary">11 / 11</p>
+          <p className="mt-1 text-sm text-fg-secondary">
+            households where annual federal tax matches PolicyEngine-US and Tax-Calculator within $0.01. EITC not modeled.
           </p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-3xl font-semibold tabular-nums text-slate-900">{TESTS_PASSING}</p>
-          <p className="mt-1 text-sm text-slate-600">automated tests pass. They run before every deploy, with type checks and lint.</p>
-        </Card>
-        <Card className="p-4">
-          <p className="text-3xl font-semibold tabular-nums text-slate-900">
-            {READER.exact} / {READER.fields}
-          </p>
-          <p className="mt-1 text-sm text-slate-600">fields read exactly from {READER.files} synthetic test documents.</p>
         </Card>
       </div>
 
@@ -245,7 +242,7 @@ export default function AccuracyPage() {
         </p>
       </Card>
 
-      <H2>What PayTrail doesn&apos;t cover yet</H2>
+      <H2 id="limits">What PayTrail doesn&apos;t cover yet</H2>
       <ul className="mt-3 list-disc space-y-1.5 pl-5">
         {LIMITS.map((l) => (
           <li key={l}>{l}</li>

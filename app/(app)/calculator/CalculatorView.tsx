@@ -116,7 +116,7 @@ export function CalculatorView() {
             </fieldset>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              {money("otherIncome", "Additional income ($ a year)", "With nothing withheld, e.g. interest or side work")}
+              {money("otherIncome", "Additional income ($ a year)", "With nothing withheld, e.g. bank interest")}
               {money("extraWithholdingPerPaycheck", "Additional withholding ($ per paycheck)", "W-4 Step 4(c), if you already have one")}
             </div>
 

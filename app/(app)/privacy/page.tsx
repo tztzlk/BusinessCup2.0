@@ -79,7 +79,7 @@ export default function PrivacyPage() {
   return (
     <article className="mx-auto max-w-3xl text-slate-700">
       <p className="text-sm text-slate-500">Last updated {UPDATED}</p>
-      <h1 className="mt-1 text-3xl font-semibold text-slate-900">Privacy policy</h1>
+      <h1 className="mt-1 text-[28px] font-semibold leading-tight tracking-tight text-fg-primary sm:text-[32px]">Privacy policy</h1>
       <p className="mt-3 text-lg leading-relaxed">
         PayTrail works with documents that have your salary on them. This page says exactly what we keep, where it goes and how
         to remove it.
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {SUMMARY.map(([title, body]) => (
-          <Card key={title} className="p-4">
+          <Card key={title} padding="sm">
             <h2 className="font-semibold text-slate-900">{title}</h2>
             <p className="mt-1 text-sm text-slate-600">{body}</p>
           </Card>
@@ -245,7 +245,7 @@ export default function PrivacyPage() {
         <h3 className="font-semibold text-slate-900">Delete everything, any time</h3>
         <p className="mt-1 text-sm">
           Use <Link href="/report" className="font-medium text-brand-700 underline underline-offset-2">My report</Link> or{" "}
-          <Link href="/settings" className="font-medium text-brand-700 underline underline-offset-2">Account</Link>. One click removes, right away:
+          <Link href="/settings" className="font-medium text-brand-700 underline underline-offset-2">Settings</Link>. One click removes, right away:
         </p>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm">
           <li>your household profile and jobs</li>

@@ -59,9 +59,9 @@ const FAQ: Array<{ q: string; a: string; href?: string; link?: string }> = [
   },
   {
     q: "Does PayTrail cover state taxes?",
-    a: "Not yet. Our paycheck checks and April projection cover federal tax; state tax is not included.",
-    href: "/accuracy",
-    link: "What isn't covered",
+    a: "Not yet. Federal income tax only: state and local income taxes are not calculated.",
+    href: "/accuracy#limits",
+    link: "What PayTrail doesn't cover yet",
   },
   {
     q: `What does Annual (${ANNUAL_PRICE_LABEL}) include?`,

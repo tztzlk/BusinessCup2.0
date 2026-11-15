@@ -24,7 +24,7 @@ export interface QuickEstimateInput {
   step2Checked: boolean;
   /** Children claimed in W-4 Step 3 (on the higher-paying job's W-4, as the form instructs). */
   childrenOnW4: boolean;
-  /** Yearly income with nothing withheld (interest, side work). Added to AGI; 0 or missing = none. */
+  /** Yearly income with nothing withheld (e.g. bank interest). Added to AGI as ordinary income; no self-employment tax. */
   otherIncome?: number;
   /** Extra withholding per paycheck already on the W-4 (Step 4(c)), on the higher-paying job. */
   extraWithholdingPerPaycheck?: number;
