@@ -257,7 +257,8 @@ export function runPaystubChecks(
 
 /**
  * How many workweeks a pay period can touch. Periods that are a whole number of weeks (weekly, biweekly)
- * line up with the employer's workweek. Other periods (semi-monthly, monthly) cut across workweeks, so
+ * line up with the employer's workweek. Other periods (semi-monthly, monthly) cut across workweeks, even
+ * when they happen to be a whole number of weeks long, so
  * we count every workweek the period could touch: that keeps the overtime estimate a lower bound.
  * Uses the period dates on the stub; falls back to the pay frequency when they are missing or odd.
  */
@@ -266,7 +267,10 @@ export function workweeksInPeriod(stub: Pick<Paystub, "payPeriodStart" | "payPer
   const end = Date.parse(`${stub.payPeriodEnd}T00:00:00Z`);
   const days = Math.round((end - start) / 86_400_000) + 1;
   if (Number.isFinite(days) && days >= 1 && days <= 31) {
-    if (days % 7 === 0) return { weeks: days / 7, aligned: true };
+    // Only weekly and biweekly pay follows the workweek. A monthly February (28 days) is a whole number
+    // of weeks too, but it can start mid-workweek and touch 5 of them.
+    const weeklyPay = stub.payFrequency === "weekly" || stub.payFrequency === "biweekly";
+    if (weeklyPay && days % 7 === 0) return { weeks: days / 7, aligned: true };
     return { weeks: Math.ceil((days - 1) / 7) + 1, aligned: false };
   }
   if (stub.payFrequency === "weekly") return { weeks: 1, aligned: true };

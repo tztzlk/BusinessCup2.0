@@ -59,6 +59,11 @@ describe("workweeks in a pay period", () => {
     expect(workweeksInPeriod({ payPeriodStart: "2026-10-01", payPeriodEnd: "2026-10-31", payFrequency: "monthly" })).toEqual({ weeks: 6, aligned: false });
   });
 
+  it("a monthly February is 28 days but can touch 5 workweeks", () => {
+    expect(workweeksInPeriod({ payPeriodStart: "2026-02-01", payPeriodEnd: "2026-02-28", payFrequency: "monthly" })).toEqual({ weeks: 5, aligned: false });
+    expect(workweeksInPeriod({ payPeriodStart: "2028-02-16", payPeriodEnd: "2028-02-29", payFrequency: "semimonthly" })).toEqual({ weeks: 3, aligned: false });
+  });
+
   it("falls back to the pay frequency when the dates are missing or odd", () => {
     expect(workweeksInPeriod({ payPeriodStart: "", payPeriodEnd: "", payFrequency: "biweekly" })).toEqual({ weeks: 2, aligned: true });
     expect(workweeksInPeriod({ payPeriodStart: "2026-11-30", payPeriodEnd: "2026-11-01", payFrequency: "weekly" })).toEqual({ weeks: 1, aligned: true });
@@ -95,6 +100,10 @@ describe("unpaid overtime per workweek", () => {
     expect(overtime(s)).toEqual({ ran: true, findings: [["POSSIBLE_UNPAID_OVERTIME", 10 * RATE * 0.5]] });
     // A normal full-time semi-monthly stub (86.67 h) is fine.
     expect(overtime(stub([reg(86.67)], "2026-11-01", "2026-11-15", "semimonthly")).findings).toEqual([]);
+  });
+
+  it("monthly February: 180 hours can fit in 5 workweeks, so no finding", () => {
+    expect(overtime(stub([reg(180)], "2026-02-01", "2026-02-28", "monthly")).findings).toEqual([]);
   });
 
   it("an overtime amount without hours is not second-guessed", () => {
